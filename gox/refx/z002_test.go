@@ -7,35 +7,35 @@
 package refx
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
 
-type Z01t int
-type Z01A struct {
+type Z02t int
+type Z02A struct {
 	Age string
 	//Age2  uint64
-	Age3  uint64
+	Age3  float32
 	Vtime time.Time
 }
-type Z01B struct {
-	Year uint64 `xref:"Age;t.nano"`
+type Z02B struct {
+	Year float32 `xref:"Age3;t.nano"`
 }
 
-func Test_Z01001(t *testing.T) {
-	a := int(0256)
-	println(a)
-	z01A := Z01A{
+func Test_Z00201(t *testing.T) {
+	z02A := Z02A{
 		Age: "18446744073709551550",
 		//Age2:  18446744073709551539,
-		Age3:  18446744073709551550,
+		Age3:  12185.123456,
 		Vtime: time.Now(),
 	}
 	//a := int64(64)
-	z01B := Z01B{
+	z02B := Z02B{
 		Year: 00,
 	}
-	XReflectCopy(z01A, &z01B)
-	println(z01A.Age3, z01B.Year)
+	XReflectCopy(z02A, &z02B)
+	fmt.Printf("%.10f\n", z02A.Age3)
+	fmt.Printf("%.10f\n", z02B.Year)
 
 }
