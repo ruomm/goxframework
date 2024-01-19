@@ -29,10 +29,11 @@ const (
 
 	xReflect_time_layout = "2006-01-02 15:04:05"
 
-	xReflect_key_time_t       = "t"
-	xReflect_key_zero_to_8    = "z8"
-	xReflect_key_time_tf      = "tf"
-	xReflect_key_number_point = "p"
+	xReflect_key_time_t             = "t"
+	xReflect_key_zero_to_8          = "z8"
+	xReflect_key_string_bool_number = "snb"
+	xReflect_key_time_tf            = "tf"
+	xReflect_key_number_point       = "p"
 
 	// 如是omitempty参数存在，来源的数字类型的0、bool类型的false、字符串类型的空、时间类型的0或负数不会赋值的目标里面
 	xReflect_key_tidy = "tidy"
@@ -178,6 +179,10 @@ func xReflect_transSrcToDestValue(key string, cpOpt string, srcValue interface{}
 		return xReflect_transToInt64(srcValue, cpOpt)
 	} else if xIsFloatKind(destKind) {
 		return xReflect_transToFloat64(srcValue, cpOpt)
+	} else if destKind == reflect.Bool {
+		return xReflect_transToBool(srcValue,cpOpt)
+	} else if destKind == reflect.String {
+		return nil
 	}
 	return nil
 }
@@ -282,30 +287,16 @@ func xReflect_transToInt64(origVal interface{}, cpOpt string) interface{} {
 			actualValue = actualValue.Convert(stringType)
 		}
 		viString := actualValue.Interface().(string)
-		numBase := 10
-		if strings.HasPrefix(viString, "0x") || strings.HasPrefix(viString, "0X") {
-			numBase = 16
-			viString = viString[2:]
-		} else if strings.HasPrefix(viString, "-0x") || strings.HasPrefix(viString, "-0X") {
-			numBase = 16
-			viString = "-" + viString[3:]
-		} else if (strings.HasPrefix(viString, "0") || strings.HasPrefix(viString, "-0")) && xReflect_tagContainKey(cpOpt, xReflect_key_zero_to_8) {
-			numBase = 8
-		}
-		if strings.HasPrefix(viString, "-") {
-			viInt64, err := strconv.ParseInt(viString, numBase, 64)
-			if err != nil {
+		viInt64, err := xTransStringToInt64(viString, cpOpt)
+		if err != nil {
+			viFloat64, errF := strconv.ParseFloat(viString, 64)
+			if errF != nil {
 				vi = nil
 			} else {
-				vi = viInt64
+				vi = int64(math.Round(viFloat64))
 			}
 		} else {
-			viUint64, err := strconv.ParseUint(viString, numBase, 64)
-			if err != nil {
-				vi = nil
-			} else {
-				vi = int64(viUint64)
-			}
+			vi = viInt64
 		}
 
 	} else if xIsStructType(actualKind) {
@@ -367,11 +358,15 @@ func xReflect_transToFloat64(origVal interface{}, cpOpt string) interface{} {
 		viString := actualValue.Interface().(string)
 		viFloat64, err := strconv.ParseFloat(viString, 64)
 		if err != nil {
-			vi = nil
+			viInt64, errI := xTransStringToInt64(viString, cpOpt)
+			if errI != nil {
+				vi = nil
+			} else {
+				vi = float64(viInt64)
+			}
 		} else {
 			vi = viFloat64
 		}
-
 	} else if xIsStructType(actualKind) {
 		srcFieldVT := reflect.TypeOf(origVal).String()
 		if xIsStructType(actualKind) && xIsTimeType(srcFieldVT) {
@@ -385,6 +380,166 @@ func xReflect_transToFloat64(origVal interface{}, cpOpt string) interface{} {
 		vi = nil
 	}
 	return vi
+}
+
+// 转换各种类型为bool类型，整形进行转换，字符串进行格式转换
+func xReflect_transToBool(origVal interface{}, cpOpt string) interface{} {
+	// 获取真实的数值
+	actualValue := reflect.ValueOf(origVal)
+	if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
+		if actualValue.IsNil() {
+			return nil
+		}
+		actualValue = actualValue.Elem()
+	}
+	actualKind := actualValue.Kind()
+	var vi interface{} = nil
+	// 判断类型并转换
+	if xIsIntegerKind(actualKind) {
+		int64Type := reflect.TypeOf(int64(0))
+		if int64Type != actualValue.Type() {
+			actualValue = actualValue.Convert(int64Type)
+		}
+		viInt64 := actualValue.Interface().(int64)
+		if viInt64 > 0 {
+			vi = true
+		} else {
+			vi = false
+		}
+	} else if xIsFloatKind(actualKind) {
+		float64Type := reflect.TypeOf(float64(0))
+		if float64Type != actualValue.Type() {
+			actualValue = actualValue.Convert(float64Type)
+		}
+		viFloat64 := actualValue.Interface().(float64)
+		viInt64 := int64(math.Round(viFloat64))
+		if viInt64 > 0 {
+			vi = true
+		} else {
+			vi = false
+		}
+	} else if actualKind == reflect.Bool {
+		boolType := reflect.TypeOf(true)
+		if boolType != actualValue.Type() {
+			actualValue = actualValue.Convert(boolType)
+		}
+		vi = actualValue.Interface().(bool)
+	} else if xIsStringType(actualKind) {
+		stringType := reflect.TypeOf("")
+		if stringType != actualValue.Type() {
+			actualValue = actualValue.Convert(stringType)
+		}
+		viString := actualValue.Interface().(string)
+		viBool, err := strconv.ParseBool(viString)
+		if err != nil && xReflect_tagContainKey(cpOpt, xReflect_key_string_bool_number) {
+			viBoolByInt, errB := xTransStringIntToBool(viString, cpOpt)
+			if errB != nil {
+				viFloat64, errF := strconv.ParseFloat(viString, 64)
+				if errF != nil {
+					vi = nil
+				} else {
+					if int64(math.Round(viFloat64)) > 0 {
+						vi = true
+					} else {
+						vi = false
+					}
+				}
+			} else {
+				vi = viBoolByInt
+			}
+		} else if err != nil {
+			vi = nil
+		} else {
+			vi = viBool
+		}
+
+	} else if xIsStructType(actualKind) {
+		srcFieldVT := reflect.TypeOf(origVal).String()
+		if xIsStructType(actualKind) && xIsTimeType(srcFieldVT) {
+			optStr := xReflect_findTagValueByKey(cpOpt, xReflect_key_time_t)
+			viTimeValue := actualValue.Interface().(time.Time)
+			viInt64 := xTransTimeToInt64(&viTimeValue, optStr)
+			if viInt64 > 0 {
+				vi = true
+			} else {
+				vi = false
+			}
+		} else {
+			vi = nil
+		}
+	} else {
+		vi = nil
+	}
+	return vi
+}
+
+// 字符串转换为int64
+func xTransStringToInt64(viString string, cpOpt string) (int64, error) {
+	numBase := 10
+	if strings.HasPrefix(viString, "0x") || strings.HasPrefix(viString, "0X") {
+		numBase = 16
+		viString = viString[2:]
+	} else if strings.HasPrefix(viString, "-0x") || strings.HasPrefix(viString, "-0X") {
+		numBase = 16
+		viString = "-" + viString[3:]
+	} else if (strings.HasPrefix(viString, "0") || strings.HasPrefix(viString, "-0")) && xReflect_tagContainKey(cpOpt, xReflect_key_zero_to_8) {
+		numBase = 8
+	}
+	if strings.HasPrefix(viString, "-") {
+		viInt64, err := strconv.ParseInt(viString, numBase, 64)
+		if err != nil {
+			return 0, err
+		} else {
+			return viInt64, nil
+		}
+	} else {
+		viUint64, err := strconv.ParseUint(viString, numBase, 64)
+		if err != nil {
+			if xReflect_tagContainKey(cpOpt, xReflect_key_string_bool_number) {
+				viBool, errB := strconv.ParseBool(viString)
+				if errB != nil {
+					return 0, errB
+				} else if viBool {
+					return 1, nil
+				} else {
+					return 0, nil
+				}
+			} else {
+				return 0, err
+			}
+		} else {
+			return int64(viUint64), nil
+		}
+	}
+}
+
+// 字符串转换为int64
+func xTransStringIntToBool(viString string, cpOpt string) (bool, error) {
+	numBase := 10
+	if strings.HasPrefix(viString, "0x") || strings.HasPrefix(viString, "0X") {
+		numBase = 16
+		viString = viString[2:]
+	} else if strings.HasPrefix(viString, "-0x") || strings.HasPrefix(viString, "-0X") {
+		numBase = 16
+		viString = "-" + viString[3:]
+	} else if (strings.HasPrefix(viString, "0") || strings.HasPrefix(viString, "-0")) && xReflect_tagContainKey(cpOpt, xReflect_key_zero_to_8) {
+		numBase = 8
+	}
+	if strings.HasPrefix(viString, "-") {
+		viInt64, err := strconv.ParseInt(viString, numBase, 64)
+		if err != nil {
+			return false, err
+		} else {
+			return viInt64 > 0, nil
+		}
+	} else {
+		viUint64, err := strconv.ParseUint(viString, numBase, 64)
+		if err != nil {
+			return false, err
+		} else {
+			return viUint64 > 0, nil
+		}
+	}
 }
 
 func xTransInt64ToTime(srcVal int64, optStr1 string) *time.Time {
