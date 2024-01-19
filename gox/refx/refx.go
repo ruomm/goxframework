@@ -180,11 +180,30 @@ func xReflect_transSrcToDestValue(key string, cpOpt string, srcValue interface{}
 	} else if xIsFloatKind(destKind) {
 		return xReflect_transToFloat64(srcValue, cpOpt)
 	} else if destKind == reflect.Bool {
-		return xReflect_transToBool(srcValue,cpOpt)
+		return xReflect_transToBool(srcValue, cpOpt)
 	} else if destKind == reflect.String {
-		return nil
+		return xReflect_transToString(srcValue, cpOpt)
+	} else if xIsTimeType(destTypeOf.String()) {
+		return xReflect_transToTime(srcValue, cpOpt)
+	} else {
+		srcTypeOf := reflect.TypeOf(srcValue)
+		srcKind := srcTypeOf.Kind()
+		srcType := srcTypeOf.String()
+		destType := destTypeOf.String()
+		if srcKind != destKind {
+			if xReflect_log {
+				fmt.Println(key + "字段无法赋值，切片错误，目标和来源切片类型不同")
+			}
+			return nil
+		} else if srcType != destType {
+			if xReflect_log {
+				fmt.Println(key + "字段无法赋值，结构错误，目标和来源结构类型不同")
+			}
+			return nil
+		} else {
+			return srcValue
+		}
 	}
-	return nil
 }
 
 func xReflect_tagContainKey(tagValue string, key string) bool {
@@ -222,6 +241,13 @@ func xIsIntegerKind(kind reflect.Kind) bool {
 		return false
 	}
 }
+func xIsUnsignedIntegerKind(kind reflect.Kind) bool {
+	if kind == reflect.Uint || kind == reflect.Uint8 || kind == reflect.Uint16 || kind == reflect.Uint32 || kind == reflect.Uint64 {
+		return true
+	} else {
+		return false
+	}
+}
 func xIsFloatKind(kind reflect.Kind) bool {
 	if kind == reflect.Float64 || kind == reflect.Float32 {
 		return true
@@ -242,6 +268,10 @@ func xIsStringTypeByName(typeName string) bool {
 }
 func xIsTimeType(typeName string) bool {
 	return typeName == "time.Time" || typeName == "Time" || typeName == "*time.Time"
+}
+
+func xIsPointor(typeName string) bool {
+	return strings.HasPrefix(typeName, "*")
 }
 
 // 转换各种类型为int64，浮点型进行math.Round，字符串进行格式化，时间类型取得毫秒时间戳
@@ -540,6 +570,174 @@ func xTransStringIntToBool(viString string, cpOpt string) (bool, error) {
 			return viUint64 > 0, nil
 		}
 	}
+}
+
+// 转换各种类型为int64，浮点型进行math.Round，字符串进行格式化，时间类型取得毫秒时间戳
+func xReflect_transToString(origVal interface{}, cpOpt string) interface{} {
+	// 获取真实的数值
+	actualValue := reflect.ValueOf(origVal)
+	if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
+		if actualValue.IsNil() {
+			return nil
+		}
+		actualValue = actualValue.Elem()
+	}
+	actualKind := actualValue.Kind()
+	var vi interface{} = nil
+	// 判断类型并转换
+	if xIsIntegerKind(actualKind) {
+		if xIsUnsignedIntegerKind(actualKind) {
+			uint64Type := reflect.TypeOf(uint64(0))
+			if uint64Type != actualValue.Type() {
+				actualValue = actualValue.Convert(uint64Type)
+			}
+			vi = strconv.FormatUint(actualValue.Interface().(uint64), 10)
+		} else {
+			int64Type := reflect.TypeOf(int64(0))
+			if int64Type != actualValue.Type() {
+				actualValue = actualValue.Convert(int64Type)
+			}
+			vi = strconv.FormatInt(actualValue.Interface().(int64), 10)
+		}
+	} else if xIsFloatKind(actualKind) {
+		float64Type := reflect.TypeOf(float64(0))
+		if float64Type != actualValue.Type() {
+			actualValue = actualValue.Convert(float64Type)
+		}
+		viFloat64 := actualValue.Interface().(float64)
+		optStr := xReflect_findTagValueByKey(cpOpt, xReflect_key_number_point)
+		prec := -1
+		if len(optStr) > 0 {
+			prec64, errPrec := strconv.ParseInt(optStr, 10, 64)
+			if errPrec != nil {
+				prec = -1
+			} else if prec64 >= -1 && prec64 <= 10 {
+				prec = int(prec64)
+			} else {
+				prec = -1
+			}
+		}
+		return strconv.FormatFloat(viFloat64, 'f', prec, 64)
+	} else if actualKind == reflect.Bool {
+		boolType := reflect.TypeOf(true)
+		if boolType != actualValue.Type() {
+			actualValue = actualValue.Convert(boolType)
+		}
+		viBool := actualValue.Interface().(bool)
+		if viBool {
+			vi = "true"
+		} else {
+			vi = "false"
+		}
+	} else if xIsStringType(actualKind) {
+		stringType := reflect.TypeOf("")
+		if stringType != actualValue.Type() {
+			actualValue = actualValue.Convert(stringType)
+		}
+		vi = actualValue.Interface().(string)
+	} else if xIsStructType(actualKind) {
+		srcFieldVT := reflect.TypeOf(origVal).String()
+		if xIsStructType(actualKind) && xIsTimeType(srcFieldVT) {
+			optStr := xReflect_findTagValueByKey(cpOpt, xReflect_key_time_tf)
+			viTimeValue := actualValue.Interface().(time.Time)
+			vi = xReflect_formatTimeToString(&viTimeValue, optStr)
+		} else {
+			vi = nil
+		}
+	} else {
+		vi = nil
+	}
+	return vi
+}
+
+// 转换各种类型为int64，浮点型进行math.Round，字符串进行格式化，时间类型取得毫秒时间戳
+func xReflect_transToTime(origVal interface{}, cpOpt string) interface{} {
+	// 获取真实的数值
+	actualValue := reflect.ValueOf(origVal)
+	if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
+		if actualValue.IsNil() {
+			return nil
+		}
+		actualValue = actualValue.Elem()
+	}
+	actualKind := actualValue.Kind()
+	var vi interface{} = nil
+	// 判断类型并转换
+	if xIsIntegerKind(actualKind) {
+
+		int64Type := reflect.TypeOf(int64(0))
+		if int64Type != actualValue.Type() {
+			actualValue = actualValue.Convert(int64Type)
+		}
+		viInt64 := actualValue.Interface().(int64)
+		optStr := xReflect_findTagValueByKey(cpOpt, xReflect_key_time_t)
+		vi = xTransInt64ToTime(viInt64, optStr)
+	} else if xIsFloatKind(actualKind) {
+		float64Type := reflect.TypeOf(float64(0))
+		if float64Type != actualValue.Type() {
+			actualValue = actualValue.Convert(float64Type)
+		}
+		viFloat64 := actualValue.Interface().(float64)
+		viInt64 := int64(math.Round(viFloat64))
+		optStr := xReflect_findTagValueByKey(cpOpt, xReflect_key_time_t)
+		vi = xTransInt64ToTime(viInt64, optStr)
+	} else if actualKind == reflect.Bool {
+		vi = nil
+	} else if xIsStringType(actualKind) {
+		stringType := reflect.TypeOf("")
+		if stringType != actualValue.Type() {
+			actualValue = actualValue.Convert(stringType)
+		}
+		viStr := actualValue.Interface().(string)
+		optStr := xReflect_findTagValueByKey(cpOpt, xReflect_key_time_tf)
+		pViTime := xReflect_parseStringToTime(viStr, optStr)
+		if pViTime == nil {
+			if xReflect_log {
+				fmt.Println("字段无法赋值，转换错误，string->time.Time")
+			}
+			return nil
+		} else {
+			vi = pViTime
+		}
+	} else if xIsStructType(actualKind) {
+		srcFieldVT := reflect.TypeOf(origVal).String()
+		if xIsStructType(actualKind) && xIsTimeType(srcFieldVT) {
+			viTimeValue := actualValue.Interface().(time.Time)
+			vi = &viTimeValue
+		} else {
+			vi = nil
+		}
+	} else {
+		vi = nil
+	}
+	return vi
+}
+
+// 格式化时间为字符串
+func xReflect_formatTimeToString(t *time.Time, timeLayout string) string {
+	//"America/Adak" "Asia/Shanghai"
+	var realTimeLayout string
+	if len(timeLayout) > 0 {
+		realTimeLayout = timeLayout
+	} else {
+		realTimeLayout = xReflect_time_layout
+	}
+	return t.In(corex.ToTimeLocation()).Format(realTimeLayout)
+}
+
+// 解析字符串为时间
+func xReflect_parseStringToTime(sTime string, timeLayout string) *time.Time {
+	var realTimeLayout string
+	if len(timeLayout) > 0 {
+		realTimeLayout = timeLayout
+	} else {
+		realTimeLayout = xReflect_time_layout
+	}
+	timeStamp, err := time.ParseInLocation(realTimeLayout, sTime, corex.ToTimeLocation())
+	if err != nil {
+		return nil
+	}
+	return &timeStamp
 }
 
 func xTransInt64ToTime(srcVal int64, optStr1 string) *time.Time {
