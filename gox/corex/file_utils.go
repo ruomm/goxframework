@@ -105,7 +105,7 @@ func FirstIndexOfFileSeparator(filePath string) int {
  */
 func ParseFileSeparator(filePath string) string {
 	if len(filePath) <= 0 {
-		return os.PathSeparator
+		return string(os.PathSeparator)
 	}
 	filePosi1 := strings.Index(filePath, "\\")
 	filePosi2 := strings.Index(filePath, "/")
@@ -120,7 +120,7 @@ func ParseFileSeparator(filePath string) string {
 	} else if filePosi2 >= 0 {
 		return "/"
 	} else {
-		return os.PathSeparator
+		return string(os.PathSeparator)
 	}
 }
 

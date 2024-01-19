@@ -366,7 +366,7 @@ func xReflect_transSrcToDestValue(key string, cpOpt string, srcValue interface{}
 			} else if strings.Contains(optStr1, "mil") {
 				timeDest = time.UnixMilli(srcVal.(int64))
 			} else if strings.Contains(optStr1, "mic") {
-				timeDest = time.UnixMicro(srcVal.(int64))
+				timeDest = time.UnixMicro(srcVal.(int64) / 1e3)
 			} else if strings.Contains(optStr1, "nano") {
 				return time.UnixMilli(srcVal.(int64) / 1e6)
 			} else {
