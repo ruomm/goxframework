@@ -58,7 +58,7 @@ func XRefCopy(srcO interface{}, destO interface{}) error {
 	}
 	resOpt := make(map[string]string)
 	resSrc := make(map[string]string)
-	reflectValueMap, err := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
+	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
 			return false
@@ -86,8 +86,8 @@ func XRefCopy(srcO interface{}, destO interface{}) error {
 		}
 		return true
 	})
-	if err != nil {
-		return err
+	if errG != nil {
+		return errG
 	}
 	for key, value := range reflectValueMap {
 		var srcKey string
@@ -96,8 +96,9 @@ func XRefCopy(srcO interface{}, destO interface{}) error {
 		} else {
 			srcKey = key
 		}
-		srcValue, err := xreflect.EmbedFieldValue(srcO, srcKey)
-		if err != nil {
+		srcValue, tmpErr01 := xreflect.EmbedFieldValue(srcO, srcKey)
+		if tmpErr01 != nil {
+			errG = tmpErr01
 			continue
 		}
 		if srcValue == nil {
@@ -111,17 +112,17 @@ func XRefCopy(srcO interface{}, destO interface{}) error {
 		if rtVal == nil {
 			continue
 		}
-		tmpErr := xreflect.SetEmbedField(destO, key, rtVal)
-		if tmpErr != nil {
-			err = tmpErr
+		tmpErr02 := xreflect.SetEmbedField(destO, key, rtVal)
+		if tmpErr02 != nil {
+			errG = tmpErr02
 		}
 
 	}
-	return err
+	return errG
 }
 
 // 字段是否需要XReflect复制
-func xReflect_canXCopy(tagSrcVal string, srcNameStr string) (string, bool) {
+func xReflect_canXCopy(tagSrcVal string, nameSpace string) (string, bool) {
 	if tagSrcVal == "" {
 		return "", true
 	}
@@ -141,8 +142,8 @@ func xReflect_canXCopy(tagSrcVal string, srcNameStr string) (string, bool) {
 				cpSrcId = subVList[0]
 				cpEnable = true
 			}
-		} else if lenVList == 2 {
-			if len(subVList[0]) > 0 && (strings.HasSuffix(srcNameStr, subVList[0]) || strings.HasPrefix(srcNameStr, subVList[0])) {
+		} else if lenVList == 2 && len(nameSpace) > 0 {
+			if len(subVList[0]) > 0 && (strings.HasSuffix(nameSpace, subVList[0]) || strings.HasPrefix(nameSpace, subVList[0])) {
 				cpEnable = true
 				cpSrcId = subVList[1]
 				break
