@@ -14,7 +14,7 @@ import (
 )
 
 type OrigS2S struct {
-	Orig int
+	Orig int32
 }
 
 type DestS2S struct {
@@ -40,6 +40,7 @@ func TestS2S(t *testing.T) {
 		Orig: 456456,
 	}
 	dest := DestS2S{}
+	println(dest.VTime.UnixMilli())
 	XReflectCopy(orgi, &dest)
 
 	jsonStr, _ := corex.JsonToString(dest)

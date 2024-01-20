@@ -7,6 +7,7 @@
 package refx
 
 import (
+	"fmt"
 	"math"
 	"reflect"
 	"strconv"
@@ -14,13 +15,19 @@ import (
 	"time"
 )
 
-func xParseToBool(origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
+func xParseToBool(key string, origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToBool(origVal, cpOpt)
 	if vi == nil {
+		if xReflect_log {
+			fmt.Println(key + "字段无法赋值，来源字段值无法解析或者为nil。")
+		}
 		return nil
 	}
 	viBool := vi.(bool)
 	if isTidy && !viBool {
+		if xReflect_log {
+			fmt.Println(key + "字段无需赋值，来源字段值解析后的值为false。")
+		}
 		return nil
 	}
 	if !strings.HasPrefix(destTypeName, "*") {
@@ -29,6 +36,9 @@ func xParseToBool(origVal interface{}, destTypeName string, cpOpt string, isTidy
 	if destTypeName == "*bool" {
 		return &viBool
 	} else {
+		if xReflect_log {
+			fmt.Println(key + "字段无需赋值，目标指针类型未知。")
+		}
 		return nil
 	}
 }

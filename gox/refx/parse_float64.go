@@ -7,19 +7,26 @@
 package refx
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
 )
 
-func xParseToFloat(origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
+func xParseToFloat(key string, origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToFloat64(origVal, cpOpt)
 	if vi == nil {
+		if xReflect_log {
+			fmt.Println(key + "字段无法赋值，来源字段值无法解析或者为nil。")
+		}
 		return nil
 	}
 	viFloat64 := vi.(float64)
 	if isTidy && viFloat64 >= -0.0000000001 && viFloat64 <= 0.0000000001 {
+		if xReflect_log {
+			fmt.Println(key + "字段无需赋值，来源字段值解析后的值为0。")
+		}
 		return nil
 	}
 	if !strings.HasPrefix(destTypeName, "*") {
@@ -32,6 +39,9 @@ func xParseToFloat(origVal interface{}, destTypeName string, cpOpt string, isTid
 		rtVal := viFloat64
 		return &rtVal
 	} else {
+		if xReflect_log {
+			fmt.Println(key + "字段无需赋值，目标指针类型未知。")
+		}
 		return nil
 	}
 }

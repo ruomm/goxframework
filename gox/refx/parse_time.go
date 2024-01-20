@@ -14,13 +14,19 @@ import (
 	"time"
 )
 
-func xParseToTime(origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
+func xParseToTime(key string, origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToTime(origVal, cpOpt)
 	if vi == nil {
+		if xReflect_log {
+			fmt.Println(key + "字段无法赋值，来源字段值无法解析或者为nil。")
+		}
 		return nil
 	}
 	viPTime := vi.(*time.Time)
-	if isTidy && viPTime.UnixMilli() == 0 {
+	if isTidy && (viPTime.Unix() == xReflct_AD_Zero_Second || viPTime.UnixMilli() == 0) {
+		if xReflect_log {
+			fmt.Println(key + "字段无需赋值，来源字段值解析后的时间值为空。")
+		}
 		return nil
 	}
 	if !strings.HasPrefix(destTypeName, "*") {
@@ -29,6 +35,9 @@ func xParseToTime(origVal interface{}, destTypeName string, cpOpt string, isTidy
 	if destTypeName == "*time.Time" {
 		return viPTime
 	} else {
+		if xReflect_log {
+			fmt.Println(key + "字段无需赋值，目标指针类型未知。")
+		}
 		return nil
 	}
 }

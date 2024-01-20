@@ -7,19 +7,26 @@
 package refx
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
 )
 
-func xParseToString(origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
+func xParseToString(key string, origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToString(origVal, cpOpt)
 	if vi == nil {
+		if xReflect_log {
+			fmt.Println(key + "字段无法赋值，来源字段值无法解析或者为nil。")
+		}
 		return nil
 	}
 	viString := vi.(string)
 	if isTidy && viString == "" {
+		if xReflect_log {
+			fmt.Println(key + "字段无需赋值，来源字段值解析后的值为空字符串。")
+		}
 		return nil
 	}
 	if !strings.HasPrefix(destTypeName, "*") {
@@ -28,6 +35,9 @@ func xParseToString(origVal interface{}, destTypeName string, cpOpt string, isTi
 	if destTypeName == "*string" {
 		return &viString
 	} else {
+		if xReflect_log {
+			fmt.Println(key + "字段无需赋值，目标指针类型未知。")
+		}
 		return nil
 	}
 }

@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	xReflect_log = true
+	xReflct_AD_Zero_Second = int64(-62135596800)
+	xReflect_log           = true
 
 	// const xReflect_tag_cp_opt = "xref_opt"
 	// const xReflect_tag_cp_src = "xref"
@@ -43,13 +44,9 @@ destO：目标切片，不可以传入结构体
 */
 // TransferObj 将srcO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
 // 无标签的如果再按属性名匹配
-func XReflectCopy(srcO interface{}, destO interface{}, transBasePointer ...bool) error {
+func XReflectCopy(srcO interface{}, destO interface{}) error {
 	if nil == srcO {
 		return errors.New("XReflectCopy error,source interface is nil")
-	}
-	var transBasePointerFlag = false
-	if nil != transBasePointer && len(transBasePointer) > 0 && transBasePointer[0] {
-		transBasePointerFlag = transBasePointer[0]
 	}
 	// 获取srcO的类名称
 	srcT := reflect.TypeOf(srcO)
@@ -103,12 +100,10 @@ func XReflectCopy(srcO interface{}, destO interface{}, transBasePointer ...bool)
 		if err != nil {
 			continue
 		}
-		if transBasePointerFlag {
-			//srcValue = transBasePointerToValue(srcValue)
-			//srcValue = transBasePointerToValue(srcValue)
-			fmt.Println("transBasePointerToValue")
-		}
 		if srcValue == nil {
+			if xReflect_log {
+				fmt.Println(key + "字段无需赋值，来源字段值为nil。")
+			}
 			continue
 		}
 		cpOpt := resOpt[key]
@@ -157,7 +152,7 @@ func xReflect_canXCopy(tagSrcVal string, srcNameStr string) (string, bool) {
 	return cpSrcId, cpEnable
 }
 
-// 解析来源字段为目标待赋值字段
+// 解析来源字段值为目标待赋值字段
 func xReflect_transSrcToDestValue(key string, cpOpt string, srcValue interface{}, destValue reflect.Value) interface{} {
 
 	//srcTypeOf := reflect.TypeOf(srcValue)
@@ -178,15 +173,15 @@ func xReflect_transSrcToDestValue(key string, cpOpt string, srcValue interface{}
 	//	fmt.Println(fmt.Sprintf("来源类型:%d-%s,目标类型:%d-%s,Tidy:%t", srcKind, srcType, destKind, destType, isTidy))
 	//}
 	if xIsIntegerKind(destKind) || xIsIntegerPointer(destTypeName) {
-		return xParseToInt(srcValue, destTypeName, cpOpt, isTidy)
+		return xParseToInt(key, srcValue, destTypeName, cpOpt, isTidy)
 	} else if xIsFloatKind(destKind) || xIsFloatPointer(destTypeName) {
-		return xParseToFloat(srcValue, destTypeName, cpOpt, isTidy)
+		return xParseToFloat(key, srcValue, destTypeName, cpOpt, isTidy)
 	} else if destKind == reflect.Bool || destTypeName == "*bool" {
-		return xParseToBool(srcValue, destTypeName, cpOpt, isTidy)
+		return xParseToBool(key, srcValue, destTypeName, cpOpt, isTidy)
 	} else if destKind == reflect.String || destTypeName == "*string" {
-		return xParseToString(srcValue, destTypeName, cpOpt, isTidy)
+		return xParseToString(key, srcValue, destTypeName, cpOpt, isTidy)
 	} else if xIsTimeType(destTypeOf.String()) {
-		return xParseToTime(srcValue, destTypeName, cpOpt, isTidy)
+		return xParseToTime(key, srcValue, destTypeName, cpOpt, isTidy)
 	} else {
 		srcTypeOf := reflect.TypeOf(srcValue)
 		srcKind := srcTypeOf.Kind()

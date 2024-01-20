@@ -7,6 +7,7 @@
 package refx
 
 import (
+	"fmt"
 	"math"
 	"reflect"
 	"strconv"
@@ -14,13 +15,19 @@ import (
 	"time"
 )
 
-func xParseToInt(origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
+func xParseToInt(key string, origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToInt64(origVal, cpOpt)
-	if vi == nil || isTidy && vi.(int64) == 0 {
+	if vi == nil {
+		if xReflect_log {
+			fmt.Println(key + "字段无法赋值，来源字段值无法解析或者为nil。")
+		}
 		return nil
 	}
 	viInt64 := vi.(int64)
 	if isTidy && viInt64 == 0 {
+		if xReflect_log {
+			fmt.Println(key + "字段无需赋值，来源字段值解析后的值为0。")
+		}
 		return nil
 	}
 	if !strings.HasPrefix(destTypeName, "*") {
@@ -57,6 +64,9 @@ func xParseToInt(origVal interface{}, destTypeName string, cpOpt string, isTidy 
 		rtVal := uint64(viInt64)
 		return &rtVal
 	} else {
+		if xReflect_log {
+			fmt.Println(key + "字段无需赋值，目标指针类型未知。")
+		}
 		return nil
 	}
 
