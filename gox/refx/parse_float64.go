@@ -104,7 +104,11 @@ func ParseToFloat64(origVal interface{}, cpOpt string) interface{} {
 		if xIsStructType(actualKind) && xIsTimeType(srcFieldVT) {
 			optStr := xTagFindValueByKey(cpOpt, xReflect_key_time_t)
 			viTimeValue := actualValue.Interface().(time.Time)
-			vi = float64(xTransTimeToInt64(&viTimeValue, optStr))
+			if viTimeValue.Unix() == xReflct_AD_Zero_Second {
+				vi = nil
+			} else {
+				vi = float64(xTransTimeToInt64(&viTimeValue, optStr))
+			}
 		} else {
 			vi = nil
 		}

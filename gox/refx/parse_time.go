@@ -95,7 +95,11 @@ func ParseToTime(origVal interface{}, cpOpt string) interface{} {
 		srcFieldVT := reflect.TypeOf(origVal).String()
 		if xIsStructType(actualKind) && xIsTimeType(srcFieldVT) {
 			viTimeValue := actualValue.Interface().(time.Time)
-			vi = &viTimeValue
+			if viTimeValue.Unix() == xReflct_AD_Zero_Second {
+				vi = nil
+			} else {
+				vi = &viTimeValue
+			}
 		} else {
 			vi = nil
 		}

@@ -14,29 +14,37 @@ import (
 )
 
 type OrigS2P struct {
-	Orig int
+	//Orig int
+	//Orig string
+	//Orig float64
+	//Orig bool
+	Orig time.Time
 }
 
 type DestS2P struct {
-	Vint     *int       `xref:"Orig" json:""`
-	Vint8    *int8      `xref:"Orig" json:""`
-	Vint16   *int16     `xref:"Orig" json:""`
-	Vint32   *int32     `xref:"Orig" json:""`
-	Vint64   *int64     `xref:"Orig" json:""`
-	Vuint    *uint      `xref:"Orig" json:""`
-	Vuint8   *uint8     `xref:"Orig" json:""`
-	Vuint16  *uint16    `xref:"Orig" json:""`
-	Vuint32  *uint32    `xref:"Orig" json:""`
-	Vuint64  *uint64    `xref:"Orig" json:""`
-	Vfloat32 *float32   `xref:"Orig" json:""`
-	Vfloat64 *float64   `xref:"Orig" json:""`
-	Vstring  *string    `xref:"Orig" json:""`
-	Vbool    *bool      `xref:"Orig" json:""`
-	VTime    *time.Time `xref:"Orig" json:""`
+	Vint     *int       `xref:"Orig;tidy" json:""`
+	Vint8    *int8      `xref:"Orig;tidy" json:""`
+	Vint16   *int16     `xref:"Orig;tidy" json:""`
+	Vint32   *int32     `xref:"Orig;tidy" json:""`
+	Vint64   *int64     `xref:"Orig;tidy" json:""`
+	Vuint    *uint      `xref:"Orig;tidy" json:""`
+	Vuint8   *uint8     `xref:"Orig;tidy" json:""`
+	Vuint16  *uint16    `xref:"Orig;tidy" json:""`
+	Vuint32  *uint32    `xref:"Orig;tidy" json:""`
+	Vuint64  *uint64    `xref:"Orig;tidy" json:""`
+	Vfloat32 *float32   `xref:"Orig;tidy" json:""`
+	Vfloat64 *float64   `xref:"Orig;tidy" json:""`
+	Vstring  *string    `xref:"Orig;tidy" json:""`
+	Vbool    *bool      `xref:"Orig;tidy" json:""`
+	VTime    *time.Time `xref:"Orig;tidy" json:""`
 }
 
 func TestS2P(t *testing.T) {
-	a := 123456789
+	//a := 123456.567
+	//a := true
+	//a := time.Now()
+	a := time.Time{}
+	fmt.Println(a)
 	orgiP := OrigS2P{
 		Orig: a,
 	}
@@ -47,7 +55,7 @@ func TestS2P(t *testing.T) {
 
 	jsonStr, _ := corex.JsonToString(destP)
 	fmt.Println(jsonStr)
-	if jsonStr != TEST_JSON_STRING {
+	if jsonStr != readJson(3) {
 		t.Error("测试失败")
 	}
 

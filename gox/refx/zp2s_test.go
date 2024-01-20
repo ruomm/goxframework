@@ -14,31 +14,41 @@ import (
 )
 
 type OrgiP2S struct {
-	Orig *int
+	//Orig *int
+	//Orig *string
+	//Orig *float64
+	//Orig *bool
+	Orig *time.Time
 }
 
 type DestP2S struct {
-	Vint     int       `xref:"Orig" json:""`
-	Vint8    int8      `xref:"Orig" json:""`
-	Vint16   int16     `xref:"Orig" json:""`
-	Vint32   int32     `xref:"Orig" json:""`
-	Vint64   int64     `xref:"Orig" json:""`
-	Vuint    uint      `xref:"Orig" json:""`
-	Vuint8   uint8     `xref:"Orig" json:""`
-	Vuint16  uint16    `xref:"Orig" json:""`
-	Vuint32  uint32    `xref:"Orig" json:""`
-	Vuint64  uint64    `xref:"Orig" json:""`
-	Vfloat32 float32   `xref:"Orig" json:""`
-	Vfloat64 float64   `xref:"Orig" json:""`
-	Vstring  string    `xref:"Orig" json:""`
-	Vbool    bool      `xref:"Orig" json:""`
-	VTime    time.Time `xref:"Orig" json:""`
+	Vint     int       `xref:"Orig;tidy" json:""`
+	Vint8    int8      `xref:"Orig;tidy" json:""`
+	Vint16   int16     `xref:"Orig;tidy" json:""`
+	Vint32   int32     `xref:"Orig;tidy" json:""`
+	Vint64   int64     `xref:"Orig;tidy" json:""`
+	Vuint    uint      `xref:"Orig;tidy" json:""`
+	Vuint8   uint8     `xref:"Orig;tidy" json:""`
+	Vuint16  uint16    `xref:"Orig;tidy" json:""`
+	Vuint32  uint32    `xref:"Orig;tidy" json:""`
+	Vuint64  uint64    `xref:"Orig;tidy" json:""`
+	Vfloat32 float32   `xref:"Orig;tidy" json:""`
+	Vfloat64 float64   `xref:"Orig;tidy" json:""`
+	Vstring  string    `xref:"Orig;tidy" json:""`
+	Vbool    bool      `xref:"Orig;tidy" json:""`
+	VTime    time.Time `xref:"Orig;tidy" json:""`
 }
 
 func TestP2S(t *testing.T) {
-	a := 123456789
+	//a := 123456.567
+	//a := true
+	//a := time.Now()
+	a := time.Time{}
+
+	fmt.Println(a)
 	orgi := OrgiP2S{
 		Orig: &a,
+		//Orig: nil,
 	}
 	dest := DestP2S{
 		//Vint: &a,
@@ -47,7 +57,7 @@ func TestP2S(t *testing.T) {
 
 	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)
-	if jsonStr != TEST_JSON_STRING {
+	if jsonStr != readJson(3) {
 		t.Error("测试失败")
 	}
 

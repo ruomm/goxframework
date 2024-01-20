@@ -119,12 +119,17 @@ func ParseToBool(origVal interface{}, cpOpt string) interface{} {
 		if xIsStructType(actualKind) && xIsTimeType(srcFieldVT) {
 			optStr := xTagFindValueByKey(cpOpt, xReflect_key_time_t)
 			viTimeValue := actualValue.Interface().(time.Time)
-			viInt64 := xTransTimeToInt64(&viTimeValue, optStr)
-			if viInt64 > 0 {
-				vi = true
+			if viTimeValue.Unix() == xReflct_AD_Zero_Second {
+				vi = nil
 			} else {
-				vi = false
+				viInt64 := xTransTimeToInt64(&viTimeValue, optStr)
+				if viInt64 > 0 {
+					vi = true
+				} else {
+					vi = false
+				}
 			}
+
 		} else {
 			vi = nil
 		}

@@ -110,7 +110,11 @@ func ParseToString(origVal interface{}, cpOpt string) interface{} {
 		if xIsStructType(actualKind) && xIsTimeType(srcFieldVT) {
 			optStr := xTagFindValueByKey(cpOpt, xReflect_key_time_tf)
 			viTimeValue := actualValue.Interface().(time.Time)
-			vi = xFormatTimeToString(&viTimeValue, optStr)
+			if viTimeValue.Unix() == xReflct_AD_Zero_Second {
+				vi = nil
+			} else {
+				vi = xFormatTimeToString(&viTimeValue, optStr)
+			}
 		} else {
 			vi = nil
 		}
