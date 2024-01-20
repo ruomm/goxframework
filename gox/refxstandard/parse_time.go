@@ -8,7 +8,6 @@ package refx
 
 import (
 	"fmt"
-	"math"
 	"reflect"
 	"strings"
 	"time"
@@ -64,17 +63,6 @@ func ParseToTime(origVal interface{}, cpOpt string) interface{} {
 		viInt64 := actualValue.Interface().(int64)
 		optStr := xTagFindValueByKey(cpOpt, xRef_key_time_t)
 		vi = xTransInt64ToTime(viInt64, optStr)
-	} else if xIsFloatKind(actualKind) {
-		float64Type := reflect.TypeOf(float64(0))
-		if float64Type != actualValue.Type() {
-			actualValue = actualValue.Convert(float64Type)
-		}
-		viFloat64 := actualValue.Interface().(float64)
-		viInt64 := int64(math.Round(viFloat64))
-		optStr := xTagFindValueByKey(cpOpt, xRef_key_time_t)
-		vi = xTransInt64ToTime(viInt64, optStr)
-	} else if actualKind == reflect.Bool {
-		vi = nil
 	} else if xIsStringKind(actualKind) {
 		stringType := reflect.TypeOf("")
 		if stringType != actualValue.Type() {

@@ -8,11 +8,8 @@ package refx
 
 import (
 	"fmt"
-	"math"
 	"reflect"
-	"strconv"
 	"strings"
-	"time"
 )
 
 func xParseToInt(key string, origVal interface{}, destTypeName string, destActualTypeKind reflect.Kind, cpOpt string, isTidy bool) (interface{}, bool) {
@@ -91,24 +88,6 @@ func ParseToInt64(origVal interface{}, cpOpt string) interface{} {
 			actualValue = actualValue.Convert(int64Type)
 		}
 		vi = actualValue.Interface()
-	} else if xIsFloatKind(actualKind) {
-		float64Type := reflect.TypeOf(float64(0))
-		if float64Type != actualValue.Type() {
-			actualValue = actualValue.Convert(float64Type)
-		}
-		viFloat64 := actualValue.Interface().(float64)
-		vi = int64(math.Round(viFloat64))
-	} else if actualKind == reflect.Bool {
-		boolType := reflect.TypeOf(true)
-		if boolType != actualValue.Type() {
-			actualValue = actualValue.Convert(boolType)
-		}
-		viBool := actualValue.Interface().(bool)
-		if viBool {
-			vi = int64(1)
-		} else {
-			vi = int64(0)
-		}
 	} else if xIsStringKind(actualKind) {
 		stringType := reflect.TypeOf("")
 		if stringType != actualValue.Type() {
@@ -117,29 +96,11 @@ func ParseToInt64(origVal interface{}, cpOpt string) interface{} {
 		viString := actualValue.Interface().(string)
 		viInt64, err := xTransStringToInt64(viString, cpOpt)
 		if err != nil {
-			viFloat64, errF := strconv.ParseFloat(viString, 64)
-			if errF != nil {
-				vi = nil
-			} else {
-				vi = int64(math.Round(viFloat64))
-			}
+			return nil
 		} else {
 			vi = viInt64
 		}
 
-	} else if xIsStructType(actualKind) {
-		origFieldVT := reflect.TypeOf(origVal).String()
-		if xIsStructType(actualKind) && xIsTimeType(origFieldVT) {
-			optStr := xTagFindValueByKey(cpOpt, xRef_key_time_t)
-			viTimeValue := actualValue.Interface().(time.Time)
-			if viTimeValue.Unix() == xRef_AD_Zero_Second {
-				vi = nil
-			} else {
-				vi = xTransTimeToInt64(&viTimeValue, optStr)
-			}
-		} else {
-			vi = nil
-		}
 	} else {
 		vi = nil
 	}

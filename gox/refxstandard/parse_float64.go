@@ -11,7 +11,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func xParseToFloat(key string, origVal interface{}, destTypeName string, destActualTypeKind reflect.Kind, cpOpt string, isTidy bool) (interface{}, bool) {
@@ -71,17 +70,6 @@ func ParseToFloat64(origVal interface{}, cpOpt string) interface{} {
 			actualValue = actualValue.Convert(float64Type)
 		}
 		vi = actualValue.Interface().(float64)
-	} else if actualKind == reflect.Bool {
-		boolType := reflect.TypeOf(true)
-		if boolType != actualValue.Type() {
-			actualValue = actualValue.Convert(boolType)
-		}
-		viBool := actualValue.Interface().(bool)
-		if viBool {
-			vi = float64(1)
-		} else {
-			vi = float64(0)
-		}
 	} else if xIsStringKind(actualKind) {
 		stringType := reflect.TypeOf("")
 		if stringType != actualValue.Type() {
@@ -98,19 +86,6 @@ func ParseToFloat64(origVal interface{}, cpOpt string) interface{} {
 			}
 		} else {
 			vi = viFloat64
-		}
-	} else if xIsStructType(actualKind) {
-		origFieldVT := reflect.TypeOf(origVal).String()
-		if xIsStructType(actualKind) && xIsTimeType(origFieldVT) {
-			optStr := xTagFindValueByKey(cpOpt, xRef_key_time_t)
-			viTimeValue := actualValue.Interface().(time.Time)
-			if viTimeValue.Unix() == xRef_AD_Zero_Second {
-				vi = nil
-			} else {
-				vi = float64(xTransTimeToInt64(&viTimeValue, optStr))
-			}
-		} else {
-			vi = nil
 		}
 	} else {
 		vi = nil

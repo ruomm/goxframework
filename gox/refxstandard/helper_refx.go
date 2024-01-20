@@ -7,6 +7,7 @@
 package refx
 
 import (
+	"errors"
 	"github.com/ruomm/goxframework/gox/corex"
 	"strconv"
 	"strings"
@@ -63,33 +64,41 @@ func xTransStringToInt64(viString string, cpOpt string) (int64, error) {
 	}
 }
 
-// 字符串转换为bool
+// // 字符串转换为bool
 func xTransStringIntToBool(viString string, cpOpt string) (bool, error) {
-	numBase := 10
-	if strings.HasPrefix(viString, "0x") || strings.HasPrefix(viString, "0X") {
-		numBase = 16
-		viString = viString[2:]
-	} else if strings.HasPrefix(viString, "-0x") || strings.HasPrefix(viString, "-0X") {
-		numBase = 16
-		viString = "-" + viString[3:]
-	} else if (strings.HasPrefix(viString, "0") || strings.HasPrefix(viString, "-0")) && xTagContainKey(cpOpt, xRef_key_zero_to_8) {
-		numBase = 8
-	}
-	if strings.HasPrefix(viString, "-") {
-		viInt64, err := strconv.ParseInt(viString, numBase, 64)
-		if err != nil {
-			return false, err
-		} else {
-			return viInt64 > 0, nil
-		}
+	if viString == "0" {
+		return false, nil
+	} else if viString == "1" {
+		return true, nil
 	} else {
-		viUint64, err := strconv.ParseUint(viString, numBase, 64)
-		if err != nil {
-			return false, err
-		} else {
-			return viUint64 > 0, nil
-		}
+		return false, errors.New("string int to bool must be \"0\" or \"1\",\"0\"->false,\"1\"->true")
 	}
+	//
+	//numBase := 10
+	//if strings.HasPrefix(viString, "0x") || strings.HasPrefix(viString, "0X") {
+	//	numBase = 16
+	//	viString = viString[2:]
+	//} else if strings.HasPrefix(viString, "-0x") || strings.HasPrefix(viString, "-0X") {
+	//	numBase = 16
+	//	viString = "-" + viString[3:]
+	//} else if (strings.HasPrefix(viString, "0") || strings.HasPrefix(viString, "-0")) && xTagContainKey(cpOpt, xRef_key_zero_to_8) {
+	//	numBase = 8
+	//}
+	//if strings.HasPrefix(viString, "-") {
+	//	viInt64, err := strconv.ParseInt(viString, numBase, 64)
+	//	if err != nil {
+	//		return false, err
+	//	} else {
+	//		return viInt64 > 0, nil
+	//	}
+	//} else {
+	//	viUint64, err := strconv.ParseUint(viString, numBase, 64)
+	//	if err != nil {
+	//		return false, err
+	//	} else {
+	//		return viUint64 > 0, nil
+	//	}
+	//}
 }
 
 // 格式化时间为字符串

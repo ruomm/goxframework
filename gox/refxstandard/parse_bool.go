@@ -8,11 +8,9 @@ package refx
 
 import (
 	"fmt"
-	"math"
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func xParseToBool(key string, origVal interface{}, destTypeName string, destActualTypeKind reflect.Kind, cpOpt string, isTidy bool) (interface{}, bool) {
@@ -62,22 +60,12 @@ func ParseToBool(origVal interface{}, cpOpt string) interface{} {
 			actualValue = actualValue.Convert(int64Type)
 		}
 		viInt64 := actualValue.Interface().(int64)
-		if viInt64 > 0 {
+		if viInt64 == 0 {
+			vi = false
+		} else if viInt64 == 1 {
 			vi = true
 		} else {
-			vi = false
-		}
-	} else if xIsFloatKind(actualKind) {
-		float64Type := reflect.TypeOf(float64(0))
-		if float64Type != actualValue.Type() {
-			actualValue = actualValue.Convert(float64Type)
-		}
-		viFloat64 := actualValue.Interface().(float64)
-		viInt64 := int64(math.Round(viFloat64))
-		if viInt64 > 0 {
-			vi = true
-		} else {
-			vi = false
+			vi = nil
 		}
 	} else if actualKind == reflect.Bool {
 		boolType := reflect.TypeOf(true)
@@ -93,20 +81,18 @@ func ParseToBool(origVal interface{}, cpOpt string) interface{} {
 		viString := actualValue.Interface().(string)
 		viBool, err := strconv.ParseBool(viString)
 		if err != nil && xTagContainKey(cpOpt, xRef_key_string_bool_number) {
-			viBoolByInt, errB := xTransStringIntToBool(viString, cpOpt)
-			if errB != nil {
-				viFloat64, errF := strconv.ParseFloat(viString, 64)
-				if errF != nil {
-					vi = nil
-				} else {
-					if int64(math.Round(viFloat64)) > 0 {
-						vi = true
-					} else {
-						vi = false
-					}
-				}
+			//viBoolByInt, errB := xTransStringIntToBool(viString, cpOpt)
+			//if errB != nil {
+			//	vi = nil
+			//} else {
+			//	vi = viBoolByInt
+			//}
+			if viString == "0" {
+				vi = false
+			} else if viString == "1" {
+				vi = true
 			} else {
-				vi = viBoolByInt
+				vi = nil
 			}
 		} else if err != nil {
 			vi = nil
@@ -114,25 +100,6 @@ func ParseToBool(origVal interface{}, cpOpt string) interface{} {
 			vi = viBool
 		}
 
-	} else if xIsStructType(actualKind) {
-		origFieldVT := reflect.TypeOf(origVal).String()
-		if xIsStructType(actualKind) && xIsTimeType(origFieldVT) {
-			optStr := xTagFindValueByKey(cpOpt, xRef_key_time_t)
-			viTimeValue := actualValue.Interface().(time.Time)
-			if viTimeValue.Unix() == xRef_AD_Zero_Second {
-				vi = nil
-			} else {
-				viInt64 := xTransTimeToInt64(&viTimeValue, optStr)
-				if viInt64 > 0 {
-					vi = true
-				} else {
-					vi = false
-				}
-			}
-
-		} else {
-			vi = nil
-		}
 	} else {
 		vi = nil
 	}
