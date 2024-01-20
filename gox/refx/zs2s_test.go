@@ -14,7 +14,7 @@ import (
 )
 
 type OrigS2S struct {
-	Orig int32
+	Orig int
 }
 
 type DestS2S struct {
@@ -36,8 +36,9 @@ type DestS2S struct {
 }
 
 func TestS2S(t *testing.T) {
+	a := 123456789
 	orgi := OrigS2S{
-		Orig: 456456,
+		Orig: a,
 	}
 	dest := DestS2S{}
 	println(dest.VTime.UnixMilli())
@@ -45,5 +46,8 @@ func TestS2S(t *testing.T) {
 
 	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)
+	if jsonStr != TEST_JSON_STRING {
+		t.Error("测试失败")
+	}
 
 }

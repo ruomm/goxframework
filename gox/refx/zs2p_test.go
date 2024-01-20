@@ -32,12 +32,13 @@ type DestS2P struct {
 	Vfloat64 *float64   `xref:"Orig" json:""`
 	Vstring  *string    `xref:"Orig" json:""`
 	Vbool    *bool      `xref:"Orig" json:""`
-	VTime    *time.Time `xref:"Orig;t.day" json:""`
+	VTime    *time.Time `xref:"Orig" json:""`
 }
 
 func TestS2P(t *testing.T) {
+	a := 123456789
 	orgiP := OrigS2P{
-		Orig: 456456,
+		Orig: a,
 	}
 	destP := DestS2P{
 		//Vint: &a,
@@ -46,5 +47,8 @@ func TestS2P(t *testing.T) {
 
 	jsonStr, _ := corex.JsonToString(destP)
 	fmt.Println(jsonStr)
+	if jsonStr != TEST_JSON_STRING {
+		t.Error("测试失败")
+	}
 
 }

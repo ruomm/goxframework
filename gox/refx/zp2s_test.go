@@ -14,7 +14,7 @@ import (
 )
 
 type OrgiP2S struct {
-	Orig int
+	Orig *int
 }
 
 type DestP2S struct {
@@ -36,8 +36,9 @@ type DestP2S struct {
 }
 
 func TestP2S(t *testing.T) {
+	a := 123456789
 	orgi := OrgiP2S{
-		Orig: 456456,
+		Orig: &a,
 	}
 	dest := DestP2S{
 		//Vint: &a,
@@ -46,5 +47,8 @@ func TestP2S(t *testing.T) {
 
 	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)
+	if jsonStr != TEST_JSON_STRING {
+		t.Error("测试失败")
+	}
 
 }
