@@ -166,22 +166,30 @@ func xReflect_transSrcToDestValue(key string, cpOpt string, srcValue interface{}
 	//m := xParseToInt64(srcValue, cpOpt)
 	//println(m)
 	destTypeOf := destValue.Type()
+	isPointor := false
+	if destValue.Kind() == reflect.Pointer || destValue.Kind() == reflect.Interface {
+		destActualValue := destValue.Elem()
+		destKind := destActualValue.Kind()
+		println(destKind)
+		destTypeOf = reflect.TypeOf(destActualValue)
+		isPointor = true
+	}
 	destKind := destTypeOf.Kind()
-	//destType := destTypeOf.String()
-	//isTidy := xTagContainKey(cpOpt, xReflect_key_tidy)
+
+	isTidy := xTagContainKey(cpOpt, xReflect_key_tidy)
 	//if xReflect_log {
 	//	fmt.Println(fmt.Sprintf("来源类型:%d-%s,目标类型:%d-%s,Tidy:%t", srcKind, srcType, destKind, destType, isTidy))
 	//}
 	if xIsIntegerKind(destKind) {
-		return xParseToInt64(srcValue, cpOpt)
+		return xParseToInt64(srcValue, cpOpt, isPointor, isTidy)
 	} else if xIsFloatKind(destKind) {
-		return xParseToFloat64(srcValue, cpOpt)
+		return xParseToFloat64(srcValue, cpOpt, isPointor, isTidy)
 	} else if destKind == reflect.Bool {
-		return xParseToBool(srcValue, cpOpt)
+		return xParseToBool(srcValue, cpOpt, isPointor, isTidy)
 	} else if destKind == reflect.String {
-		return xParseToString(srcValue, cpOpt)
+		return xParseToString(srcValue, cpOpt, isPointor, isTidy)
 	} else if xIsTimeType(destTypeOf.String()) {
-		return xParseToTime(srcValue, cpOpt)
+		return xParseToTime(srcValue, cpOpt, isPointor, isTidy)
 	} else {
 		srcTypeOf := reflect.TypeOf(srcValue)
 		srcKind := srcTypeOf.Kind()
@@ -253,7 +261,7 @@ func xIsFloatKind(kind reflect.Kind) bool {
 	}
 }
 
-func xIsStringType(kind reflect.Kind) bool {
+func xIsStringKind(kind reflect.Kind) bool {
 	return kind == reflect.String
 }
 

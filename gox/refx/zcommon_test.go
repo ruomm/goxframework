@@ -35,6 +35,24 @@ type DestV struct {
 	VTime    time.Time `xref:"Orig" json:""`
 }
 
+type DestPV struct {
+	Vint     *int      `xref:"Orig" json:""`
+	Vint8    *int8     `xref:"Orig" json:""`
+	Vint16   *int16    `xref:"Orig" json:""`
+	Vint32   *int32    `xref:"Orig" json:""`
+	Vint64   *int64    `xref:"Orig" json:""`
+	Vuint    *uint     `xref:"Orig" json:""`
+	Vuint8   *uint8    `xref:"Orig" json:""`
+	Vuint16  *uint16   `xref:"Orig" json:""`
+	Vuint32  *uint32   `xref:"Orig" json:""`
+	Vuint64  *uint64   `xref:"Orig" json:""`
+	Vfloat32 *float32  `xref:"Orig" json:""`
+	Vfloat64 *float64  `xref:"Orig" json:""`
+	Vstring  *string   `xref:"Orig" json:""`
+	Vbool    *bool     `xref:"Orig" json:""`
+	VTime    time.Time `xref:"Orig" json:""`
+}
+
 func TestIntCase(t *testing.T) {
 	orgiV := OrigV{
 		Orig: 456456,

@@ -13,8 +13,23 @@ import (
 	"time"
 )
 
+func xParseToBool(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+	vi := ParseToBool(origVal, cpOpt)
+	if vi == nil {
+		return nil
+	}
+	rtVal := vi.(bool)
+	if isTidy && !rtVal {
+		return nil
+	} else if isPointer {
+		return &vi
+	} else {
+		return vi
+	}
+}
+
 // 转换各种类型为bool类型，整形进行转换，字符串进行格式转换
-func xParseToBool(origVal interface{}, cpOpt string) interface{} {
+func ParseToBool(origVal interface{}, cpOpt string) interface{} {
 	// 获取真实的数值
 	actualValue := reflect.ValueOf(origVal)
 	if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
@@ -55,7 +70,7 @@ func xParseToBool(origVal interface{}, cpOpt string) interface{} {
 			actualValue = actualValue.Convert(boolType)
 		}
 		vi = actualValue.Interface().(bool)
-	} else if xIsStringType(actualKind) {
+	} else if xIsStringKind(actualKind) {
 		stringType := reflect.TypeOf("")
 		if stringType != actualValue.Type() {
 			actualValue = actualValue.Convert(stringType)

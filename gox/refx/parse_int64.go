@@ -13,8 +13,23 @@ import (
 	"time"
 )
 
+func xParseToInt64(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+	vi := ParseToInt64(origVal, cpOpt)
+	if vi == nil {
+		return nil
+	}
+	rtVal := vi.(int64)
+	if isTidy && rtVal == 0 {
+		return nil
+	} else if isPointer {
+		return &vi
+	} else {
+		return vi
+	}
+}
+
 // 转换各种类型为int64，浮点型进行math.Round，字符串进行格式化，时间类型取得毫秒时间戳
-func xParseToInt64(origVal interface{}, cpOpt string) interface{} {
+func ParseToInt64(origVal interface{}, cpOpt string) interface{} {
 	// 获取真实的数值
 	actualValue := reflect.ValueOf(origVal)
 	if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
@@ -50,7 +65,7 @@ func xParseToInt64(origVal interface{}, cpOpt string) interface{} {
 		} else {
 			vi = int64(0)
 		}
-	} else if xIsStringType(actualKind) {
+	} else if xIsStringKind(actualKind) {
 		stringType := reflect.TypeOf("")
 		if stringType != actualValue.Type() {
 			actualValue = actualValue.Convert(stringType)

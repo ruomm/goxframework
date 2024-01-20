@@ -13,8 +13,23 @@ import (
 	"time"
 )
 
+func xParseToTime(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+	vi := ParseToTime(origVal, cpOpt)
+	if vi == nil {
+		return nil
+	}
+	rtVal := vi.(*time.Time)
+	if isTidy && rtVal.UnixMilli() == 0 {
+		return nil
+	} else if isPointer {
+		return rtVal
+	} else {
+		return *rtVal
+	}
+}
+
 // 转换各种类型为时间类型
-func xParseToTime(origVal interface{}, cpOpt string) interface{} {
+func ParseToTime(origVal interface{}, cpOpt string) interface{} {
 	// 获取真实的数值
 	actualValue := reflect.ValueOf(origVal)
 	if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
@@ -46,7 +61,7 @@ func xParseToTime(origVal interface{}, cpOpt string) interface{} {
 		vi = xTransInt64ToTime(viInt64, optStr)
 	} else if actualKind == reflect.Bool {
 		vi = nil
-	} else if xIsStringType(actualKind) {
+	} else if xIsStringKind(actualKind) {
 		stringType := reflect.TypeOf("")
 		if stringType != actualValue.Type() {
 			actualValue = actualValue.Convert(stringType)

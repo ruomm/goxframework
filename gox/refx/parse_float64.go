@@ -12,8 +12,23 @@ import (
 	"time"
 )
 
+func xParseToFloat64(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+	vi := ParseToFloat64(origVal, cpOpt)
+	if vi == nil {
+		return nil
+	}
+	rtVal := vi.(float64)
+	if isTidy && rtVal >= -0.0000000001 && rtVal <= 0.0000000001 {
+		return nil
+	} else if isPointer {
+		return &vi
+	} else {
+		return vi
+	}
+}
+
 // 转换各种类型为浮点型，整形进行转换，字符串进行格式化，时间类型取得毫秒时间戳
-func xParseToFloat64(origVal interface{}, cpOpt string) interface{} {
+func ParseToFloat64(origVal interface{}, cpOpt string) interface{} {
 	// 获取真实的数值
 	actualValue := reflect.ValueOf(origVal)
 	if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
@@ -48,7 +63,7 @@ func xParseToFloat64(origVal interface{}, cpOpt string) interface{} {
 		} else {
 			vi = float64(0)
 		}
-	} else if xIsStringType(actualKind) {
+	} else if xIsStringKind(actualKind) {
 		stringType := reflect.TypeOf("")
 		if stringType != actualValue.Type() {
 			actualValue = actualValue.Convert(stringType)
