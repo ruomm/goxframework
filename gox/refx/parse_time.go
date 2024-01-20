@@ -10,21 +10,26 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"strings"
 	"time"
 )
 
-func xParseToTime(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+func xParseToTime(origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToTime(origVal, cpOpt)
 	if vi == nil {
 		return nil
 	}
-	rtVal := vi.(*time.Time)
-	if isTidy && rtVal.UnixMilli() == 0 {
+	viPTime := vi.(*time.Time)
+	if isTidy && viPTime.UnixMilli() == 0 {
 		return nil
-	} else if isPointer {
-		return rtVal
+	}
+	if !strings.HasPrefix(destTypeName, "*") {
+		return *viPTime
+	}
+	if destTypeName == "*time.Time" {
+		return viPTime
 	} else {
-		return *rtVal
+		return nil
 	}
 }
 

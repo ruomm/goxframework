@@ -10,22 +10,120 @@ import (
 	"math"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
-func xParseToInt64(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+//	func xParseToInt(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+//		vi := ParseToInt64(origVal, cpOpt)
+//		if vi == nil || isTidy && vi.(int64) == 0 {
+//			return nil
+//		}
+//		rtVal := int(vi.(int64))
+//		if isPointer {
+//			return &rtVal
+//		} else {
+//			return rtVal
+//		}
+//	}
+//
+//	func xParseToInt8(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+//		vi := ParseToInt64(origVal, cpOpt)
+//		if vi == nil || isTidy && vi.(int64) == 0 {
+//			return nil
+//		}
+//		rtVal := int8(vi.(int64))
+//		if isPointer {
+//			return &rtVal
+//		} else {
+//			return rtVal
+//		}
+//	}
+//
+//	func xParseToInt16(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+//		vi := ParseToInt64(origVal, cpOpt)
+//		if vi == nil || isTidy && vi.(int64) == 0 {
+//			return nil
+//		}
+//		rtVal := int16(vi.(int64))
+//		if isPointer {
+//			return &rtVal
+//		} else {
+//			return rtVal
+//		}
+//	}
+//
+//	func xParseToInt32(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+//		vi := ParseToInt64(origVal, cpOpt)
+//		if vi == nil || isTidy && vi.(int64) == 0 {
+//			return nil
+//		}
+//		rtVal := int32(vi.(int64))
+//		if isPointer {
+//			return &rtVal
+//		} else {
+//			return rtVal
+//		}
+//	}
+//func xParseToInt64(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+//	vi := ParseToInt64(origVal, cpOpt)
+//	if vi == nil || isTidy && vi.(int64) == 0 {
+//		return nil
+//	}
+//	rtVal := vi.(int64)
+//	if isPointer {
+//		return &rtVal
+//	} else {
+//		return rtVal
+//	}
+//}
+
+func xParseToInt(origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToInt64(origVal, cpOpt)
-	if vi == nil {
+	if vi == nil || isTidy && vi.(int64) == 0 {
 		return nil
 	}
-	rtVal := vi.(int64)
-	if isTidy && rtVal == 0 {
+	viInt64 := vi.(int64)
+	if isTidy && viInt64 == 0 {
 		return nil
-	} else if isPointer {
-		return &vi
-	} else {
+	}
+	if !strings.HasPrefix(destTypeName, "*") {
 		return vi
 	}
+	if destTypeName == "*int" {
+		rtVal := int(viInt64)
+		return &rtVal
+	} else if destTypeName == "*int8" {
+		rtVal := int8(viInt64)
+		return &rtVal
+	} else if destTypeName == "*int16" {
+		rtVal := int16(viInt64)
+		return &rtVal
+	} else if destTypeName == "*int32" {
+		rtVal := int32(viInt64)
+		return &rtVal
+	} else if destTypeName == "*int64" {
+		rtVal := viInt64
+		return &rtVal
+	} else if destTypeName == "*uint" {
+		rtVal := uint(viInt64)
+		return &rtVal
+	} else if destTypeName == "*uint8" {
+		rtVal := uint8(viInt64)
+		return &rtVal
+	} else if destTypeName == "*uint16" {
+		rtVal := uint16(viInt64)
+		return &rtVal
+	} else if destTypeName == "*uint32" {
+		rtVal := uint32(viInt64)
+		return &rtVal
+	} else if destTypeName == "*uint64" {
+		rtVal := uint64(viInt64)
+		return &rtVal
+	} else {
+		return nil
+	}
+
 }
 
 // 转换各种类型为int64，浮点型进行math.Round，字符串进行格式化，时间类型取得毫秒时间戳

@@ -9,21 +9,30 @@ package refx
 import (
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
-func xParseToFloat64(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+func xParseToFloat(origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToFloat64(origVal, cpOpt)
 	if vi == nil {
 		return nil
 	}
-	rtVal := vi.(float64)
-	if isTidy && rtVal >= -0.0000000001 && rtVal <= 0.0000000001 {
+	viFloat64 := vi.(float64)
+	if isTidy && viFloat64 >= -0.0000000001 && viFloat64 <= 0.0000000001 {
 		return nil
-	} else if isPointer {
-		return &vi
-	} else {
+	}
+	if !strings.HasPrefix(destTypeName, "*") {
 		return vi
+	}
+	if destTypeName == "*float32" {
+		rtVal := float32(viFloat64)
+		return &rtVal
+	} else if destTypeName == "*float64" {
+		rtVal := viFloat64
+		return &rtVal
+	} else {
+		return nil
 	}
 }
 

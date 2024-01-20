@@ -166,41 +166,37 @@ func xReflect_transSrcToDestValue(key string, cpOpt string, srcValue interface{}
 	//m := xParseToInt64(srcValue, cpOpt)
 	//println(m)
 	destTypeOf := destValue.Type()
-	isPointor := false
-	if destValue.Kind() == reflect.Pointer || destValue.Kind() == reflect.Interface {
-		destActualValue := destValue.Elem()
-		destKind := destActualValue.Kind()
-		println(destKind)
-		destTypeOf = reflect.TypeOf(destActualValue)
-		isPointor = true
-	}
+	//isPointor := false
+	//if destValue.Kind() == reflect.Pointer || destValue.Kind() == reflect.Interface {
+	//	isPointor = true
+	//}
 	destKind := destTypeOf.Kind()
+	destTypeName := destTypeOf.String()
 
 	isTidy := xTagContainKey(cpOpt, xReflect_key_tidy)
 	//if xReflect_log {
 	//	fmt.Println(fmt.Sprintf("来源类型:%d-%s,目标类型:%d-%s,Tidy:%t", srcKind, srcType, destKind, destType, isTidy))
 	//}
-	if xIsIntegerKind(destKind) {
-		return xParseToInt64(srcValue, cpOpt, isPointor, isTidy)
-	} else if xIsFloatKind(destKind) {
-		return xParseToFloat64(srcValue, cpOpt, isPointor, isTidy)
-	} else if destKind == reflect.Bool {
-		return xParseToBool(srcValue, cpOpt, isPointor, isTidy)
-	} else if destKind == reflect.String {
-		return xParseToString(srcValue, cpOpt, isPointor, isTidy)
+	if xIsIntegerKind(destKind) || xIsIntegerPointer(destTypeName) {
+		return xParseToInt(srcValue, destTypeName, cpOpt, isTidy)
+	} else if xIsFloatKind(destKind) || xIsFloatPointer(destTypeName) {
+		return xParseToFloat(srcValue, destTypeName, cpOpt, isTidy)
+	} else if destKind == reflect.Bool || destTypeName == "*bool" {
+		return xParseToBool(srcValue, destTypeName, cpOpt, isTidy)
+	} else if destKind == reflect.String || destTypeName == "*string" {
+		return xParseToString(srcValue, destTypeName, cpOpt, isTidy)
 	} else if xIsTimeType(destTypeOf.String()) {
-		return xParseToTime(srcValue, cpOpt, isPointor, isTidy)
+		return xParseToTime(srcValue, destTypeName, cpOpt, isTidy)
 	} else {
 		srcTypeOf := reflect.TypeOf(srcValue)
 		srcKind := srcTypeOf.Kind()
 		srcType := srcTypeOf.String()
-		destType := destTypeOf.String()
 		if srcKind != destKind {
 			if xReflect_log {
 				fmt.Println(key + "字段无法赋值，切片错误，目标和来源切片类型不同")
 			}
 			return nil
-		} else if srcType != destType {
+		} else if srcType != destTypeName {
 			if xReflect_log {
 				fmt.Println(key + "字段无法赋值，结构错误，目标和来源结构类型不同")
 			}
@@ -264,6 +260,37 @@ func xIsFloatKind(kind reflect.Kind) bool {
 func xIsStringKind(kind reflect.Kind) bool {
 	return kind == reflect.String
 }
+
+func xIsIntegerPointer(typeName string) bool {
+	if typeName == "*int" || typeName == "*int8" || typeName == "*int16" || typeName == "*int32" || typeName == "*int64" ||
+		typeName == "*uint" || typeName == "*uint8" || typeName == "*uint16" || typeName == "*uint32" || typeName == "*uint64" {
+		return true
+	} else {
+		return false
+	}
+}
+func xIsUnsignedIntegerPointer(typeName string) bool {
+	if typeName == "*uint" || typeName == "*uint8" || typeName == "*uint16" || typeName == "*uint32" || typeName == "*uint64" {
+		return true
+	} else {
+		return false
+	}
+}
+func xIsFloatPointer(typeName string) bool {
+	if typeName == "*float64" || typeName == "*float32" {
+		return true
+	} else {
+		return false
+	}
+}
+
+//func xIsStringPointer(typeName string) bool {
+//	if typeName == "*string" {
+//		return true
+//	} else {
+//		return false
+//	}
+//}
 
 func xIsStructType(kind reflect.Kind) bool {
 	return kind == reflect.Struct

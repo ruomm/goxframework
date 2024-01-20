@@ -10,21 +10,26 @@ import (
 	"math"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
-func xParseToBool(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+func xParseToBool(origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToBool(origVal, cpOpt)
 	if vi == nil {
 		return nil
 	}
-	rtVal := vi.(bool)
-	if isTidy && !rtVal {
+	viBool := vi.(bool)
+	if isTidy && !viBool {
 		return nil
-	} else if isPointer {
-		return &vi
-	} else {
+	}
+	if !strings.HasPrefix(destTypeName, "*") {
 		return vi
+	}
+	if destTypeName == "*bool" {
+		return &viBool
+	} else {
+		return nil
 	}
 }
 

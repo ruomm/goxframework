@@ -9,21 +9,26 @@ package refx
 import (
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
-func xParseToString(origVal interface{}, cpOpt string, isPointer bool, isTidy bool) interface{} {
+func xParseToString(origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToString(origVal, cpOpt)
 	if vi == nil {
 		return nil
 	}
-	rtVal := vi.(string)
-	if isTidy && rtVal == "" {
+	viString := vi.(string)
+	if isTidy && viString == "" {
 		return nil
-	} else if isPointer {
-		return &vi
-	} else {
+	}
+	if !strings.HasPrefix(destTypeName, "*") {
 		return vi
+	}
+	if destTypeName == "*string" {
+		return &viString
+	} else {
+		return nil
 	}
 }
 
