@@ -13,11 +13,11 @@ import (
 	"time"
 )
 
-type OrigV struct {
+type OrigS2S struct {
 	Orig int
 }
 
-type DestV struct {
+type DestS2S struct {
 	Vint     int       `xref:"Orig" json:""`
 	Vint8    int8      `xref:"Orig" json:""`
 	Vint16   int16     `xref:"Orig" json:""`
@@ -35,32 +35,14 @@ type DestV struct {
 	VTime    time.Time `xref:"Orig" json:""`
 }
 
-type DestPV struct {
-	Vint     int       `xref:"Orig" json:""`
-	Vint8    int8      `xref:"Orig" json:""`
-	Vint16   int16     `xref:"Orig" json:""`
-	Vint32   int32     `xref:"Orig" json:""`
-	Vint64   int64     `xref:"Orig" json:""`
-	Vuint    uint      `xref:"Orig" json:""`
-	Vuint8   uint8     `xref:"Orig" json:""`
-	Vuint16  uint16    `xref:"Orig" json:""`
-	Vuint32  uint32    `xref:"Orig" json:""`
-	Vuint64  uint64    `xref:"Orig" json:""`
-	Vfloat32 float32   `xref:"Orig" json:""`
-	Vfloat64 float64   `xref:"Orig" json:""`
-	Vstring  string    `xref:"Orig" json:""`
-	Vbool    bool      `xref:"Orig" json:""`
-	VTime    time.Time `xref:"Orig;t.day" json:""`
-}
-
-func TestIntCase(t *testing.T) {
-	orgiV := OrigV{
+func TestS2S(t *testing.T) {
+	orgi := OrigS2S{
 		Orig: 456456,
 	}
-	destV := DestV{}
-	XReflectCopy(orgiV, &destV)
+	dest := DestS2S{}
+	XReflectCopy(orgi, &dest)
 
-	jsonStr, _ := corex.JsonToString(destV)
+	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)
 
 }
