@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func xParseToFloat(key string, origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
+func xParseToFloat(key string, origVal interface{}, destTypeName string, destActualTypeKind reflect.Kind, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToFloat64(origVal, cpOpt)
 	if vi == nil {
 		if xRef_log {
@@ -32,10 +32,10 @@ func xParseToFloat(key string, origVal interface{}, destTypeName string, cpOpt s
 	if !strings.HasPrefix(destTypeName, "*") {
 		return vi
 	}
-	if destTypeName == "*float32" {
+	if destActualTypeKind == reflect.Float32 {
 		rtVal := float32(viFloat64)
 		return &rtVal
-	} else if destTypeName == "*float64" {
+	} else if destActualTypeKind == reflect.Float64 {
 		rtVal := viFloat64
 		return &rtVal
 	} else {

@@ -42,8 +42,8 @@ type DestS2P struct {
 func TestS2P(t *testing.T) {
 	//a := 123456.567
 	//a := true
-	//a := time.Now()
-	a := time.Time{}
+	a := time.Now()
+	//a := time.Time{}
 	fmt.Println(a)
 	orgiP := OrigS2P{
 		Orig: a,

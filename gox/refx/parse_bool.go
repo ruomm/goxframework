@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-func xParseToBool(key string, origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
+func xParseToBool(key string, origVal interface{}, destTypeName string, destActualTypeKind reflect.Kind, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToBool(origVal, cpOpt)
 	if vi == nil {
 		if xRef_log {
@@ -33,7 +33,7 @@ func xParseToBool(key string, origVal interface{}, destTypeName string, cpOpt st
 	if !strings.HasPrefix(destTypeName, "*") {
 		return vi
 	}
-	if destTypeName == "*bool" {
+	if destActualTypeKind == reflect.Bool {
 		return &viBool
 	} else {
 		if xRef_log {

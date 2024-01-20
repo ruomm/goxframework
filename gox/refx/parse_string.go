@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func xParseToString(key string, origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
+func xParseToString(key string, origVal interface{}, destTypeName string, destActualTypeKind reflect.Kind, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToString(origVal, cpOpt)
 	if vi == nil {
 		if xRef_log {
@@ -32,7 +32,7 @@ func xParseToString(key string, origVal interface{}, destTypeName string, cpOpt 
 	if !strings.HasPrefix(destTypeName, "*") {
 		return vi
 	}
-	if destTypeName == "*string" {
+	if destActualTypeKind == reflect.String {
 		return &viString
 	} else {
 		if xRef_log {

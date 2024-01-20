@@ -42,8 +42,8 @@ type DestP2S struct {
 func TestP2S(t *testing.T) {
 	//a := 123456.567
 	//a := true
-	//a := time.Now()
-	a := time.Time{}
+	a := time.Now()
+	//a := time.Time{}
 
 	fmt.Println(a)
 	orgi := OrgiP2S{

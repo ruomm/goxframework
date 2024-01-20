@@ -167,19 +167,25 @@ func xReflect_transSrcToDestValue(key string, cpOpt string, srcValue interface{}
 	//}
 	destKind := destTypeOf.Kind()
 	destTypeName := destTypeOf.String()
+	destActualTypeKind := reflect.Invalid
+	if destKind == reflect.Pointer {
+		destActualTypeKind = destTypeOf.Elem().Kind()
+	} else {
+		destActualTypeKind = destKind
+	}
 
 	isTidy := xTagContainKey(cpOpt, xRef_key_tidy)
 	//if xRef_log {
 	//	fmt.Println(fmt.Sprintf("来源类型:%d-%s,目标类型:%d-%s,Tidy:%t", srcKind, srcType, destKind, destType, isTidy))
 	//}
-	if xIsIntegerKind(destKind) || xIsIntegerPointer(destTypeName) {
-		return xParseToInt(key, srcValue, destTypeName, cpOpt, isTidy)
-	} else if xIsFloatKind(destKind) || xIsFloatPointer(destTypeName) {
-		return xParseToFloat(key, srcValue, destTypeName, cpOpt, isTidy)
-	} else if destKind == reflect.Bool || destTypeName == "*bool" {
-		return xParseToBool(key, srcValue, destTypeName, cpOpt, isTidy)
-	} else if destKind == reflect.String || destTypeName == "*string" {
-		return xParseToString(key, srcValue, destTypeName, cpOpt, isTidy)
+	if xIsIntegerKind(destActualTypeKind) {
+		return xParseToInt(key, srcValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+	} else if xIsFloatKind(destActualTypeKind) {
+		return xParseToFloat(key, srcValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+	} else if destActualTypeKind == reflect.Bool {
+		return xParseToBool(key, srcValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+	} else if destActualTypeKind == reflect.String {
+		return xParseToString(key, srcValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
 	} else if xIsTimeType(destTypeOf.String()) {
 		return xParseToTime(key, srcValue, destTypeName, cpOpt, isTidy)
 	} else {

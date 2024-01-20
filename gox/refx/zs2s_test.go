@@ -18,7 +18,9 @@ type OrigS2S struct {
 	//Orig string
 	//Orig float64
 	//Orig bool
-	Orig time.Time
+	Orig   time.Time
+	Obyte  byte
+	Obytes []byte
 }
 
 type DestS2S struct {
@@ -37,16 +39,20 @@ type DestS2S struct {
 	Vstring  string    `xref:"Orig;tidy" json:""`
 	Vbool    bool      `xref:"Orig;tidy" json:""`
 	VTime    time.Time `xref:"Orig;tidy" json:""`
+	Obyte    byte      `xref:"Obyte;tidy" json:""`
+	Obytes   []byte    `xref:"Obytes;tidy" json:""`
 }
 
 func TestS2S(t *testing.T) {
 	//a := 123456.567
 	//a := true
-	//a := time.Now()
-	a := time.Time{}
+	a := time.Now()
+	//a := time.Time{}
 	fmt.Println(a)
 	orgi := OrigS2S{
-		Orig: a,
+		Orig:   a,
+		Obytes: []byte{'a', 'b', 'c'},
+		Obyte:  'd',
 	}
 	dest := DestS2S{}
 	println(dest.VTime.UnixMilli())

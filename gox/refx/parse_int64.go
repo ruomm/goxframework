@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-func xParseToInt(key string, origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
+func xParseToInt(key string, origVal interface{}, destTypeName string, destActualTypeKind reflect.Kind, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToInt64(origVal, cpOpt)
 	if vi == nil {
 		if xRef_log {
@@ -33,34 +33,34 @@ func xParseToInt(key string, origVal interface{}, destTypeName string, cpOpt str
 	if !strings.HasPrefix(destTypeName, "*") {
 		return vi
 	}
-	if destTypeName == "*int" {
+	if destActualTypeKind == reflect.Int {
 		rtVal := int(viInt64)
 		return &rtVal
-	} else if destTypeName == "*int8" {
+	} else if destActualTypeKind == reflect.Int8 {
 		rtVal := int8(viInt64)
 		return &rtVal
-	} else if destTypeName == "*int16" {
+	} else if destActualTypeKind == reflect.Int16 {
 		rtVal := int16(viInt64)
 		return &rtVal
-	} else if destTypeName == "*int32" {
+	} else if destActualTypeKind == reflect.Int32 {
 		rtVal := int32(viInt64)
 		return &rtVal
-	} else if destTypeName == "*int64" {
+	} else if destActualTypeKind == reflect.Int64 {
 		rtVal := viInt64
 		return &rtVal
-	} else if destTypeName == "*uint" {
+	} else if destActualTypeKind == reflect.Uint {
 		rtVal := uint(viInt64)
 		return &rtVal
-	} else if destTypeName == "*uint8" {
+	} else if destActualTypeKind == reflect.Uint8 {
 		rtVal := uint8(viInt64)
 		return &rtVal
-	} else if destTypeName == "*uint16" {
+	} else if destActualTypeKind == reflect.Uint16 {
 		rtVal := uint16(viInt64)
 		return &rtVal
-	} else if destTypeName == "*uint32" {
+	} else if destActualTypeKind == reflect.Uint32 {
 		rtVal := uint32(viInt64)
 		return &rtVal
-	} else if destTypeName == "*uint64" {
+	} else if destActualTypeKind == reflect.Uint64 {
 		rtVal := uint64(viInt64)
 		return &rtVal
 	} else {
