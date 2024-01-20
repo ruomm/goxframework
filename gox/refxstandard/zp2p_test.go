@@ -49,6 +49,7 @@ func TestP2P(t *testing.T) {
 	fmt.Println(a)
 	orgiMap := make(map[string]string)
 	orgiMap["Orig"] = "123456"
+	fmt.Println(orgiMap)
 
 	orig := OrigP2P{
 		Orig: &a,

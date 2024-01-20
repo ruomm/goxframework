@@ -49,6 +49,7 @@ func TestP2P(t *testing.T) {
 	fmt.Println(a)
 	orgiMap := make(map[string]string)
 	orgiMap["Orig"] = "123456"
+	fmt.Println(orgiMap)
 
 	orig := OrigP2P{
 		Orig: &a,
@@ -58,8 +59,8 @@ func TestP2P(t *testing.T) {
 	dest := DestP2P{
 		//Vint: &a,
 	}
-	//XRefCopy(orig, &dest)
-	XRefMapCopy(orgiMap, &dest)
+	XRefCopy(orig, &dest)
+	//XRefMapCopy(orgiMap, &dest)
 
 	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)

@@ -41,9 +41,9 @@ destO：目标切片，不可以传入结构体
 */
 // TransferObj 将origO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
 // 无标签的如果再按属性名匹配
-func XRefCopy(origO interface{}, destO interface{}, options ...XrefOption) error {
+func XRefCopy(origO interface{}, destO interface{}, options ...XrefOption) (error, []string) {
 	if nil == origO {
-		return errors.New("XRefCopy error,source interface is nil")
+		return errors.New("XRefCopy error,source interface is nil"), nil
 	}
 	do := xrefOptions{}
 	for _, option := range options {
@@ -90,8 +90,9 @@ func XRefCopy(origO interface{}, destO interface{}, options ...XrefOption) error
 		return true
 	})
 	if errG != nil {
-		return errG
+		return errG, nil
 	}
+	var transFailsKeys []string = nil
 	for key, value := range reflectValueMap {
 		var origKey string
 		if resOrig[key] != "" {
@@ -111,7 +112,10 @@ func XRefCopy(origO interface{}, destO interface{}, options ...XrefOption) error
 			continue
 		}
 		cpOpt := resOpt[key]
-		rtVal, _ := xRef_transOrigToDestValue(key, cpOpt, origValue, value)
+		rtVal, transOk := xRef_transOrigToDestValue(key, cpOpt, origValue, value)
+		if !transOk {
+			transFailsKeys = append(transFailsKeys, key)
+		}
 		if rtVal == nil {
 			continue
 		}
@@ -121,7 +125,7 @@ func XRefCopy(origO interface{}, destO interface{}, options ...XrefOption) error
 		}
 
 	}
-	return errG
+	return errG, transFailsKeys
 }
 
 /*
@@ -131,9 +135,9 @@ destO：目标切片，不可以传入结构体
 */
 // TransferObj 将origO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
 // 无标签的如果再按属性名匹配
-func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOption) error {
+func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOption) (error, []string) {
 	if nil == origMap {
-		return errors.New("XRefCopy error,source map is nil")
+		return errors.New("XRefCopy error,source map is nil"), nil
 	}
 	do := xrefOptions{}
 	for _, option := range options {
@@ -172,8 +176,9 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 		return true
 	})
 	if errG != nil {
-		return errG
+		return errG, nil
 	}
+	var transFailsKeys []string = nil
 	for key, value := range reflectValueMap {
 		var origKey string
 		if resOrig[key] != "" {
@@ -190,7 +195,10 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 			continue
 		}
 		cpOpt := resOpt[key]
-		rtVal, _ := xRef_transOrigToDestValue(key, cpOpt, origValue, value)
+		rtVal, transOk := xRef_transOrigToDestValue(key, cpOpt, origValue, value)
+		if !transOk {
+			transFailsKeys = append(transFailsKeys, key)
+		}
 		if rtVal == nil {
 			continue
 		}
@@ -200,7 +208,7 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 		}
 
 	}
-	return errG
+	return errG, transFailsKeys
 }
 
 // 字段是否需要XReflect复制
