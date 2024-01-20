@@ -15,13 +15,47 @@ import (
 )
 
 // 解析真实的tag名称
-func xParseRefTagName(tagName string) string {
-	real_tag_name := tagName
-	if len(real_tag_name) <= 0 {
+func xParseRefTagName(optTag string) string {
+	if len(optTag) <= 0 {
 		//real_tag_name = xRef_tag_cp_xreft
-		real_tag_name = "xref"
+		return "xref"
+	} else {
+		return optTag
 	}
-	return real_tag_name
+
+}
+
+// 解析真实的NameSpace
+func xParseRefNameSpace(optNameSpace string, origNameSpace string) string {
+	if len(optNameSpace) <= 0 {
+		return origNameSpace
+	} else {
+		return optNameSpace
+	}
+}
+
+// 属性空值设置 for refx.
+type XrefOption struct {
+	f func(*xrefOptions)
+}
+
+type xrefOptions struct {
+	optTag       string //关联的tag的名称
+	optNameSpace string //关联源的nameSpace
+}
+
+// 设置关联tag的名称，不设置默认为xref
+func XrefOptTag(tag string) XrefOption {
+	return XrefOption{func(do *xrefOptions) {
+		do.optTag = tag
+	}}
+}
+
+// 设置关联源的nameSpace，不设置则取源对象的类型名称
+func XrefOptNameSpace(nameSpace string) XrefOption {
+	return XrefOption{func(do *xrefOptions) {
+		do.optNameSpace = nameSpace
+	}}
 }
 
 // 字符串转换为int64

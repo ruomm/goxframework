@@ -41,11 +41,15 @@ destO：目标切片，不可以传入结构体
 */
 // TransferObj 将origO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
 // 无标签的如果再按属性名匹配
-func XRefCopy(origO interface{}, destO interface{}, tagName string) error {
+func XRefCopy(origO interface{}, destO interface{}, options ...XrefOption) error {
 	if nil == origO {
 		return errors.New("XRefCopy error,source interface is nil")
 	}
-	xRef_tag_cp_xreft := xParseRefTagName(tagName)
+	do := xrefOptions{}
+	for _, option := range options {
+		option.f(&do)
+	}
+	xRef_tag_cp_xreft := xParseRefTagName(do.optTag)
 	// 获取origO的类名称
 	origT := reflect.TypeOf(origO)
 	var origNameSpace string
@@ -54,6 +58,7 @@ func XRefCopy(origO interface{}, destO interface{}, tagName string) error {
 	} else {
 		origNameSpace = origT.String()
 	}
+	origNameSpace = xParseRefNameSpace(do.optNameSpace, origNameSpace)
 	resOpt := make(map[string]string)
 	resOrig := make(map[string]string)
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
@@ -126,11 +131,16 @@ destO：目标切片，不可以传入结构体
 */
 // TransferObj 将origO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
 // 无标签的如果再按属性名匹配
-func XRefMapCopy(origMap map[string]string, destO interface{}, origNameSpace string, tagName string) error {
+func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOption) error {
 	if nil == origMap {
 		return errors.New("XRefCopy error,source map is nil")
 	}
-	xRef_tag_cp_xreft := xParseRefTagName(tagName)
+	do := xrefOptions{}
+	for _, option := range options {
+		option.f(&do)
+	}
+	xRef_tag_cp_xreft := xParseRefTagName(do.optTag)
+	origNameSpace := xParseRefNameSpace(do.optNameSpace, "")
 	resOpt := make(map[string]string)
 	resOrig := make(map[string]string)
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {

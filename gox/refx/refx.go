@@ -41,11 +41,15 @@ destO：目标切片，不可以传入结构体
 */
 // TransferObj 将origO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
 // 无标签的如果再按属性名匹配
-func XRefCopy(origO interface{}, destO interface{}, tagName string) error {
+func XRefCopy(origO interface{}, destO interface{}, options ...XrefOption) error {
 	if nil == origO {
 		return errors.New("XRefCopy error,source interface is nil")
 	}
-	xRef_tag_cp_xreft := xParseRefTagName(tagName)
+	do := xrefOptions{}
+	for _, option := range options {
+		option.f(&do)
+	}
+	xRef_tag_cp_xreft := xParseRefTagName(do.optTag)
 	// 获取origO的类名称
 	origT := reflect.TypeOf(origO)
 	var origNameSpace string
@@ -54,6 +58,7 @@ func XRefCopy(origO interface{}, destO interface{}, tagName string) error {
 	} else {
 		origNameSpace = origT.String()
 	}
+	origNameSpace = xParseRefNameSpace(do.optNameSpace, origNameSpace)
 	resOpt := make(map[string]string)
 	resOrig := make(map[string]string)
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
@@ -102,6 +107,85 @@ func XRefCopy(origO interface{}, destO interface{}, tagName string) error {
 		if origValue == nil {
 			if xRef_log {
 				fmt.Println(key + "字段无需赋值，来源字段值为nil。")
+			}
+			continue
+		}
+		cpOpt := resOpt[key]
+		rtVal, _ := xRef_transOrigToDestValue(key, cpOpt, origValue, value)
+		if rtVal == nil {
+			continue
+		}
+		tmpErr02 := xreflect.SetEmbedField(destO, key, rtVal)
+		if tmpErr02 != nil {
+			errG = tmpErr02
+		}
+
+	}
+	return errG
+}
+
+/*
+*
+origMap：源map数据
+destO：目标切片，不可以传入结构体
+*/
+// TransferObj 将origO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
+// 无标签的如果再按属性名匹配
+func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOption) error {
+	if nil == origMap {
+		return errors.New("XRefCopy error,source map is nil")
+	}
+	do := xrefOptions{}
+	for _, option := range options {
+		option.f(&do)
+	}
+	xRef_tag_cp_xreft := xParseRefTagName(do.optTag)
+	origNameSpace := xParseRefNameSpace(do.optNameSpace, "")
+	resOpt := make(map[string]string)
+	resOrig := make(map[string]string)
+	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
+		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
+		if !okXreft {
+			return false
+		}
+		// 开始分割目标控制和属性控制
+		subTags := corex.ParseToSubTag(tagXreft)
+		// 解析目标控制
+		tagOrigVal := ""
+		if len(subTags) > 0 {
+			tagOrigVal = subTags[0]
+		}
+		tagOrig, okCanXref := xReflect_canXCopy(tagOrigVal, origNameSpace)
+		if !okCanXref {
+			return false
+		}
+		resOrig[s] = tagOrig
+		// 解析属性控制
+		tagOpt := ""
+		if len(subTags) > 1 {
+			tagOpt = subTags[1]
+		}
+		resOpt[s] = tagOpt
+		if xRef_log {
+			fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrig + "，控制协议：" + tagOpt)
+		}
+		return true
+	})
+	if errG != nil {
+		return errG
+	}
+	for key, value := range reflectValueMap {
+		var origKey string
+		if resOrig[key] != "" {
+			origKey = resOrig[key]
+		} else {
+			origKey = key
+		}
+
+		origValue, ok := origMap[origKey]
+		if !ok {
+			if xRef_log {
+				fmt.Println(key + "字段无需赋值，来源字段值为空。")
 			}
 			continue
 		}

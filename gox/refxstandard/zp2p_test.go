@@ -36,7 +36,7 @@ type DestP2P struct {
 	Vfloat32 *float32      `xref:"Orig;tidy" json:""`
 	Vfloat64 *float64      `xref:"Orig;tidy" json:""`
 	Vstring  *string       `xref:"Orig;tidy" json:""`
-	Vbool    *bool         `xref:"Orig;tidy" json:""`
+	Vbool    *bool         `xref:"Orig;tidy,snb" json:""`
 	VTime    *time.Time    `xref:"Orig;tidy" json:""`
 }
 
@@ -47,14 +47,19 @@ func TestP2P(t *testing.T) {
 	//a := time.Time{}
 	a := "123456"
 	fmt.Println(a)
+	orgiMap := make(map[string]string)
+	orgiMap["Orig"] = "123456"
+
 	orig := OrigP2P{
 		Orig: &a,
 		//Orig: nil,
 	}
+	fmt.Println(orig)
 	dest := DestP2P{
 		//Vint: &a,
 	}
-	XRefCopy(orig, &dest)
+	//XRefCopy(orig, &dest)
+	XRefMapCopy(orgiMap, &dest)
 
 	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)
