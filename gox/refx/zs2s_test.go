@@ -49,14 +49,14 @@ func TestS2S(t *testing.T) {
 	a := time.Now()
 	//a := time.Time{}
 	fmt.Println(a)
-	orgi := OrigS2S{
+	orig := OrigS2S{
 		Orig:   a,
 		Obytes: []byte{'a', 'b', 'c'},
 		Obyte:  'd',
 	}
 	dest := DestS2S{}
 	println(dest.VTime.UnixMilli())
-	XRefCopy(orgi, &dest)
+	XRefCopy(orig, &dest)
 
 	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)

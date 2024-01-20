@@ -18,10 +18,7 @@ import (
 const (
 	xRef_AD_Zero_Second = int64(-62135596800)
 	xRef_log            = true
-
-	// const xReflect_tag_cp_opt = "xref_opt"
-	// const xReflect_tag_cp_src = "xref"
-	xRef_tag_cp_xreft = "xref"
+	xRef_tag_cp_xreft   = "xref"
 
 	//var xReflect_location, _ = time.LoadLocation("Asia/Shanghai")
 
@@ -39,25 +36,25 @@ const (
 
 /*
 *
-srcO：源结构体
+origO：源结构体
 destO：目标切片，不可以传入结构体
 */
-// TransferObj 将srcO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
+// TransferObj 将origO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
 // 无标签的如果再按属性名匹配
-func XRefCopy(srcO interface{}, destO interface{}) error {
-	if nil == srcO {
+func XRefCopy(origO interface{}, destO interface{}) error {
+	if nil == origO {
 		return errors.New("XRefCopy error,source interface is nil")
 	}
-	// 获取srcO的类名称
-	srcT := reflect.TypeOf(srcO)
-	var srcNameStr string
-	if srcT.Kind() == reflect.Array || srcT.Kind() == reflect.Chan || srcT.Kind() == reflect.Map || srcT.Kind() == reflect.Pointer || srcT.Kind() == reflect.Slice {
-		srcNameStr = srcT.Elem().String()
+	// 获取origO的类名称
+	origT := reflect.TypeOf(origO)
+	var origNameSpace string
+	if origT.Kind() == reflect.Array || origT.Kind() == reflect.Chan || origT.Kind() == reflect.Map || origT.Kind() == reflect.Pointer || origT.Kind() == reflect.Slice {
+		origNameSpace = origT.Elem().String()
 	} else {
-		srcNameStr = srcT.String()
+		origNameSpace = origT.String()
 	}
 	resOpt := make(map[string]string)
-	resSrc := make(map[string]string)
+	resOrig := make(map[string]string)
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
@@ -66,15 +63,15 @@ func XRefCopy(srcO interface{}, destO interface{}) error {
 		// 开始分割目标控制和属性控制
 		subTags := corex.ParseToSubTag(tagXreft)
 		// 解析目标控制
-		tagSrcVal := ""
+		tagOrigVal := ""
 		if len(subTags) > 0 {
-			tagSrcVal = subTags[0]
+			tagOrigVal = subTags[0]
 		}
-		tagSrc, okCanXref := xReflect_canXCopy(tagSrcVal, srcNameStr)
+		tagOrig, okCanXref := xReflect_canXCopy(tagOrigVal, origNameSpace)
 		if !okCanXref {
 			return false
 		}
-		resSrc[s] = tagSrc
+		resOrig[s] = tagOrig
 		// 解析属性控制
 		tagOpt := ""
 		if len(subTags) > 1 {
@@ -82,7 +79,7 @@ func XRefCopy(srcO interface{}, destO interface{}) error {
 		}
 		resOpt[s] = tagOpt
 		if xRef_log {
-			fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagSrc + "，控制协议：" + tagOpt)
+			fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrig + "，控制协议：" + tagOpt)
 		}
 		return true
 	})
@@ -90,25 +87,25 @@ func XRefCopy(srcO interface{}, destO interface{}) error {
 		return errG
 	}
 	for key, value := range reflectValueMap {
-		var srcKey string
-		if resSrc[key] != "" {
-			srcKey = resSrc[key]
+		var origKey string
+		if resOrig[key] != "" {
+			origKey = resOrig[key]
 		} else {
-			srcKey = key
+			origKey = key
 		}
-		srcValue, tmpErr01 := xreflect.EmbedFieldValue(srcO, srcKey)
+		origValue, tmpErr01 := xreflect.EmbedFieldValue(origO, origKey)
 		if tmpErr01 != nil {
 			errG = tmpErr01
 			continue
 		}
-		if srcValue == nil {
+		if origValue == nil {
 			if xRef_log {
 				fmt.Println(key + "字段无需赋值，来源字段值为nil。")
 			}
 			continue
 		}
 		cpOpt := resOpt[key]
-		rtVal := xReflect_transSrcToDestValue(key, cpOpt, srcValue, value)
+		rtVal := xRef_transOrigToDoestValue(key, cpOpt, origValue, value)
 		if rtVal == nil {
 			continue
 		}
@@ -122,50 +119,40 @@ func XRefCopy(srcO interface{}, destO interface{}) error {
 }
 
 // 字段是否需要XReflect复制
-func xReflect_canXCopy(tagSrcVal string, nameSpace string) (string, bool) {
-	if tagSrcVal == "" {
+func xReflect_canXCopy(tagOrigVal string, origNameSpace string) (string, bool) {
+	if tagOrigVal == "" {
 		return "", true
 	}
 	cpEnable := false
-	cpSrcId := ""
-	srcVlist := strings.Split(tagSrcVal, ",")
-	for _, srcV := range srcVlist {
-		if srcV == "" {
+	cpOrigKey := ""
+	tagOriglist := strings.Split(tagOrigVal, ",")
+	for _, tagOrigItem := range tagOriglist {
+		if tagOrigItem == "" {
 			continue
 		}
-		subVList := strings.Split(srcV, "-")
+		subVList := strings.Split(tagOrigItem, "-")
 		lenVList := len(subVList)
 		if lenVList == 0 {
 			continue
 		} else if lenVList == 1 {
 			if len(subVList[0]) > 0 {
-				cpSrcId = subVList[0]
+				cpOrigKey = subVList[0]
 				cpEnable = true
 			}
-		} else if lenVList == 2 && len(nameSpace) > 0 {
-			if len(subVList[0]) > 0 && (strings.HasSuffix(nameSpace, subVList[0]) || strings.HasPrefix(nameSpace, subVList[0])) {
+		} else if lenVList == 2 && len(origNameSpace) > 0 {
+			if len(subVList[0]) > 0 && (strings.HasSuffix(origNameSpace, subVList[0]) || strings.HasPrefix(origNameSpace, subVList[0])) {
 				cpEnable = true
-				cpSrcId = subVList[1]
+				cpOrigKey = subVList[1]
 				break
 			}
 		}
 	}
-	return cpSrcId, cpEnable
+	return cpOrigKey, cpEnable
 }
 
 // 解析来源字段值为目标待赋值字段
-func xReflect_transSrcToDestValue(key string, cpOpt string, srcValue interface{}, destValue reflect.Value) interface{} {
-
-	//srcTypeOf := reflect.TypeOf(srcValue)
-	//srcKind := srcTypeOf.Kind()
-	//srcType := srcTypeOf.String()
-	//m := xParseToInt64(srcValue, cpOpt)
-	//println(m)
+func xRef_transOrigToDoestValue(key string, cpOpt string, origValue interface{}, destValue reflect.Value) interface{} {
 	destTypeOf := destValue.Type()
-	//isPointor := false
-	//if destValue.Kind() == reflect.Pointer || destValue.Kind() == reflect.Interface {
-	//	isPointor = true
-	//}
 	destKind := destTypeOf.Kind()
 	destTypeName := destTypeOf.String()
 	destActualTypeKind := reflect.Invalid
@@ -177,34 +164,34 @@ func xReflect_transSrcToDestValue(key string, cpOpt string, srcValue interface{}
 
 	isTidy := xTagContainKey(cpOpt, xRef_key_tidy)
 	//if xRef_log {
-	//	fmt.Println(fmt.Sprintf("来源类型:%d-%s,目标类型:%d-%s,Tidy:%t", srcKind, srcType, destKind, destType, isTidy))
+	//	fmt.Println(fmt.Sprintf("来源类型:%d-%s,目标类型:%d-%s,Tidy:%t", origKind, origType, destKind, destTypeName, isTidy))
 	//}
 	if xIsIntegerKind(destActualTypeKind) {
-		return xParseToInt(key, srcValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		return xParseToInt(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
 	} else if xIsFloatKind(destActualTypeKind) {
-		return xParseToFloat(key, srcValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		return xParseToFloat(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
 	} else if destActualTypeKind == reflect.Bool {
-		return xParseToBool(key, srcValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		return xParseToBool(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
 	} else if destActualTypeKind == reflect.String {
-		return xParseToString(key, srcValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		return xParseToString(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
 	} else if xIsTimeType(destTypeOf.String()) {
-		return xParseToTime(key, srcValue, destTypeName, cpOpt, isTidy)
+		return xParseToTime(key, origValue, destTypeName, cpOpt, isTidy)
 	} else {
-		srcTypeOf := reflect.TypeOf(srcValue)
-		srcKind := srcTypeOf.Kind()
-		srcType := srcTypeOf.String()
-		if srcKind != destKind {
+		origTypeOf := reflect.TypeOf(origValue)
+		origKind := origTypeOf.Kind()
+		origType := origTypeOf.String()
+		if origKind != destKind {
 			if xRef_log {
 				fmt.Println(key + "字段无法赋值，切片错误，目标和来源切片类型不同")
 			}
 			return nil
-		} else if srcType != destTypeName {
+		} else if origType != destTypeName {
 			if xRef_log {
 				fmt.Println(key + "字段无法赋值，结构错误，目标和来源结构类型不同")
 			}
 			return nil
 		} else {
-			return srcValue
+			return origValue
 		}
 	}
 }

@@ -46,14 +46,14 @@ func TestP2S(t *testing.T) {
 	//a := time.Time{}
 
 	fmt.Println(a)
-	orgi := OrgiP2S{
+	orig := OrgiP2S{
 		Orig: &a,
 		//Orig: nil,
 	}
 	dest := DestP2S{
 		//Vint: &a,
 	}
-	XRefCopy(orgi, &dest)
+	XRefCopy(orig, &dest)
 
 	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)

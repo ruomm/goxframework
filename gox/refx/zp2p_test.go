@@ -46,14 +46,14 @@ func TestP2P(t *testing.T) {
 	a := time.Now()
 	//a := time.Time{}
 	fmt.Println(a)
-	orgi := OrigP2P{
+	orig := OrigP2P{
 		Orig: &a,
 		//Orig: nil,
 	}
 	dest := DestP2P{
 		//Vint: &a,
 	}
-	XRefCopy(orgi, &dest)
+	XRefCopy(orig, &dest)
 
 	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)

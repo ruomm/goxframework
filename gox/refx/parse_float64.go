@@ -100,8 +100,8 @@ func ParseToFloat64(origVal interface{}, cpOpt string) interface{} {
 			vi = viFloat64
 		}
 	} else if xIsStructType(actualKind) {
-		srcFieldVT := reflect.TypeOf(origVal).String()
-		if xIsStructType(actualKind) && xIsTimeType(srcFieldVT) {
+		origFieldVT := reflect.TypeOf(origVal).String()
+		if xIsStructType(actualKind) && xIsTimeType(origFieldVT) {
 			optStr := xTagFindValueByKey(cpOpt, xRef_key_time_t)
 			viTimeValue := actualValue.Interface().(time.Time)
 			if viTimeValue.Unix() == xRef_AD_Zero_Second {

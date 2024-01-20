@@ -109,54 +109,54 @@ func xTransStringToTime(sTime string, timeLayout string) *time.Time {
 	return &timeStamp
 }
 
-func xTransInt64ToTime(srcVal int64, optStr1 string) *time.Time {
+func xTransInt64ToTime(origVal int64, optStr string) *time.Time {
 	var timeDest *time.Time
-	if len(optStr1) <= 0 {
-		timeValue := time.UnixMilli(srcVal)
+	if len(optStr) <= 0 {
+		timeValue := time.UnixMilli(origVal)
 		timeDest = &timeValue
-	} else if strings.Contains(optStr1, "sec") {
-		timeValue := time.UnixMilli(srcVal * 1000)
+	} else if strings.Contains(optStr, "sec") {
+		timeValue := time.UnixMilli(origVal * 1000)
 		timeDest = &timeValue
-	} else if strings.Contains(optStr1, "min") {
-		timeValue := time.UnixMilli(srcVal * 1000 * 60)
+	} else if strings.Contains(optStr, "min") {
+		timeValue := time.UnixMilli(origVal * 1000 * 60)
 		timeDest = &timeValue
-	} else if strings.Contains(optStr1, "hour") {
-		timeValue := time.UnixMilli(srcVal * 1000 * 60 * 60)
+	} else if strings.Contains(optStr, "hour") {
+		timeValue := time.UnixMilli(origVal * 1000 * 60 * 60)
 		timeDest = &timeValue
-	} else if strings.Contains(optStr1, "day") {
-		timeValue := time.UnixMilli(srcVal * 1000 * 60 * 60 * 24)
+	} else if strings.Contains(optStr, "day") {
+		timeValue := time.UnixMilli(origVal * 1000 * 60 * 60 * 24)
 		timeDest = &timeValue
-	} else if strings.Contains(optStr1, "mil") {
-		timeValue := time.UnixMilli(srcVal)
+	} else if strings.Contains(optStr, "mil") {
+		timeValue := time.UnixMilli(origVal)
 		timeDest = &timeValue
-	} else if strings.Contains(optStr1, "mic") {
-		timeValue := time.UnixMicro(srcVal / 1e3)
+	} else if strings.Contains(optStr, "mic") {
+		timeValue := time.UnixMicro(origVal / 1e3)
 		timeDest = &timeValue
-	} else if strings.Contains(optStr1, "nano") {
-		timeValue := time.UnixMilli(srcVal / 1e6)
+	} else if strings.Contains(optStr, "nano") {
+		timeValue := time.UnixMilli(origVal / 1e6)
 		timeDest = &timeValue
 	} else {
-		timeValue := time.UnixMilli(srcVal)
+		timeValue := time.UnixMilli(origVal)
 		timeDest = &timeValue
 	}
 	return timeDest
 }
-func xTransTimeToInt64(pTime *time.Time, optStr1 string) int64 {
-	if len(optStr1) <= 0 {
+func xTransTimeToInt64(pTime *time.Time, optStr string) int64 {
+	if len(optStr) <= 0 {
 		return pTime.UnixMilli()
-	} else if strings.Contains(optStr1, "sec") {
+	} else if strings.Contains(optStr, "sec") {
 		return pTime.UnixMilli() / 1000
-	} else if strings.Contains(optStr1, "min") {
+	} else if strings.Contains(optStr, "min") {
 		return pTime.UnixMilli() / (1000 * 60)
-	} else if strings.Contains(optStr1, "hour") {
+	} else if strings.Contains(optStr, "hour") {
 		return pTime.UnixMilli() / (1000 * 60 * 60)
-	} else if strings.Contains(optStr1, "day") {
+	} else if strings.Contains(optStr, "day") {
 		return pTime.UnixMilli() / (1000 * 60 * 60 * 24)
-	} else if strings.Contains(optStr1, "mil") {
+	} else if strings.Contains(optStr, "mil") {
 		return pTime.UnixMilli()
-	} else if strings.Contains(optStr1, "mic") {
+	} else if strings.Contains(optStr, "mic") {
 		return pTime.UnixMicro()
-	} else if strings.Contains(optStr1, "nano") {
+	} else if strings.Contains(optStr, "nano") {
 		return pTime.UnixNano()
 	} else {
 		return pTime.UnixMilli()

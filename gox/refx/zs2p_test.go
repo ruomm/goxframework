@@ -45,15 +45,15 @@ func TestS2P(t *testing.T) {
 	a := time.Now()
 	//a := time.Time{}
 	fmt.Println(a)
-	orgiP := OrigS2P{
+	orig := OrigS2P{
 		Orig: a,
 	}
-	destP := DestS2P{
+	dest := DestS2P{
 		//Vint: &a,
 	}
-	XRefCopy(orgiP, &destP)
+	XRefCopy(orig, &dest)
 
-	jsonStr, _ := corex.JsonToString(destP)
+	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)
 	if jsonStr != readJson(3) {
 		t.Error("测试失败")
