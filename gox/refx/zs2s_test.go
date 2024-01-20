@@ -50,7 +50,7 @@ func TestS2S(t *testing.T) {
 	}
 	dest := DestS2S{}
 	println(dest.VTime.UnixMilli())
-	RefxCopy(orgi, &dest)
+	XRefCopy(orgi, &dest)
 
 	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)

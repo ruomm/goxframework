@@ -22,7 +22,7 @@ func xTransStringToInt64(viString string, cpOpt string) (int64, error) {
 	} else if strings.HasPrefix(viString, "-0x") || strings.HasPrefix(viString, "-0X") {
 		numBase = 16
 		viString = "-" + viString[3:]
-	} else if (strings.HasPrefix(viString, "0") || strings.HasPrefix(viString, "-0")) && xTagContainKey(cpOpt, xReflect_key_zero_to_8) {
+	} else if (strings.HasPrefix(viString, "0") || strings.HasPrefix(viString, "-0")) && xTagContainKey(cpOpt, xRef_key_zero_to_8) {
 		numBase = 8
 	}
 	if strings.HasPrefix(viString, "-") {
@@ -35,7 +35,7 @@ func xTransStringToInt64(viString string, cpOpt string) (int64, error) {
 	} else {
 		viUint64, err := strconv.ParseUint(viString, numBase, 64)
 		if err != nil {
-			if xTagContainKey(cpOpt, xReflect_key_string_bool_number) {
+			if xTagContainKey(cpOpt, xRef_key_string_bool_number) {
 				viBool, errB := strconv.ParseBool(viString)
 				if errB != nil {
 					return 0, errB
@@ -62,7 +62,7 @@ func xTransStringIntToBool(viString string, cpOpt string) (bool, error) {
 	} else if strings.HasPrefix(viString, "-0x") || strings.HasPrefix(viString, "-0X") {
 		numBase = 16
 		viString = "-" + viString[3:]
-	} else if (strings.HasPrefix(viString, "0") || strings.HasPrefix(viString, "-0")) && xTagContainKey(cpOpt, xReflect_key_zero_to_8) {
+	} else if (strings.HasPrefix(viString, "0") || strings.HasPrefix(viString, "-0")) && xTagContainKey(cpOpt, xRef_key_zero_to_8) {
 		numBase = 8
 	}
 	if strings.HasPrefix(viString, "-") {
@@ -89,7 +89,7 @@ func xFormatTimeToString(t *time.Time, timeLayout string) string {
 	if len(timeLayout) > 0 {
 		realTimeLayout = timeLayout
 	} else {
-		realTimeLayout = xReflect_time_layout
+		realTimeLayout = xRef_time_layout
 	}
 	return t.In(corex.ToTimeLocation()).Format(realTimeLayout)
 }
@@ -100,7 +100,7 @@ func xTransStringToTime(sTime string, timeLayout string) *time.Time {
 	if len(timeLayout) > 0 {
 		realTimeLayout = timeLayout
 	} else {
-		realTimeLayout = xReflect_time_layout
+		realTimeLayout = xRef_time_layout
 	}
 	timeStamp, err := time.ParseInLocation(realTimeLayout, sTime, corex.ToTimeLocation())
 	if err != nil {

@@ -16,25 +16,25 @@ import (
 )
 
 const (
-	xReflct_AD_Zero_Second = int64(-62135596800)
-	xReflect_log           = true
+	xRef_AD_Zero_Second = int64(-62135596800)
+	xRef_log            = true
 
 	// const xReflect_tag_cp_opt = "xref_opt"
 	// const xReflect_tag_cp_src = "xref"
-	xReflect_tag_cp_xreft = "xref"
+	xRef_tag_cp_xreft = "xref"
 
 	//var xReflect_location, _ = time.LoadLocation("Asia/Shanghai")
 
-	xReflect_time_layout = "2006-01-02 15:04:05"
+	xRef_time_layout = "2006-01-02 15:04:05"
 
-	xReflect_key_time_t             = "t"
-	xReflect_key_zero_to_8          = "z8"
-	xReflect_key_string_bool_number = "snb"
-	xReflect_key_time_tf            = "tf"
-	xReflect_key_number_point       = "p"
+	xRef_key_time_t             = "t"
+	xRef_key_zero_to_8          = "z8"
+	xRef_key_string_bool_number = "snb"
+	xRef_key_time_tf            = "tf"
+	xRef_key_number_point       = "p"
 
 	// 如是omitempty参数存在，来源的数字类型的0、bool类型的false、字符串类型的空、时间类型的0或负数不会赋值的目标里面
-	xReflect_key_tidy = "tidy"
+	xRef_key_tidy = "tidy"
 )
 
 /*
@@ -44,9 +44,9 @@ destO：目标切片，不可以传入结构体
 */
 // TransferObj 将srcO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
 // 无标签的如果再按属性名匹配
-func RefxCopy(srcO interface{}, destO interface{}) error {
+func XRefCopy(srcO interface{}, destO interface{}) error {
 	if nil == srcO {
-		return errors.New("RefxCopy error,source interface is nil")
+		return errors.New("XRefCopy error,source interface is nil")
 	}
 	// 获取srcO的类名称
 	srcT := reflect.TypeOf(srcO)
@@ -59,7 +59,7 @@ func RefxCopy(srcO interface{}, destO interface{}) error {
 	resOpt := make(map[string]string)
 	resSrc := make(map[string]string)
 	reflectValueMap, err := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
-		tagXreft, okXreft := field.Tag.Lookup(xReflect_tag_cp_xreft)
+		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
 			return false
 		}
@@ -81,7 +81,7 @@ func RefxCopy(srcO interface{}, destO interface{}) error {
 			tagOpt = subTags[1]
 		}
 		resOpt[s] = tagOpt
-		if xReflect_log {
+		if xRef_log {
 			fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagSrc + "，控制协议：" + tagOpt)
 		}
 		return true
@@ -101,7 +101,7 @@ func RefxCopy(srcO interface{}, destO interface{}) error {
 			continue
 		}
 		if srcValue == nil {
-			if xReflect_log {
+			if xRef_log {
 				fmt.Println(key + "字段无需赋值，来源字段值为nil。")
 			}
 			continue
@@ -168,8 +168,8 @@ func xReflect_transSrcToDestValue(key string, cpOpt string, srcValue interface{}
 	destKind := destTypeOf.Kind()
 	destTypeName := destTypeOf.String()
 
-	isTidy := xTagContainKey(cpOpt, xReflect_key_tidy)
-	//if xReflect_log {
+	isTidy := xTagContainKey(cpOpt, xRef_key_tidy)
+	//if xRef_log {
 	//	fmt.Println(fmt.Sprintf("来源类型:%d-%s,目标类型:%d-%s,Tidy:%t", srcKind, srcType, destKind, destType, isTidy))
 	//}
 	if xIsIntegerKind(destKind) || xIsIntegerPointer(destTypeName) {
@@ -187,12 +187,12 @@ func xReflect_transSrcToDestValue(key string, cpOpt string, srcValue interface{}
 		srcKind := srcTypeOf.Kind()
 		srcType := srcTypeOf.String()
 		if srcKind != destKind {
-			if xReflect_log {
+			if xRef_log {
 				fmt.Println(key + "字段无法赋值，切片错误，目标和来源切片类型不同")
 			}
 			return nil
 		} else if srcType != destTypeName {
-			if xReflect_log {
+			if xRef_log {
 				fmt.Println(key + "字段无法赋值，结构错误，目标和来源结构类型不同")
 			}
 			return nil

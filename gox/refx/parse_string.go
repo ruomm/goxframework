@@ -17,14 +17,14 @@ import (
 func xParseToString(key string, origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToString(origVal, cpOpt)
 	if vi == nil {
-		if xReflect_log {
+		if xRef_log {
 			fmt.Println(key + "字段无法赋值，来源字段值无法解析或者为nil。")
 		}
 		return nil
 	}
 	viString := vi.(string)
 	if isTidy && viString == "" {
-		if xReflect_log {
+		if xRef_log {
 			fmt.Println(key + "字段无需赋值，来源字段值解析后的值为空字符串。")
 		}
 		return nil
@@ -35,7 +35,7 @@ func xParseToString(key string, origVal interface{}, destTypeName string, cpOpt 
 	if destTypeName == "*string" {
 		return &viString
 	} else {
-		if xReflect_log {
+		if xRef_log {
 			fmt.Println(key + "字段无需赋值，目标指针类型未知。")
 		}
 		return nil
@@ -75,7 +75,7 @@ func ParseToString(origVal interface{}, cpOpt string) interface{} {
 			actualValue = actualValue.Convert(float64Type)
 		}
 		viFloat64 := actualValue.Interface().(float64)
-		optStr := xTagFindValueByKey(cpOpt, xReflect_key_number_point)
+		optStr := xTagFindValueByKey(cpOpt, xRef_key_number_point)
 		prec := -1
 		if len(optStr) > 0 {
 			prec64, errPrec := strconv.ParseInt(optStr, 10, 64)
@@ -108,9 +108,9 @@ func ParseToString(origVal interface{}, cpOpt string) interface{} {
 	} else if xIsStructType(actualKind) {
 		srcFieldVT := reflect.TypeOf(origVal).String()
 		if xIsStructType(actualKind) && xIsTimeType(srcFieldVT) {
-			optStr := xTagFindValueByKey(cpOpt, xReflect_key_time_tf)
+			optStr := xTagFindValueByKey(cpOpt, xRef_key_time_tf)
 			viTimeValue := actualValue.Interface().(time.Time)
-			if viTimeValue.Unix() == xReflct_AD_Zero_Second {
+			if viTimeValue.Unix() == xRef_AD_Zero_Second {
 				vi = nil
 			} else {
 				vi = xFormatTimeToString(&viTimeValue, optStr)

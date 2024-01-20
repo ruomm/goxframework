@@ -17,14 +17,14 @@ import (
 func xParseToTime(key string, origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToTime(origVal, cpOpt)
 	if vi == nil {
-		if xReflect_log {
+		if xRef_log {
 			fmt.Println(key + "字段无法赋值，来源字段值无法解析或者为nil。")
 		}
 		return nil
 	}
 	viPTime := vi.(*time.Time)
-	if isTidy && (viPTime.Unix() == xReflct_AD_Zero_Second || viPTime.UnixMilli() == 0) {
-		if xReflect_log {
+	if isTidy && (viPTime.Unix() == xRef_AD_Zero_Second || viPTime.UnixMilli() == 0) {
+		if xRef_log {
 			fmt.Println(key + "字段无需赋值，来源字段值解析后的时间值为空。")
 		}
 		return nil
@@ -35,7 +35,7 @@ func xParseToTime(key string, origVal interface{}, destTypeName string, cpOpt st
 	if destTypeName == "*time.Time" {
 		return viPTime
 	} else {
-		if xReflect_log {
+		if xRef_log {
 			fmt.Println(key + "字段无需赋值，目标指针类型未知。")
 		}
 		return nil
@@ -62,7 +62,7 @@ func ParseToTime(origVal interface{}, cpOpt string) interface{} {
 			actualValue = actualValue.Convert(int64Type)
 		}
 		viInt64 := actualValue.Interface().(int64)
-		optStr := xTagFindValueByKey(cpOpt, xReflect_key_time_t)
+		optStr := xTagFindValueByKey(cpOpt, xRef_key_time_t)
 		vi = xTransInt64ToTime(viInt64, optStr)
 	} else if xIsFloatKind(actualKind) {
 		float64Type := reflect.TypeOf(float64(0))
@@ -71,7 +71,7 @@ func ParseToTime(origVal interface{}, cpOpt string) interface{} {
 		}
 		viFloat64 := actualValue.Interface().(float64)
 		viInt64 := int64(math.Round(viFloat64))
-		optStr := xTagFindValueByKey(cpOpt, xReflect_key_time_t)
+		optStr := xTagFindValueByKey(cpOpt, xRef_key_time_t)
 		vi = xTransInt64ToTime(viInt64, optStr)
 	} else if actualKind == reflect.Bool {
 		vi = nil
@@ -81,10 +81,10 @@ func ParseToTime(origVal interface{}, cpOpt string) interface{} {
 			actualValue = actualValue.Convert(stringType)
 		}
 		viStr := actualValue.Interface().(string)
-		optStr := xTagFindValueByKey(cpOpt, xReflect_key_time_tf)
+		optStr := xTagFindValueByKey(cpOpt, xRef_key_time_tf)
 		pViTime := xTransStringToTime(viStr, optStr)
 		if pViTime == nil {
-			if xReflect_log {
+			if xRef_log {
 				fmt.Println("字段无法赋值，转换错误，string->time.Time")
 			}
 			return nil
@@ -95,7 +95,7 @@ func ParseToTime(origVal interface{}, cpOpt string) interface{} {
 		srcFieldVT := reflect.TypeOf(origVal).String()
 		if xIsStructType(actualKind) && xIsTimeType(srcFieldVT) {
 			viTimeValue := actualValue.Interface().(time.Time)
-			if viTimeValue.Unix() == xReflct_AD_Zero_Second {
+			if viTimeValue.Unix() == xRef_AD_Zero_Second {
 				vi = nil
 			} else {
 				vi = &viTimeValue

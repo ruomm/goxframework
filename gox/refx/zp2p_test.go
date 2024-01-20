@@ -52,7 +52,7 @@ func TestP2P(t *testing.T) {
 	dest := DestP2P{
 		//Vint: &a,
 	}
-	RefxCopy(orgi, &dest)
+	XRefCopy(orgi, &dest)
 
 	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)

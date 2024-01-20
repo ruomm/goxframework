@@ -18,14 +18,14 @@ import (
 func xParseToBool(key string, origVal interface{}, destTypeName string, cpOpt string, isTidy bool) interface{} {
 	vi := ParseToBool(origVal, cpOpt)
 	if vi == nil {
-		if xReflect_log {
+		if xRef_log {
 			fmt.Println(key + "字段无法赋值，来源字段值无法解析或者为nil。")
 		}
 		return nil
 	}
 	viBool := vi.(bool)
 	if isTidy && !viBool {
-		if xReflect_log {
+		if xRef_log {
 			fmt.Println(key + "字段无需赋值，来源字段值解析后的值为false。")
 		}
 		return nil
@@ -36,7 +36,7 @@ func xParseToBool(key string, origVal interface{}, destTypeName string, cpOpt st
 	if destTypeName == "*bool" {
 		return &viBool
 	} else {
-		if xReflect_log {
+		if xRef_log {
 			fmt.Println(key + "字段无需赋值，目标指针类型未知。")
 		}
 		return nil
@@ -92,7 +92,7 @@ func ParseToBool(origVal interface{}, cpOpt string) interface{} {
 		}
 		viString := actualValue.Interface().(string)
 		viBool, err := strconv.ParseBool(viString)
-		if err != nil && xTagContainKey(cpOpt, xReflect_key_string_bool_number) {
+		if err != nil && xTagContainKey(cpOpt, xRef_key_string_bool_number) {
 			viBoolByInt, errB := xTransStringIntToBool(viString, cpOpt)
 			if errB != nil {
 				viFloat64, errF := strconv.ParseFloat(viString, 64)
@@ -117,9 +117,9 @@ func ParseToBool(origVal interface{}, cpOpt string) interface{} {
 	} else if xIsStructType(actualKind) {
 		srcFieldVT := reflect.TypeOf(origVal).String()
 		if xIsStructType(actualKind) && xIsTimeType(srcFieldVT) {
-			optStr := xTagFindValueByKey(cpOpt, xReflect_key_time_t)
+			optStr := xTagFindValueByKey(cpOpt, xRef_key_time_t)
 			viTimeValue := actualValue.Interface().(time.Time)
-			if viTimeValue.Unix() == xReflct_AD_Zero_Second {
+			if viTimeValue.Unix() == xRef_AD_Zero_Second {
 				vi = nil
 			} else {
 				viInt64 := xTransTimeToInt64(&viTimeValue, optStr)
