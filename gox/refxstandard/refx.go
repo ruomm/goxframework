@@ -4,7 +4,7 @@
  * @create 2024/1/19 21:02
  * @version 1.0
  */
-package refx
+package refxstandard
 
 import (
 	"errors"
@@ -34,6 +34,10 @@ const (
 	xRef_key_tidy = "tidy"
 )
 
+// key目标字段的key值，origKey源字段的key值
+// 返回需要往目标里面注入的值和时候有错误发生
+type XrefHander func(origKey string, key string) (interface{}, error)
+
 /*
 *
 origO：源结构体
@@ -41,9 +45,9 @@ destO：目标切片，不可以传入结构体
 */
 // TransferObj 将origO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
 // 无标签的如果再按属性名匹配
-func XRefCopy(origO interface{}, destO interface{}, options ...XrefOption) (error, []string) {
+func XRefStructCopy(origO interface{}, destO interface{}, options ...XrefOption) (error, []string) {
 	if nil == origO {
-		return errors.New("XRefCopy error,source interface is nil"), nil
+		return errors.New("XRefStructCopy error,source interface is nil"), nil
 	}
 	do := xrefOptions{}
 	for _, option := range options {
@@ -100,8 +104,10 @@ func XRefCopy(origO interface{}, destO interface{}, options ...XrefOption) (erro
 		} else {
 			origKey = key
 		}
+
 		origValue, tmpErr01 := xreflect.EmbedFieldValue(origO, origKey)
 		if tmpErr01 != nil {
+			transFailsKeys = append(transFailsKeys, key)
 			errG = tmpErr01
 			continue
 		}
@@ -121,6 +127,7 @@ func XRefCopy(origO interface{}, destO interface{}, options ...XrefOption) (erro
 		}
 		tmpErr02 := xreflect.SetEmbedField(destO, key, rtVal)
 		if tmpErr02 != nil {
+			transFailsKeys = append(transFailsKeys, key)
 			errG = tmpErr02
 		}
 
@@ -137,7 +144,7 @@ destO：目标切片，不可以传入结构体
 // 无标签的如果再按属性名匹配
 func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOption) (error, []string) {
 	if nil == origMap {
-		return errors.New("XRefCopy error,source map is nil"), nil
+		return errors.New("XRefStructCopy error,source map is nil"), nil
 	}
 	do := xrefOptions{}
 	for _, option := range options {
@@ -204,6 +211,96 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 		}
 		tmpErr02 := xreflect.SetEmbedField(destO, key, rtVal)
 		if tmpErr02 != nil {
+			transFailsKeys = append(transFailsKeys, key)
+			errG = tmpErr02
+		}
+
+	}
+	return errG, transFailsKeys
+}
+
+/*
+*
+origMap：源map数据
+destO：目标切片，不可以传入结构体
+*/
+// TransferObj 将origO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
+// 无标签的如果再按属性名匹配
+func XRefHandlerCopy(xrefOrigHandler XrefHander, destO interface{}, options ...XrefOption) (error, []string) {
+	if nil == xrefOrigHandler {
+		return errors.New("XRefStructCopy error,xrefOrigHandler is nil"), nil
+	}
+	do := xrefOptions{}
+	for _, option := range options {
+		option.f(&do)
+	}
+	xRef_tag_cp_xreft := xParseRefTagName(do.optTag)
+	origNameSpace := xParseRefNameSpace(do.optNameSpace, "")
+	resOpt := make(map[string]string)
+	resOrig := make(map[string]string)
+	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
+		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
+		if !okXreft {
+			return false
+		}
+		// 开始分割目标控制和属性控制
+		subTags := corex.ParseToSubTag(tagXreft)
+		// 解析目标控制
+		tagOrigVal := ""
+		if len(subTags) > 0 {
+			tagOrigVal = subTags[0]
+		}
+		tagOrig, okCanXref := xReflect_canXCopy(tagOrigVal, origNameSpace)
+		if !okCanXref {
+			return false
+		}
+		resOrig[s] = tagOrig
+		// 解析属性控制
+		tagOpt := ""
+		if len(subTags) > 1 {
+			tagOpt = subTags[1]
+		}
+		resOpt[s] = tagOpt
+		if xRef_log {
+			fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrig + "，控制协议：" + tagOpt)
+		}
+		return true
+	})
+	if errG != nil {
+		return errG, nil
+	}
+	var transFailsKeys []string = nil
+	for key, value := range reflectValueMap {
+		var origKey string
+		if resOrig[key] != "" {
+			origKey = resOrig[key]
+		} else {
+			origKey = key
+		}
+
+		origValue, tmpErr01 := xrefOrigHandler(origKey, key)
+		if tmpErr01 != nil {
+			transFailsKeys = append(transFailsKeys, key)
+			errG = tmpErr01
+			continue
+		}
+		if origValue == nil {
+			if xRef_log {
+				fmt.Println(key + "字段无需赋值，来源字段值为nil。")
+			}
+			continue
+		}
+		cpOpt := resOpt[key]
+		rtVal, transOk := xRef_transOrigToDestValue(key, cpOpt, origValue, value)
+		if !transOk {
+			transFailsKeys = append(transFailsKeys, key)
+		}
+		if rtVal == nil {
+			continue
+		}
+		tmpErr02 := xreflect.SetEmbedField(destO, key, rtVal)
+		if tmpErr02 != nil {
+			transFailsKeys = append(transFailsKeys, key)
 			errG = tmpErr02
 		}
 

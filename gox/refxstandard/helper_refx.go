@@ -4,7 +4,7 @@
  * @create 2024/1/20 11:26
  * @version 1.0
  */
-package refx
+package refxstandard
 
 import (
 	"errors"

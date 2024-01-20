@@ -7,6 +7,7 @@
 package refx
 
 import (
+	"errors"
 	"fmt"
 	"github.com/ruomm/goxframework/gox/corex"
 	"reflect"
@@ -47,9 +48,9 @@ func TestP2P(t *testing.T) {
 	//a := time.Time{}
 	a := "123456"
 	fmt.Println(a)
-	orgiMap := make(map[string]string)
-	orgiMap["Orig"] = "123456"
-	fmt.Println(orgiMap)
+	origMap := make(map[string]string)
+	origMap["Orig"] = "123456"
+	fmt.Println(origMap)
 
 	orig := OrigP2P{
 		Orig: &a,
@@ -59,8 +60,18 @@ func TestP2P(t *testing.T) {
 	dest := DestP2P{
 		//Vint: &a,
 	}
-	XRefCopy(orig, &dest)
-	//XRefMapCopy(orgiMap, &dest)
+	//XRefStructCopy(orig, &dest)
+	//	XRefMapCopy(origMap, &dest)
+	origHandler := XrefHander(func(origKey string, key string) (interface{}, error) {
+		origValue, ok := origMap[origKey]
+		if ok {
+			return origValue, nil
+		} else {
+			return nil, errors.New("不存在此字段")
+		}
+
+	})
+	XRefHandlerCopy(origHandler, &dest)
 
 	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)

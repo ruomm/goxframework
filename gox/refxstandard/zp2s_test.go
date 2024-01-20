@@ -4,7 +4,7 @@
  * @create 2024/1/19 21:38
  * @version 1.0
  */
-package refx
+package refxstandard
 
 import (
 	"fmt"
@@ -53,7 +53,7 @@ func TestP2S(t *testing.T) {
 	dest := DestP2S{
 		//Vint: &a,
 	}
-	XRefCopy(orig, &dest)
+	XRefStructCopy(orig, &dest)
 
 	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)

@@ -51,7 +51,7 @@ func TestS2P(t *testing.T) {
 	dest := DestS2P{
 		//Vint: &a,
 	}
-	XRefCopy(orig, &dest)
+	XRefStructCopy(orig, &dest)
 
 	jsonStr, _ := corex.JsonToString(dest)
 	fmt.Println(jsonStr)
