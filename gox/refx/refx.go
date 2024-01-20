@@ -44,9 +44,9 @@ destO：目标切片，不可以传入结构体
 */
 // TransferObj 将srcO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
 // 无标签的如果再按属性名匹配
-func XReflectCopy(srcO interface{}, destO interface{}) error {
+func RefxCopy(srcO interface{}, destO interface{}) error {
 	if nil == srcO {
-		return errors.New("XReflectCopy error,source interface is nil")
+		return errors.New("RefxCopy error,source interface is nil")
 	}
 	// 获取srcO的类名称
 	srcT := reflect.TypeOf(srcO)
