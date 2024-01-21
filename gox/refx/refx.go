@@ -31,7 +31,8 @@ const (
 	xRef_key_number_point       = "p"
 
 	// 如是omitempty参数存在，来源的数字类型的0、bool类型的false、字符串类型的空、时间类型的0或负数不会赋值的目标里面
-	xRef_key_tidy = "tidy"
+	xRef_key_tidy        = "tidy"
+	xRef_key_slice_split = "split"
 )
 
 // key目标字段的key值，origKey源字段的key值
@@ -346,9 +347,12 @@ func xRef_transOrigToDestValue(key string, cpOpt string, origValue interface{}, 
 	destKind := destTypeOf.Kind()
 	destTypeName := destTypeOf.String()
 	destActualTypeKind := reflect.Invalid
+	destActualTypeOf := destTypeOf
 	if destKind == reflect.Pointer {
+		destActualTypeOf = destTypeOf.Elem()
 		destActualTypeKind = destTypeOf.Elem().Kind()
 	} else {
+		destActualTypeOf = destTypeOf
 		destActualTypeKind = destKind
 	}
 
@@ -367,6 +371,27 @@ func xRef_transOrigToDestValue(key string, cpOpt string, origValue interface{}, 
 	} else if xIsTimeType(destTypeOf.String()) {
 		return xParseToTime(key, origValue, destTypeName, cpOpt, isTidy)
 	} else {
+		// 目标是切片数组，来源是字符串时候解析字符串为数组
+		if destActualTypeKind == reflect.Slice {
+			// 获取真实的数值
+			actualValue := reflect.ValueOf(origValue)
+			if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
+				if actualValue.IsNil() {
+					return nil, true
+				}
+				actualValue = actualValue.Elem()
+			}
+			actualKind := actualValue.Kind()
+			if actualKind == reflect.String {
+				stringType := reflect.TypeOf("")
+				if stringType != actualValue.Type() {
+					actualValue = actualValue.Convert(stringType)
+				}
+				viString := actualValue.Interface().(string)
+				return xParseStringToSlice(key, viString, destTypeName, destActualTypeOf.Elem().Kind(), cpOpt)
+			}
+		}
+
 		origTypeOf := reflect.TypeOf(origValue)
 		origKind := origTypeOf.Kind()
 		origType := origTypeOf.String()
