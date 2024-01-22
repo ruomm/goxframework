@@ -17,7 +17,7 @@ import (
 
 const (
 	xRef_AD_Zero_Second = int64(-62135596800)
-	xRef_log            = true
+	xRef_log            = false
 	//xRef_tag_cp_xreft   = "xref"
 
 	//var xReflect_location, _ = time.LoadLocation("Asia/Shanghai")

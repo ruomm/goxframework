@@ -80,7 +80,7 @@ func DoHttpPost(postUrl string, postContentType string, postStr string) ([]byte,
 }
 
 func DoHttpGet(urlOfGet string, data interface{}, result interface{}) error {
-	urlData, err := ParseToUrlEncodeString(data, true)
+	urlData, err := ParseToUrlEncodeString(data)
 	if err != nil {
 		// logger.Error("Http Get Encode Request Data err:" + err.Error())
 		return err

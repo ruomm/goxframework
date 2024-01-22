@@ -1,4 +1,4 @@
-package xconfutils
+package yamlx
 
 import (
 	"github.com/ruomm/goxframework/gox/corex"

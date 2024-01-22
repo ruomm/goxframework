@@ -7,12 +7,12 @@
 package loggerx
 
 type LogConfigs struct {
-	Level        string `yaml:"level"`
-	StdOut       bool   `yaml:"stdOut"`
-	MaxSize      int    `yaml:"maxSize"`
-	MaxBackups   int    `yaml:"maxBackups"`
-	MaxAges      int    `yaml:"maxAges"`
-	Compress     bool   `yaml:"compress"`
-	ServiceName  string `yaml:"serviceName"`
-	InstanceName string `yaml:"instanceName"`
+	Level        string `xref:"Level"`
+	StdOut       bool   `xref:"StdOut"`
+	MaxSize      int    `xref:"MaxSize"`
+	MaxBackups   int    `xref:"MaxBackups"`
+	MaxAges      int    `xref:"MaxAges"`
+	Compress     bool   `xref:"Compress"`
+	ServiceName  string `xref:"ServiceName"`
+	InstanceName string `xref:"InstanceName"`
 }

@@ -1,9 +1,9 @@
-package xconfutils
+package yamlx
 
 import (
 	"flag"
 	"fmt"
-	"github.com/ruomm/goxframework/gox/reflectx"
+	"github.com/ruomm/goxframework/gox/refx"
 )
 
 type CommondConfigs struct {
@@ -36,7 +36,7 @@ func ParseYamlFileByFlag(obj interface{}) error {
 	if err != nil {
 		panic(fmt.Sprintf("config load error, cause by ParseYamlFileByFlag: %v", err))
 	}
-	errXcp := reflectx.XReflectCopy(cmdCofig, obj, true)
+	errXcp, _ := refx.XRefStructCopy(cmdCofig, obj)
 	if errXcp != nil {
 		panic(fmt.Sprintf("config load error, cause by XReflectCopy:", err))
 	} else {

@@ -14,6 +14,11 @@ import (
 	"time"
 )
 
+// 是否tidy
+func XrefTagTidy(tagValue string) bool {
+	return xTagContainKey(tagValue, xRef_key_tidy)
+}
+
 // 解析真实的tag名称
 func xParseRefTagName(optTag string) string {
 	if len(optTag) <= 0 {

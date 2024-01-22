@@ -1,17 +1,18 @@
 package loggerx
 
 import (
+	"errors"
 	"fmt"
 	"github.com/ruomm/goxframework/gox/corex"
+	"github.com/ruomm/goxframework/gox/refx"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
 	"path"
 	"runtime"
 	"strconv"
 	"strings"
-
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 var Logger *zap.Logger
@@ -20,7 +21,14 @@ var rootDirLength int
 var serviceField zap.Field
 var instanceField zap.Field
 
-func InitLogger(logConfig LogConfigs) error {
+type XCallerSkipHandler func(file string, line int) int
+
+var xCallerSkipHandler XCallerSkipHandler = nil
+
+func ConfigCallerSkipHandler(handler XCallerSkipHandler) {
+	xCallerSkipHandler = handler
+}
+func InitLogger(logConfig interface{}, callerSkipHandler XCallerSkipHandler) error {
 	// 获取当前文件绝对路径，可以减少路径长度
 	//var thisPath = "logger/zap_logger.go"
 	//_, file, _, _ := runtime.Caller(0)
@@ -31,14 +39,23 @@ func InitLogger(logConfig LogConfigs) error {
 	//	rootDirLength = 0
 	//	rootDirPath = ""
 	//}
+	logConfigInit := LogConfigs{}
+	errG, transFailsKeys := refx.XRefStructCopy(logConfig, &logConfigInit)
+	if errG != nil {
+		return errG
+	}
+	if len(transFailsKeys) > 0 {
+		return errors.New("logger config init err, some field config err:" + strings.Join(transFailsKeys, ","))
+	}
+	xCallerSkipHandler = callerSkipHandler
 	rootDirPath = corex.GetCurrentPath()
 	rootDirLength = len(rootDirPath)
-	serviceField = zap.String("service", logConfig.ServiceName)
-	instanceField = zap.String("instance", logConfig.InstanceName)
-	//initFields := getInitFields(&logConfig)
+	serviceField = zap.String("service", logConfigInit.ServiceName)
+	instanceField = zap.String("instance", logConfigInit.InstanceName)
+	//initFields := getInitFields(&logConfigInit)
 	encoder := getLogEncoder()
-	writer := getLogWriter(&logConfig)
-	level := getLogLevel(&logConfig)
+	writer := getLogWriter(&logConfigInit)
+	level := getLogLevel(&logConfigInit)
 	core := zapcore.NewCore(encoder, writer, level)
 	caller := zap.AddCaller()
 	zap.AddCallerSkip(1)
@@ -137,8 +154,11 @@ func Warn(message string, fields ...zap.Field) {
 func getCallerInfoForLog() (callerFields []zap.Field) {
 
 	pc, file, line, ok := runtime.Caller(2) // 回溯两层，拿到写日志的调用方的函数信息
-	if strings.HasSuffix(file, "common_vo.go") {
-		pc, file, line, ok = runtime.Caller(4)
+	if nil != xCallerSkipHandler {
+		callSkip := xCallerSkipHandler(file, line)
+		if callSkip > 0 {
+			pc, file, line, ok = runtime.Caller(2 + callSkip)
+		}
 	}
 	if !ok {
 		return
