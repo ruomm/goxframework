@@ -54,7 +54,7 @@ func StrToUInt64(str string) uint64 {
 	return i
 }
 
-func BytesizeFormat(byteSize int64, prec int) string {
+func ByteSizeFormat(byteSize int64, prec int) string {
 	realPrec := -1
 	if prec >= 0 {
 		realPrec = prec
@@ -94,7 +94,7 @@ func BytesizeFormat(byteSize int64, prec int) string {
 	}
 }
 
-func BytesizePrase(bytesizeStr string) (int64, error) {
+func ByteSizeParse(bytesizeStr string) (int64, error) {
 	if len(bytesizeStr) == 0 {
 		return 0, errors.New("parse bytesize err,input string is empty")
 	}
