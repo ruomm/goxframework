@@ -65,6 +65,13 @@ func XrefOptNameSpace(nameSpace string) XrefOption {
 
 // 字符串转换为int64
 func xTransStringToInt64(viString string, cpOpt string) (int64, error) {
+	if xTagContainKey(cpOpt, xRef_key_bytesize) {
+		return corex.ByteSizeParse(viString)
+	} else if xTagContainKey(cpOpt, xRef_key_timenumber_millis) {
+		return corex.TimeNumberParse(viString, false)
+	} else if xTagContainKey(cpOpt, xRef_key_timenumber_seconds) {
+		return corex.TimeNumberParse(viString, true)
+	}
 	numBase := 10
 	if strings.HasPrefix(viString, "0x") || strings.HasPrefix(viString, "0X") {
 		numBase = 16

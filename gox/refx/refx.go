@@ -25,6 +25,9 @@ const (
 	xRef_time_layout = "2006-01-02 15:04:05"
 
 	xRef_key_time_t             = "t"
+	xRef_key_bytesize           = "bs"
+	xRef_key_timenumber_seconds = "tns"
+	xRef_key_timenumber_millis  = "tnm"
 	xRef_key_zero_to_8          = "z8"
 	xRef_key_string_bool_number = "snb"
 	xRef_key_time_tf            = "tf"
