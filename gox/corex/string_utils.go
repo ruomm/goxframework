@@ -13,6 +13,9 @@ import (
 
 // 判断字符串是否匹配，支持正则表达式，支持开头结尾*通配符，支持严格匹配
 func MatchStringCommon(pattern string, s string) bool {
+	if len(pattern) <= 0 {
+		return false
+	}
 	if len(s) <= 0 {
 		return false
 	}
