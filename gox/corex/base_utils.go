@@ -77,7 +77,8 @@ func GetMd5WithSlat(data, slat string) string {
 }
 
 // 格式化时间为字符串
-func TimeFormatToString(timeLayout string, t *time.Time) string {
+func TimeFormatByString(timeLayout string, t *time.Time) string {
+	//TimeFormatByString
 	//"America/Adak" "Asia/Shanghai"
 	var realTimeLayout string
 	if len(timeLayout) > 0 {
@@ -88,8 +89,9 @@ func TimeFormatToString(timeLayout string, t *time.Time) string {
 	return t.In(ToTimeLocation()).Format(realTimeLayout)
 }
 
+// TimeParseByString
 // 解析字符串为时间
-func TimeConvertByString(timeLayout string, sTime string) (*time.Time, error) {
+func TimeParseByString(timeLayout string, sTime string) (*time.Time, error) {
 	var realTimeLayout string
 	if len(timeLayout) > 0 {
 		realTimeLayout = timeLayout
@@ -105,7 +107,7 @@ func TimeConvertByString(timeLayout string, sTime string) (*time.Time, error) {
 }
 
 func TimeAfterCurrent(timeLayout string, timeStr string) (bool, error) {
-	cTime, err := TimeConvertByString(timeLayout, timeStr)
+	cTime, err := TimeParseByString(timeLayout, timeStr)
 	if err != nil {
 		return false, err
 	}
@@ -113,7 +115,7 @@ func TimeAfterCurrent(timeLayout string, timeStr string) (bool, error) {
 }
 
 func TimeBeforceCurrent(timeLayout string, timeStr string) (bool, error) {
-	cTime, err := TimeConvertByString(timeLayout, timeStr)
+	cTime, err := TimeParseByString(timeLayout, timeStr)
 	if err != nil {
 		return false, err
 	}
@@ -127,7 +129,7 @@ func ToSnakeCase(str string) string {
 	snake = xvalid_matchAllCap.ReplaceAllString(snake, "${1}_${2}")  //拆分单词
 	return strings.ToLower(snake)                                    //全部转小写
 }
-func StringTOJson(str string, v any) error {
+func JsonParseByString(str string, v any) error {
 	if str == "" {
 		return errors.New("json Unmarshal not support empty string")
 	}
@@ -135,7 +137,7 @@ func StringTOJson(str string, v any) error {
 	return err
 }
 
-func JsonToString(v any) (string, error) {
+func JsonFormatByString(v any) (string, error) {
 	jsonData, err := json.Marshal(v)
 	if err != nil {
 		return "", err

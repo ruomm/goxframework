@@ -53,7 +53,7 @@ func TestS2P(t *testing.T) {
 	}
 	XRefStructCopy(orig, &dest)
 
-	jsonStr, _ := corex.JsonToString(dest)
+	jsonStr, _ := corex.JsonFormatByString(dest)
 	fmt.Println(jsonStr)
 	if jsonStr != readJson(3) {
 		t.Error("测试失败")

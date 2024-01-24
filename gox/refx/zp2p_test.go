@@ -73,7 +73,7 @@ func TestP2P(t *testing.T) {
 	})
 	XRefHandlerCopy(origHandler, &dest)
 
-	jsonStr, _ := corex.JsonToString(dest)
+	jsonStr, _ := corex.JsonFormatByString(dest)
 	fmt.Println(jsonStr)
 	if jsonStr != readJson(3) {
 		t.Error("测试失败")
