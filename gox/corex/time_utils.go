@@ -1,17 +1,12 @@
+/**
+ * @copyright 像衍科技-idr.ai
+ * @author 牛牛-研发部-www.ruomm.com
+ * @create 2024/1/24 13:13
+ * @version 1.0
+ */
 package corex
 
-import (
-	"crypto/md5"
-	"encoding/hex"
-	"encoding/json"
-	"errors"
-	"net/http"
-	"regexp"
-	"runtime"
-	"strconv"
-	"strings"
-	"time"
-)
+import "time"
 
 const (
 	TIME_PATTERN_STANDARD       string = "2006-01-02 15:04:05"
@@ -46,34 +41,6 @@ func ToTimeLocationPattern(timezoneValue string, timezoneOffset int) *time.Locat
 		location = time.FixedZone("CST", timezoneOffset)
 	}
 	return location
-}
-
-var (
-	//TIME_LOCATION_CN, _         = time.LoadLocation("Asia/Shanghai")
-	xvalid_matchNonAlphaNumeric = regexp.MustCompile(`[^a-zA-Z0-9]+`)
-	xvalid_matchFirstCap        = regexp.MustCompile("(.)([A-Z][a-z]+)")
-	xvalid_matchAllCap          = regexp.MustCompile("([a-z0-9])([A-Z])")
-)
-
-func ServerTrace(tracePort int) {
-	runtime.SetMutexProfileFraction(1) // 开启对锁调用的跟踪
-	runtime.SetBlockProfileRate(1)     // 开启对阻塞操作的跟踪
-	http.ListenAndServe("0.0.0.0:"+strconv.Itoa(tracePort), nil)
-}
-
-func GetMd5(data string) string {
-	h := md5.New()
-	h.Write([]byte(data))
-	bs := h.Sum(nil)
-	return hex.EncodeToString(bs)
-}
-
-func GetMd5WithSlat(data, slat string) string {
-	var realSlat string
-	h := md5.New()
-	h.Write([]byte(data + realSlat))
-	bs := h.Sum(nil)
-	return hex.EncodeToString(bs)
 }
 
 // 格式化时间为字符串
@@ -122,28 +89,21 @@ func TimeBeforceCurrent(timeLayout string, timeStr string) (bool, error) {
 	return cTime.Before(time.Now()), nil
 }
 
-// 驼峰转下划线工具
-func ToSnakeCase(str string) string {
-	str = xvalid_matchNonAlphaNumeric.ReplaceAllString(str, "_")     //非常规字符转化为 _
-	snake := xvalid_matchFirstCap.ReplaceAllString(str, "${1}_${2}") //拆分出连续大写
-	snake = xvalid_matchAllCap.ReplaceAllString(snake, "${1}_${2}")  //拆分单词
-	return strings.ToLower(snake)                                    //全部转小写
-}
-func JsonParseByString(str string, v any) error {
-	if str == "" {
-		return errors.New("json Unmarshal not support empty string")
+/**
+ * 依据时间生成文件名称
+ *
+ * @param filehead      文件头
+ * @param filetype      文件结尾
+ * @param outTimeFormat SimpleDateFormat的格式，默认yyyyMMdd_HHmmss格式
+ * @return 生成的文件名称
+ */
+func TimeToFileName(filehead string, filetype string, fileTimeLayout string) string {
+	timeNow := time.Now()
+	timeLayout := fileTimeLayout
+	if timeLayout == "" {
+		timeLayout = "20060102_150405"
 	}
-	err := json.Unmarshal([]byte(str), v)
-	return err
-}
+	dataStr := TimeFormatByString(timeLayout, &timeNow)
+	return filehead + dataStr + filetype
 
-func JsonFormatByString(v any) (string, error) {
-	jsonData, err := json.Marshal(v)
-	if err != nil {
-		return "", err
-	}
-	if len(jsonData) == 0 {
-		return "", errors.New("json Marshal not support this object")
-	}
-	return string(jsonData), err
 }
