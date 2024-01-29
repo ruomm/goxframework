@@ -91,19 +91,24 @@ func TimeBeforceCurrent(timeLayout string, timeStr string) (bool, error) {
 
 /**
  * 依据时间生成文件名称
- *
+ * @param pTime      时间
  * @param filehead      文件头
  * @param filetype      文件结尾
  * @param outTimeFormat SimpleDateFormat的格式，默认yyyyMMdd_HHmmss格式
  * @return 生成的文件名称
  */
-func TimeToFileName(filehead string, filetype string, fileTimeLayout string) string {
-	timeNow := time.Now()
+func TimeToFileName(pTime *time.Time, filehead string, filetype string, fileTimeLayout string) string {
+	var timeFile *time.Time = nil
+	if pTime == nil {
+		timeNow := time.Now()
+		timeFile = &timeNow
+	} else {
+		timeFile = pTime
+	}
 	timeLayout := fileTimeLayout
 	if timeLayout == "" {
 		timeLayout = "20060102_150405"
 	}
-	dataStr := TimeFormatByString(timeLayout, &timeNow)
+	dataStr := TimeFormatByString(timeLayout, timeFile)
 	return filehead + dataStr + filetype
-
 }
