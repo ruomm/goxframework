@@ -26,13 +26,40 @@ func initCMDConfig() *CommondConfigs {
 	return &cmdConfigs
 }
 
+func initCMDConfigLite() *CommondConfigs {
+	cmdConfigs := CommondConfigs{
+		ConfYaml:      flag.String("c", "config/conf.yaml", "config file name, yaml format."),
+		ProfileActive: flag.String("env", "", "config run environment, will load environment config file. \ndefault is define in config file."),
+	}
+	flag.Parse()
+	return &cmdConfigs
+}
+
 /*
 * 解析yaml配置文件为对象
 * 依据envKey激活环境配置文件，读取环境配置文件和指定的yaml配置文件，环境配置文件的值会覆盖指定的yaml配置文件的值。
  */
-func ParseYamlFileByFlag(obj interface{}) error {
+func ParseYamlFileByFlag(obj interface{}, options ...YamlxOption) error {
 	cmdCofig := initCMDConfig()
-	err := ParseYamlFileByEnv(*cmdCofig.ConfYaml, "profileActive", *cmdCofig.ProfileActive, obj)
+	err := ParseYamlFileByEnv(*cmdCofig.ConfYaml, "profileActive", *cmdCofig.ProfileActive, obj, options...)
+	if err != nil {
+		panic(fmt.Sprintf("config load error, cause by ParseYamlFileByFlag: %v", err))
+	}
+	errXcp, _ := refx.XRefStructCopy(cmdCofig, obj)
+	if errXcp != nil {
+		panic(fmt.Sprintf("config load error, cause by XReflectCopy:", err))
+	} else {
+		return nil
+	}
+}
+
+/*
+* 解析yaml配置文件为对象
+* 依据envKey激活环境配置文件，读取环境配置文件和指定的yaml配置文件，环境配置文件的值会覆盖指定的yaml配置文件的值。
+ */
+func ParseYamlFileByFlagLite(obj interface{}, options ...YamlxOption) error {
+	cmdCofig := initCMDConfigLite()
+	err := ParseYamlFileByEnv(*cmdCofig.ConfYaml, "profileActive", *cmdCofig.ProfileActive, obj, options...)
 	if err != nil {
 		panic(fmt.Sprintf("config load error, cause by ParseYamlFileByFlag: %v", err))
 	}

@@ -11,6 +11,22 @@ import (
 	"strings"
 )
 
+// 属性空值设置 for refx.
+type YamlxOption struct {
+	f func(*yamlxOptions)
+}
+
+type yamlxOptions struct {
+	envFileCanEmpty bool //环境配置文件非强制加载
+}
+
+// 设置关联tag的名称，不设置默认为xref
+func YamlxEnvFileCanEmpty(canEmpty bool) YamlxOption {
+	return YamlxOption{func(do *yamlxOptions) {
+		do.envFileCanEmpty = canEmpty
+	}}
+}
+
 /*
 * 解析yaml配置文件为对象
 * 只能读取指定的配置文件，不会激活环境配置文件
@@ -35,8 +51,8 @@ func ParseYamlFile(filePath string, obj interface{}) error {
 * # 如配置文件为：config/conf.yaml，环境配置值为：dev"，则激活的配置文件为：config/conf-dev.yaml。
 * # 如是指定了环境配置值，激活的配置文件必须存在且可以解析，否则程序异常报错。
  */
-func ParseYamlFileByEnv(filePath string, envKey string, envValue string, obj interface{}) error {
-	mapConfigs, configEnv, err := ParseYamlFileToMapByEnv(filePath, envKey, envValue)
+func ParseYamlFileByEnv(filePath string, envKey string, envValue string, obj interface{}, options ...YamlxOption) error {
+	mapConfigs, configEnv, err := ParseYamlFileToMapByEnv(filePath, envKey, envValue, options...)
 	if err != nil {
 		return err
 	}
@@ -46,11 +62,19 @@ func ParseYamlFileByEnv(filePath string, envKey string, envValue string, obj int
 	if err != nil {
 		return err
 	}
-
-	if configEnv != "" {
+	if len(envKey) > 0 && len(configEnv) > 0 {
 		yamlStr := string(yamlData)
-		yamlStr = strings.Replace(yamlStr, "{env}", configEnv, -1)
+		//if configEnv != "" {
+		//	yamlStr = strings.Replace(yamlStr, "${env}", configEnv, -1)
+		//	yamlStr = strings.Replace(yamlStr, "${"+envKey+"}", configEnv, -1)
+		//} else {
+		//	yamlStr = strings.Replace(yamlStr, "${env}", "dev", -1)
+		//	yamlStr = strings.Replace(yamlStr, "${"+envKey+"}", "dev", -1)
+		//}
+		yamlStr = strings.Replace(yamlStr, "${env}", configEnv, -1)
+		yamlStr = strings.Replace(yamlStr, "${"+envKey+"}", configEnv, -1)
 		yamlData = []byte(yamlStr)
+
 	}
 	return yaml.Unmarshal(yamlData, obj)
 }
@@ -80,7 +104,11 @@ func ParseYamlFileToMap(filePath string) (*map[string]interface{}, error) {
 * 解析yaml配置文件为map
 * 依据envKey激活环境配置文件，读取环境配置文件和指定的yaml配置文件，环境配置文件的值会覆盖指定的yaml配置文件的值。
  */
-func ParseYamlFileToMapByEnv(filePath string, envKey string, envValue string) (*map[string]interface{}, string, error) {
+func ParseYamlFileToMapByEnv(filePath string, envKey string, envValue string, options ...YamlxOption) (*map[string]interface{}, string, error) {
+	do := yamlxOptions{}
+	for _, option := range options {
+		option.f(&do)
+	}
 	// 读取全局配置文件
 	mapGlob, errGlob := ParseYamlFileToMap(filePath)
 	if errGlob != nil {
@@ -131,13 +159,20 @@ func ParseYamlFileToMapByEnv(filePath string, envKey string, envValue string) (*
 		mapEnv, errEnv := ParseYamlFileToMap(filePathEnv)
 		if errEnv != nil {
 			//fmt.Println("open file err = ", errEnv)
-			return nil, configEnv, errEnv
+			if do.envFileCanEmpty {
+				return mapGlob, configEnv, nil
+			} else {
+				return nil, configEnv, errEnv
+			}
 		}
 		errMergo := mergox.Map(mapGlob, mapEnv, mergox.WithOverride)
 		if errMergo != nil {
 			//fmt.Println("open file err = ", errMergo)
 			return nil, configEnv, errMergo
+		} else {
+			return mapGlob, configEnv, nil
 		}
+	} else {
+		return mapGlob, configEnv, nil
 	}
-	return mapGlob, configEnv, nil
 }
