@@ -18,7 +18,7 @@ func (e *StoreSize) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if err != nil {
 		return err
 	}
-	byteSize, err := corex.ByteSizeParse(ymalString)
+	byteSize, err := corex.StoreSizeParse(ymalString)
 	if err != nil {
 		return err
 	}
