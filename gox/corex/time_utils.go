@@ -6,7 +6,9 @@
  */
 package corex
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	TIME_PATTERN_STANDARD       string = "2006-01-02 15:04:05"
@@ -41,6 +43,20 @@ func ToTimeLocationPattern(timezoneValue string, timezoneOffset int) *time.Locat
 		location = time.FixedZone("CST", timezoneOffset)
 	}
 	return location
+}
+
+// 格式化时间为字符串
+func TimeFormatByMilliSeconds(timeLayout string, msec int64) string {
+	//TimeFormatByString
+	//"America/Adak" "Asia/Shanghai"
+	var realTimeLayout string
+	if len(timeLayout) > 0 {
+		realTimeLayout = timeLayout
+	} else {
+		realTimeLayout = TIME_PATTERN_STANDARD
+	}
+	t := time.UnixMilli(msec)
+	return t.In(ToTimeLocation()).Format(realTimeLayout)
 }
 
 // 格式化时间为字符串
