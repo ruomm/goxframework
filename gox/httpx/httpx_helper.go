@@ -15,6 +15,26 @@ import (
 	"strings"
 )
 
+func Success200(httpxResponse *HttpxResponse) bool {
+	if nil == httpxResponse {
+		return false
+	}
+	if httpxResponse.StatusCode == 200 {
+		return true
+	} else {
+		return false
+	}
+}
+func Success2xx(httpxResponse *HttpxResponse) bool {
+	if nil == httpxResponse {
+		return false
+	}
+	if httpxResponse.StatusCode >= 200 && httpxResponse.StatusCode < 300 {
+		return true
+	} else {
+		return false
+	}
+}
 func xToHttpxResponse(resp *http.Response) (*HttpxResponse, error) {
 	if nil == resp {
 		return nil, errors.New("Http Response is Empty")
