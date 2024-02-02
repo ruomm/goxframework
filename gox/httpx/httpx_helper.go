@@ -15,6 +15,7 @@ import (
 	"strings"
 )
 
+// 判断是否200成功
 func Success200(httpxResponse *HttpxResponse) bool {
 	if nil == httpxResponse {
 		return false
@@ -25,6 +26,8 @@ func Success200(httpxResponse *HttpxResponse) bool {
 		return false
 	}
 }
+
+// 判断是否2xx成功
 func Success2xx(httpxResponse *HttpxResponse) bool {
 	if nil == httpxResponse {
 		return false
@@ -35,6 +38,8 @@ func Success2xx(httpxResponse *HttpxResponse) bool {
 		return false
 	}
 }
+
+// 转换响应请求
 func xToHttpxResponse(resp *http.Response) (*HttpxResponse, error) {
 	if nil == resp {
 		return nil, errors.New("Http Response is Empty")
