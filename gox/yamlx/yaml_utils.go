@@ -84,7 +84,12 @@ func ParseYamlFileByEnv(filePath string, envKey string, envValue string, obj int
 * 只能读取指定的配置文件，不会激活环境配置文件
  */
 func ParseYamlFileToMap(filePath string) (*map[string]interface{}, error) {
-	yamlFile, err := os.Open(corex.GetAbsDir(filePath))
+	yamlFilePath := corex.GetAbsDir(filePath)
+	_, errFile := corex.IsFileExitWithErr(yamlFilePath)
+	if errFile != nil {
+		return nil, errFile
+	}
+	yamlFile, err := os.Open(yamlFilePath)
 	if err != nil {
 		//fmt.Println("open file err = ", err)
 		return nil, err
@@ -159,7 +164,7 @@ func ParseYamlFileToMapByEnv(filePath string, envKey string, envValue string, op
 		mapEnv, errEnv := ParseYamlFileToMap(filePathEnv)
 		if errEnv != nil {
 			//fmt.Println("open file err = ", errEnv)
-			if do.envFileCanEmpty {
+			if do.envFileCanEmpty && os.IsNotExist(errEnv) {
 				return mapGlob, configEnv, nil
 			} else {
 				return nil, configEnv, errEnv
