@@ -235,24 +235,33 @@ func GetAbsDir(relativePath string) string {
 		return path.Join(dir, relativePath)
 	}
 }
+
 func IsFileExit(file_path string) (bool, error) {
-	_, err := os.Stat(file_path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	} else {
-		return false, err
-	}
-}
-func IsFileExitWithErr(file_path string) (bool, error) {
 	_, err := os.Stat(file_path)
 	if err == nil {
 		return true, nil
 	}
 	return false, err
 }
+
+//func IsFileExit(file_path string) (bool, error) {
+//	_, err := os.Stat(file_path)
+//	if err == nil {
+//		return true, nil
+//	}
+//	if os.IsNotExist(err) {
+//		return false, nil
+//	} else {
+//		return false, err
+//	}
+//}
+//func IsFileExitWithErr(file_path string) (bool, error) {
+//	_, err := os.Stat(file_path)
+//	if err == nil {
+//		return true, nil
+//	}
+//	return false, err
+//}
 
 func MkdirAll(file_path string) (bool, error) {
 	fileExit, errExit := IsFileExit(file_path)
