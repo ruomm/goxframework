@@ -231,6 +231,10 @@ func GetAbsDir(relativePath string) string {
 	} else if strings.HasPrefix(relativePath, "/") || strings.HasPrefix(relativePath, "\\") {
 		return relativePath
 	} else {
+		indexSpec := strings.Index(relativePath, ":")
+		if indexSpec > 0 && indexSpec < 3 {
+			return relativePath
+		}
 		dir := filepath.Dir(os.Args[0])
 		return path.Join(dir, relativePath)
 	}
