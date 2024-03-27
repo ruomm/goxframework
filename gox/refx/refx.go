@@ -122,7 +122,10 @@ func XRefStructCopy(origO interface{}, destO interface{}, options ...XrefOption)
 			continue
 		}
 		cpOpt := resOpt[key]
-		rtVal, transOk := xRef_transOrigToDestValue(key, cpOpt, origValue, value)
+		rtVal, transOk, transErr := xRef_transOrigToDestValue(key, cpOpt, origValue, value, do.checkUnsigned)
+		if transErr != nil {
+			errG = transErr
+		}
 		if !transOk {
 			transFailsKeys = append(transFailsKeys, key)
 		}
@@ -206,7 +209,10 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 			continue
 		}
 		cpOpt := resOpt[key]
-		rtVal, transOk := xRef_transOrigToDestValue(key, cpOpt, origValue, value)
+		rtVal, transOk, transErr := xRef_transOrigToDestValue(key, cpOpt, origValue, value, do.checkUnsigned)
+		if transErr != nil {
+			errG = transErr
+		}
 		if !transOk {
 			transFailsKeys = append(transFailsKeys, key)
 		}
@@ -295,7 +301,10 @@ func XRefHandlerCopy(xrefOrigHandler XrefHander, destO interface{}, options ...X
 			continue
 		}
 		cpOpt := resOpt[key]
-		rtVal, transOk := xRef_transOrigToDestValue(key, cpOpt, origValue, value)
+		rtVal, transOk, transErr := xRef_transOrigToDestValue(key, cpOpt, origValue, value, do.checkUnsigned)
+		if transErr != nil {
+			errG = transErr
+		}
 		if !transOk {
 			transFailsKeys = append(transFailsKeys, key)
 		}
@@ -345,7 +354,7 @@ func xReflect_canXCopy(tagOrigVal string, origNameSpace string) (string, bool) {
 }
 
 // 解析来源字段值为目标待赋值字段
-func xRef_transOrigToDestValue(key string, cpOpt string, origValue interface{}, destValue reflect.Value) (interface{}, bool) {
+func xRef_transOrigToDestValue(key string, cpOpt string, origValue interface{}, destValue reflect.Value, checkUnsigned bool) (interface{}, bool, error) {
 	destTypeOf := destValue.Type()
 	destKind := destTypeOf.Kind()
 	destTypeName := destTypeOf.String()
@@ -364,15 +373,19 @@ func xRef_transOrigToDestValue(key string, cpOpt string, origValue interface{}, 
 	//	fmt.Println(fmt.Sprintf("来源类型:%d-%s,目标类型:%d-%s,Tidy:%t", origKind, origType, destKind, destTypeName, isTidy))
 	//}
 	if xIsIntegerKind(destActualTypeKind) {
-		return xParseToInt(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		return xParseToInt(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy, checkUnsigned)
 	} else if xIsFloatKind(destActualTypeKind) {
-		return xParseToFloat(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		parseVal, parseFlag := xParseToFloat(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		return parseVal, parseFlag, nil
 	} else if destActualTypeKind == reflect.Bool {
-		return xParseToBool(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		parseVal, parseFlag := xParseToBool(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		return parseVal, parseFlag, nil
 	} else if destActualTypeKind == reflect.String {
-		return xParseToString(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		parseVal, parseFlag := xParseToString(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		return parseVal, parseFlag, nil
 	} else if xIsTimeType(destTypeOf.String()) {
-		return xParseToTime(key, origValue, destTypeName, cpOpt, isTidy)
+		parseVal, parseFlag := xParseToTime(key, origValue, destTypeName, cpOpt, isTidy)
+		return parseVal, parseFlag, nil
 	} else {
 		// 目标是切片数组，来源是字符串时候解析字符串为数组
 		if destActualTypeKind == reflect.Slice {
@@ -380,7 +393,7 @@ func xRef_transOrigToDestValue(key string, cpOpt string, origValue interface{}, 
 			actualValue := reflect.ValueOf(origValue)
 			if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
 				if actualValue.IsNil() {
-					return nil, true
+					return nil, true, nil
 				}
 				actualValue = actualValue.Elem()
 			}
@@ -391,7 +404,8 @@ func xRef_transOrigToDestValue(key string, cpOpt string, origValue interface{}, 
 					actualValue = actualValue.Convert(stringType)
 				}
 				viString := actualValue.Interface().(string)
-				return xParseStringToSlice(key, viString, destTypeName, destActualTypeOf.Elem().Kind(), cpOpt)
+				parseVal, parseFlag := xParseStringToSlice(key, viString, destTypeName, destActualTypeOf.Elem().Kind(), cpOpt)
+				return parseVal, parseFlag, nil
 			}
 		}
 
@@ -402,14 +416,14 @@ func xRef_transOrigToDestValue(key string, cpOpt string, origValue interface{}, 
 			if xRef_log {
 				fmt.Println(key + "字段无法赋值，切片错误，目标和来源切片类型不同")
 			}
-			return nil, false
+			return nil, false, nil
 		} else if origType != destTypeName {
 			if xRef_log {
 				fmt.Println(key + "字段无法赋值，结构错误，目标和来源结构类型不同")
 			}
-			return nil, false
+			return nil, false, nil
 		} else {
-			return origValue, true
+			return origValue, true, nil
 		}
 	}
 }

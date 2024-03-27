@@ -45,8 +45,9 @@ type XrefOption struct {
 }
 
 type xrefOptions struct {
-	optTag       string //关联的tag的名称
-	optNameSpace string //关联源的nameSpace
+	optTag        string //关联的tag的名称
+	optNameSpace  string //关联源的nameSpace
+	checkUnsigned bool   //无符号字符串是否严格匹配校验
 }
 
 // 设置关联tag的名称，不设置默认为xref
@@ -60,6 +61,13 @@ func XrefOptTag(tag string) XrefOption {
 func XrefOptNameSpace(nameSpace string) XrefOption {
 	return XrefOption{func(do *xrefOptions) {
 		do.optNameSpace = nameSpace
+	}}
+}
+
+// 设置无符号字符串是否严格匹配校验
+func XrefOptCheckUnsigned(checkUnsigned bool) XrefOption {
+	return XrefOption{func(do *xrefOptions) {
+		do.checkUnsigned = checkUnsigned
 	}}
 }
 

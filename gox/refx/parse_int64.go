@@ -7,6 +7,7 @@
 package refx
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"reflect"
@@ -15,75 +16,94 @@ import (
 	"time"
 )
 
-func xParseToInt(key string, origVal interface{}, destTypeName string, destActualTypeKind reflect.Kind, cpOpt string, isTidy bool) (interface{}, bool) {
-	vi := ParseToInt64(origVal, cpOpt)
+func xParseToInt(key string, origVal interface{}, destTypeName string, destActualTypeKind reflect.Kind, cpOpt string, isTidy bool, checkUnsigned bool) (interface{}, bool, error) {
+	vi, vStr := ParseToInt64(origVal, cpOpt)
 	if vi == nil {
 		if xRef_log {
 			fmt.Println(key + "字段无法赋值，来源字段值无法解析或者为nil。")
 		}
-		return nil, false
+		return nil, false, nil
 	}
 	viInt64 := vi.(int64)
 	if isTidy && viInt64 == 0 {
 		if xRef_log {
 			fmt.Println(key + "字段无需赋值，来源字段值解析后的值为0。")
 		}
-		return nil, true
+		return nil, true, nil
 	}
 	if !strings.HasPrefix(destTypeName, "*") {
-		return vi, true
+		if strings.HasPrefix(destTypeName, "u") || strings.HasPrefix(destTypeName, "U") {
+			return vi, true, validUnsignedString(vStr, checkUnsigned)
+		} else {
+			return vi, true, nil
+		}
 	}
 	if destActualTypeKind == reflect.Int {
 		rtVal := int(viInt64)
-		return &rtVal, true
+		return &rtVal, true, nil
 	} else if destActualTypeKind == reflect.Int8 {
 		rtVal := int8(viInt64)
-		return &rtVal, true
+		return &rtVal, true, nil
 	} else if destActualTypeKind == reflect.Int16 {
 		rtVal := int16(viInt64)
-		return &rtVal, true
+		return &rtVal, true, nil
 	} else if destActualTypeKind == reflect.Int32 {
 		rtVal := int32(viInt64)
-		return &rtVal, true
+		return &rtVal, true, nil
 	} else if destActualTypeKind == reflect.Int64 {
 		rtVal := viInt64
-		return &rtVal, true
+		return &rtVal, true, nil
 	} else if destActualTypeKind == reflect.Uint {
 		rtVal := uint(viInt64)
-		return &rtVal, true
+		return &rtVal, true, validUnsignedString(vStr, checkUnsigned)
 	} else if destActualTypeKind == reflect.Uint8 {
 		rtVal := uint8(viInt64)
-		return &rtVal, true
+		return &rtVal, true, validUnsignedString(vStr, checkUnsigned)
 	} else if destActualTypeKind == reflect.Uint16 {
 		rtVal := uint16(viInt64)
-		return &rtVal, true
+		return &rtVal, true, validUnsignedString(vStr, checkUnsigned)
 	} else if destActualTypeKind == reflect.Uint32 {
 		rtVal := uint32(viInt64)
-		return &rtVal, true
+		return &rtVal, true, validUnsignedString(vStr, checkUnsigned)
 	} else if destActualTypeKind == reflect.Uint64 {
 		rtVal := uint64(viInt64)
-		return &rtVal, true
+		return &rtVal, true, validUnsignedString(vStr, checkUnsigned)
 	} else {
 		if xRef_log {
 			fmt.Println(key + "字段无需赋值，目标指针类型未知。")
 		}
-		return nil, false
+		return nil, false, nil
 	}
 
 }
 
+func validUnsignedString(vStr string, checkUnsigned bool) error {
+	if checkUnsigned {
+		if len(vStr) <= 0 {
+			return nil
+		} else if strings.HasPrefix(vStr, "-") {
+			return errors.New("must be unsigned number")
+		} else {
+			return nil
+		}
+	} else {
+		return nil
+	}
+}
+
 // 转换各种类型为int64，浮点型进行math.Round，字符串进行格式化，时间类型取得毫秒时间戳
-func ParseToInt64(origVal interface{}, cpOpt string) interface{} {
+func ParseToInt64(origVal interface{}, cpOpt string) (interface{}, string) {
 	// 获取真实的数值
 	actualValue := reflect.ValueOf(origVal)
 	if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
 		if actualValue.IsNil() {
-			return nil
+			return nil, ""
 		}
 		actualValue = actualValue.Elem()
 	}
 	actualKind := actualValue.Kind()
 	var vi interface{} = nil
+	var vStr = ""
 	// 判断类型并转换
 	if xIsIntegerKind(actualKind) {
 		int64Type := reflect.TypeOf(int64(0))
@@ -115,6 +135,7 @@ func ParseToInt64(origVal interface{}, cpOpt string) interface{} {
 			actualValue = actualValue.Convert(stringType)
 		}
 		viString := actualValue.Interface().(string)
+		vStr = viString
 		viInt64, err := xTransStringToInt64(viString, cpOpt)
 		if err != nil {
 			viFloat64, errF := strconv.ParseFloat(viString, 64)
@@ -143,5 +164,5 @@ func ParseToInt64(origVal interface{}, cpOpt string) interface{} {
 	} else {
 		vi = nil
 	}
-	return vi
+	return vi, vStr
 }
