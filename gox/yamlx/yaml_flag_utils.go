@@ -37,6 +37,7 @@ func initCMDConfigLite() *CommondConfigs {
 
 func initCMDConfigYsy() *CommondConfigs {
 	cmdConfigs := CommondConfigs{
+		ConfYaml:      flag.String("c", "", "config file name, yaml format.\nnot set use conf.yaml as default"),
 		ProfileActive: flag.String("env", "", "config run environment, will load environment config file. \ndefault is define in config file."),
 		WebBindPort:   flag.Int("p", 0, "config server port.\ndefault is define in config file."),
 	}
