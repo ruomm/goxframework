@@ -225,16 +225,27 @@ func GetCurrentPath() string {
 	return filepath.Dir(os.Args[0])
 }
 
+func IsAbsDir(path string) bool {
+	if len(path) <= 0 {
+		return false
+	} else if strings.HasPrefix(path, "/") || strings.HasPrefix(path, "\\") {
+		return true
+	} else {
+		indexSpec := strings.Index(path, ":")
+		if indexSpec >= 0 && indexSpec < 12 {
+			return true
+		} else {
+			return false
+		}
+	}
+}
+
 func GetAbsDir(relativePath string) string {
-	if relativePath == "" {
+	if len(relativePath) <= 0 {
 		return filepath.Dir(os.Args[0])
-	} else if strings.HasPrefix(relativePath, "/") || strings.HasPrefix(relativePath, "\\") {
+	} else if IsAbsDir(relativePath) {
 		return relativePath
 	} else {
-		indexSpec := strings.Index(relativePath, ":")
-		if indexSpec > 0 && indexSpec < 3 {
-			return relativePath
-		}
 		dir := filepath.Dir(os.Args[0])
 		return path.Join(dir, relativePath)
 	}
