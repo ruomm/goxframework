@@ -37,7 +37,6 @@ func initCMDConfigLite() *CommondConfigs {
 
 func initCMDConfigYsy() *CommondConfigs {
 	cmdConfigs := CommondConfigs{
-		ConfYaml:      flag.String("c", "conf.yaml", "config file name, yaml format."),
 		ProfileActive: flag.String("env", "", "config run environment, will load environment config file. \ndefault is define in config file."),
 		WebBindPort:   flag.Int("p", 0, "config server port.\ndefault is define in config file."),
 	}
@@ -85,9 +84,16 @@ func ParseYamlFileByFlagLite(obj interface{}, options ...YamlxOption) error {
 * 解析yaml配置文件为对象
 * 依据envKey激活环境配置文件，读取环境配置文件和指定的yaml配置文件，环境配置文件的值会覆盖指定的yaml配置文件的值。
  */
-func ParseYamlFileByFlagYsy(obj interface{}, options ...YamlxOption) error {
+func ParseYamlFileByFlagWithPath(filePath string, obj interface{}, options ...YamlxOption) error {
 	cmdCofig := initCMDConfigYsy()
-	err := ParseYamlFileByEnv(*cmdCofig.ConfYaml, "profileActive", *cmdCofig.ProfileActive, obj, options...)
+	confFilePath := *cmdCofig.ConfYaml
+	if len(confFilePath) <= 0 {
+		confFilePath = filePath
+	}
+	if len(confFilePath) <= 0 {
+		confFilePath = "conf.yaml"
+	}
+	err := ParseYamlFileByEnv(confFilePath, "profileActive", *cmdCofig.ProfileActive, obj, options...)
 	if err != nil {
 		panic(fmt.Sprintf("config load error, cause by ParseYamlFileByFlag: %v", err))
 	}
