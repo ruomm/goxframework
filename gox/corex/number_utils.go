@@ -54,6 +54,27 @@ func StrToUInt64(str string) uint64 {
 	return i
 }
 
+func Float64ToStr(floatVal float64, prec int) string {
+	realPrec := -1
+	if prec >= 0 {
+		realPrec = prec
+	}
+	return strconv.FormatFloat(floatVal, 'f', realPrec, 64)
+}
+
+func Float64Format(floatVal float64, prec int) float64 {
+	if prec < 0 {
+		return floatVal
+	}
+	resultVal, _ := strconv.ParseFloat(Float64ToStr(floatVal, prec), 64)
+	return resultVal
+}
+
+func StrToFloat64(str string) float64 {
+	numFloat64, _ := strconv.ParseFloat(str, 64)
+	return numFloat64
+}
+
 func StoreSizeFormat(byteSize int64, prec int) string {
 	realPrec := -1
 	if prec >= 0 {
