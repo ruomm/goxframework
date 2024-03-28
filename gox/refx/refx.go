@@ -29,7 +29,7 @@ snb：字符串转换成int类型时候，true解析为1，false解析为0，字
 z8：字符串转为数字类型时候，以0开头的字符串以8进制进行解析。0x固定以16进制解析。
 
 完整示例如下：
-`xref:"Name,User-UserName,Role-RoleName;bs;tns;tnm;t:sec;tf:2006-01-02 15:04:05;p:2;snb;z8"`
+`xref:"Name,User-UserName,Role-RoleName;bs,tns,tnm,t:sec,tf:2006-01-02 15:04:05,p:2,snb,z8"`
 */
 
 const (
