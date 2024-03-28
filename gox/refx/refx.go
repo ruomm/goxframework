@@ -15,6 +15,23 @@ import (
 	"strings"
 )
 
+/**
+xref可以来源控制
+	`xref:"Name,User-UserName,Role-RoleName"`表示如是来源模型以User开始或结束则从UserName来赋值，来源模型以Role开始或结束则从RoleName来赋值，其他来源从Name来赋值。
+其他控制参数：
+bs：字符串转换为int类型时候按照存储空间模式计算，可以转换kb、mb、gb、tb的单位。
+tns：字符串转换为int类型时候以秒为单位按照时间模式计算，可以转换ms、s、m、h、d、w、mon、y的单位。
+tnm：字符串转换为int类型时候以毫秒为单位按照时间模式计算，可以转换ms、s、m、h、d、w、mon、y的单位。
+t：时间类型和int、float类型相互转换时候的单位设置，默认毫秒，可选参数sec、min、hour、day、mil、mic、nano。
+tf：字符串和时间类型相互转换时候的格式化设置，默认：yyyy-MM-dd HH:mm:ss格式。
+p：Float类型转换成字符串时候保留小数位数，默认不设置。
+snb：字符串转换成int类型时候，true解析为1，false解析为0，字符串转换成boolean类型时候，大于0的解析为true，小于0的解析为false。
+z8：字符串转为数字类型时候，以0开头的字符串以8进制进行解析。0x固定以16进制解析。
+
+完整示例如下：
+`xref:"Name,User-UserName,Role-RoleName;bs;tns;tnm;t:sec;tf:2006-01-02 15:04:05;p:2;snb;z8"`
+*/
+
 const (
 	xRef_AD_Zero_Second = int64(-62135596800)
 	xRef_log            = false

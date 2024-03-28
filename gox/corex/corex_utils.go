@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -64,4 +65,32 @@ func JsonFormatByString(v any) (string, error) {
 		return "", errors.New("json Marshal not support this object")
 	}
 	return string(jsonData), err
+}
+
+func GetLenForAny(i interface{}) int {
+	if i == nil {
+		return 0
+	}
+	vi := reflect.ValueOf(i)
+	viKind := vi.Kind()
+	//chan, func, interface, map, pointer, or slice
+	if viKind == reflect.Slice || viKind == reflect.Pointer || viKind == reflect.Map || viKind == reflect.Interface || viKind == reflect.Func || viKind == reflect.Chan || viKind == reflect.Ptr {
+		if vi.IsNil() {
+			return 0
+		} else {
+			return vi.Len()
+		}
+	} else {
+		return vi.Len()
+	}
+}
+
+func IsNil(i interface{}) bool {
+	vi := reflect.ValueOf(i)
+	viKind := vi.Kind()
+	//chan, func, interface, map, pointer, or slice
+	if viKind == reflect.Slice || viKind == reflect.Pointer || viKind == reflect.Map || viKind == reflect.Interface || viKind == reflect.Func || viKind == reflect.Chan || viKind == reflect.Ptr {
+		return vi.IsNil()
+	}
+	return false
 }
