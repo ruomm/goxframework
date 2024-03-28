@@ -31,8 +31,9 @@ func ToGormMap(gormModel interface{}, selectKeys ...string) (map[string]interfac
 		ignoreFlag := false
 		if subTags != nil && len(subTags) > 0 {
 			for _, subTag := range subTags {
-				if subTag == "-" {
+				if len(subTag) > 0 && strings.HasPrefix(subTag, "-") {
 					ignoreFlag = true
+					break
 				}
 			}
 		}
@@ -82,8 +83,9 @@ func ToGormMapIgnoreMode(gormModel interface{}, ignoreKeys ...string) (map[strin
 		ignoreFlag := false
 		if subTags != nil && len(subTags) > 0 {
 			for _, subTag := range subTags {
-				if subTag == "-" {
+				if len(subTag) > 0 && strings.HasPrefix(subTag, "-") {
 					ignoreFlag = true
+					break
 				}
 			}
 		}
