@@ -13,12 +13,15 @@ import (
 
 // 泛型函数，转换一个类型的Slice到另一个类型的Slice，使用xref库进行转换。
 func XSliceCopy(srcSlice interface{}, destSlice interface{}) error {
-	if nil == srcSlice || nil == destSlice {
-		return errors.New("destSlice and destSlice must not nil")
+	if nil == destSlice {
+		return errors.New("destSlice must not nil")
 	}
 	destValue := reflect.ValueOf(destSlice)
 	if destValue.Kind() != reflect.Ptr && destValue.Elem().Kind() != reflect.Slice {
 		return errors.New("destSlice must be a slice pointer")
+	}
+	if nil == srcSlice {
+		return nil
 	}
 	destSliceElem := destValue.Elem()
 	srcValue := reflect.ValueOf(srcSlice)
@@ -43,12 +46,15 @@ func XSliceCopy(srcSlice interface{}, destSlice interface{}) error {
 
 // 泛型函数，转换一个类型的Slice到另一个类型的Slice，使用xref库进行转换。
 func XSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string) error {
-	if nil == srcSlice || nil == destSlice {
-		return errors.New("destSlice and destSlice must not nil")
+	if nil == destSlice {
+		return errors.New("destSlice must not nil")
 	}
 	destValue := reflect.ValueOf(destSlice)
 	if destValue.Kind() != reflect.Ptr && destValue.Elem().Kind() != reflect.Slice {
 		return errors.New("destSlice must be a slice pointer")
+	}
+	if nil == srcSlice {
+		return nil
 	}
 	destSliceElem := destValue.Elem()
 	srcValue := reflect.ValueOf(srcSlice)
