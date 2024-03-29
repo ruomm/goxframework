@@ -10,6 +10,7 @@ import (
 	"github.com/morrisxyang/xreflect"
 	"reflect"
 	"strings"
+	"time"
 )
 import "errors"
 
@@ -62,6 +63,7 @@ func ToGormMap(gormModel interface{}, selectKeys ...string) (map[string]interfac
 	for key, value := range mapReflectValue {
 		mapresult[key] = value.Interface()
 	}
+	mapresult["UpdatedAt"] = time.Now()
 	return mapresult, nil
 }
 
@@ -109,6 +111,7 @@ func ToGormMapIgnoreMode(gormModel interface{}, ignoreKeys ...string) (map[strin
 	for key, value := range mapReflectValue {
 		mapresult[key] = value.Interface()
 	}
+	mapresult["UpdatedAt"] = time.Now()
 	return mapresult, nil
 }
 
