@@ -42,6 +42,12 @@ type SBDestExt struct {
 	Name  string `xref:"Age;tidy"`
 }
 
+func GenerateOrigStuct() SBOrigExt {
+	sbOrig := SBOrigExt{}
+	sbOrig.UserType = SType(rand.Intn(600000000))
+	sbOrig.Age = SRType(rand2.UintN(10000))
+	return sbOrig
+}
 func GenerateOrigSlice() []SBOrigExt {
 	var sbSlice []SBOrigExt
 	for i := 0; i < 10; i++ {
@@ -53,14 +59,21 @@ func GenerateOrigSlice() []SBOrigExt {
 	return sbSlice
 }
 
-func TestSlice(t *testing.T) {
+func Test0001(t *testing.T) {
+	sbOrig := GenerateOrigStuct()
+	sbDest := SBDestExt{}
+	XRefStructCopy(sbOrig, &sbDest)
+	fmt.Println(sbDest)
+}
+
+func Test0002(t *testing.T) {
 	sbOrigSlice := GenerateOrigSlice()
 	var sbDestSlice []SBDestExt
 	XSliceCopy(sbOrigSlice, &sbDestSlice)
 	fmt.Println(sbDestSlice)
 }
 
-func TestSliceBase(t *testing.T) {
+func Test0003(t *testing.T) {
 	sbOrigSlice := GenerateOrigSlice()
 	var sbDestSlice []time.Time
 	XSliceCopyByKey(sbOrigSlice, &sbDestSlice, "UserType")

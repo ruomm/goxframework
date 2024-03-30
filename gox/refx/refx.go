@@ -429,9 +429,9 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 			continue
 		}
 		// 获取字段Field1的reflect.Value
-		//field := refValue.FieldByName(key)
+		//field := refValue.FieldByName(xParseRefValueKey(key))
 		//field, errFindField := xreflect.Field(refValue, xParseRefValueKey(key))
-		field, errFindField := xreflect.EmbedField(refValue, xParseRefValueKey(key))
+		field, errFindField := xreflect.EmbedField(refValue, key)
 		if errFindField != nil {
 			errG = errFindField
 		}
