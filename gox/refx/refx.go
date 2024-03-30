@@ -428,9 +428,13 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 		if rtVal == nil {
 			continue
 		}
-		//val := refValue.Elem()
 		// 获取字段Field1的reflect.Value
-		field := refValue.FieldByName(key)
+		//field := refValue.FieldByName(key)
+		//field, errFindField := xreflect.Field(refValue, xParseRefValueKey(key))
+		field, errFindField := xreflect.EmbedField(refValue, xParseRefValueKey(key))
+		if errFindField != nil {
+			errG = errFindField
+		}
 		if field.CanSet() {
 			kind := field.Type().Kind()
 			if xIsIntegerKind(kind) {

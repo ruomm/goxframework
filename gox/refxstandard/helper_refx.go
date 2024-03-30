@@ -14,6 +14,20 @@ import (
 	"time"
 )
 
+// 解析XRefValueCopy时候的key值
+func xParseRefValueKey(key string) string {
+	lenKey := len(key)
+	if lenKey <= 0 {
+		return key
+	}
+	indexSpec := strings.LastIndex(key, ".")
+	if indexSpec >= 0 && indexSpec < lenKey-1 {
+		return key[indexSpec+1:]
+	} else {
+		return key
+	}
+}
+
 // 是否tidy
 func XrefTagTidy(tagValue string) bool {
 	return xTagContainKey(tagValue, xRef_key_tidy)
