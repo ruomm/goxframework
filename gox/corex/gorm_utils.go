@@ -140,3 +140,26 @@ func isContainGormKey(fieldName string, fieldKeys ...string) bool {
 	}
 	return containFlag
 }
+
+func ParseConditionMap(conditionMap map[string]interface{}) (string, []interface{}) {
+	conditionKey := ""
+	var conditionArgs []interface{}
+	for keyTemp, value := range conditionMap {
+		key := strings.TrimSpace(keyTemp)
+		if len(key) > 0 {
+			if len(conditionKey) > 0 {
+				conditionKey = conditionKey + " and "
+			}
+			if strings.HasPrefix(key, "(") && strings.HasSuffix(key, ")") {
+				conditionKey = conditionKey + key
+			} else if strings.HasSuffix(key, "=") || strings.HasSuffix(key, ">") || strings.HasSuffix(key, "<") || strings.HasSuffix(key, ">=") || strings.HasSuffix(key, "<=") {
+				conditionKey = conditionKey + key + "?"
+				conditionArgs = append(conditionArgs, value)
+			} else {
+				conditionKey = conditionKey + key + "=?"
+				conditionArgs = append(conditionArgs, value)
+			}
+		}
+	}
+	return conditionKey, conditionArgs
+}
