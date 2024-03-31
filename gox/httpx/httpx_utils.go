@@ -2,6 +2,7 @@ package httpx
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -41,7 +42,7 @@ func DoHttpJson(reqUrl string, httpxMethod string, reqOjb interface{}, result in
 	return xToHttpxResponseJson(resp, result)
 }
 
-func DoHttpPost(postUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
+func DoHttpPost(reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
 	contentType := ""
 	if len(postContentType) > 0 {
 		contentType = postContentType
@@ -49,7 +50,11 @@ func DoHttpPost(postUrl string, postContentType string, postStr string) (*HttpxR
 		contentType = xParseRequestMime(postStr)
 	}
 	// logger.Debug(fmt.Sprintf("Http Post by %v Message of request:", contentType))
-	req, err := http.NewRequest("POST", postUrl, bytes.NewBuffer([]byte(postStr)))
+	var reqIo io.Reader = nil
+	if len(postStr) > 0 {
+		reqIo = bytes.NewBuffer([]byte(postStr))
+	}
+	req, err := http.NewRequest("POST", reqUrl, reqIo)
 	if err != nil {
 		// logger.Error(fmt.Sprintf("Http Post by %v Build NewRequest err: %v", contentType, err.Error()))
 		return nil, err
@@ -64,14 +69,18 @@ func DoHttpPost(postUrl string, postContentType string, postStr string) (*HttpxR
 	return xToHttpxResponse(resp)
 }
 
-func DoHttpPostJson(postUrl string, data interface{}, result interface{}) (*HttpxResponse, error) {
-	jsonData, err := ParseToJSONByte(data)
+func DoHttpPostJson(reqUrl string, data interface{}, result interface{}) (*HttpxResponse, error) {
+	jsonData, err := xParseReqJson(data)
 	if err != nil {
 		// logger.Error("Http Post by application/json Marshal Request Data err:" + err.Error())
 		return nil, err
 	}
 	// logger.Debug("Http Post by application/json Message of request:" + string(jsonData))
-	req, err := http.NewRequest("POST", postUrl, bytes.NewBuffer(jsonData))
+	var reqIo io.Reader = nil
+	if nil != jsonData {
+		reqIo = bytes.NewBuffer(jsonData)
+	}
+	req, err := http.NewRequest("POST", reqUrl, reqIo)
 	if err != nil {
 		// logger.Error("Http Post by application/json Build NewRequest err:" + err.Error())
 		return nil, err
@@ -86,7 +95,7 @@ func DoHttpPostJson(postUrl string, data interface{}, result interface{}) (*Http
 	return xToHttpxResponseJson(resp, result)
 }
 
-func DoHttpPut(postUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
+func DoHttpPut(reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
 	contentType := ""
 	if len(postContentType) > 0 {
 		contentType = postContentType
@@ -94,7 +103,11 @@ func DoHttpPut(postUrl string, postContentType string, postStr string) (*HttpxRe
 		contentType = xParseRequestMime(postStr)
 	}
 	// logger.Debug(fmt.Sprintf("Http Post by %v Message of request:", contentType))
-	req, err := http.NewRequest("PUT", postUrl, bytes.NewBuffer([]byte(postStr)))
+	var reqIo io.Reader = nil
+	if len(postStr) > 0 {
+		reqIo = bytes.NewBuffer([]byte(postStr))
+	}
+	req, err := http.NewRequest("PUT", reqUrl, reqIo)
 	if err != nil {
 		// logger.Error(fmt.Sprintf("Http Post by %v Build NewRequest err: %v", contentType, err.Error()))
 		return nil, err
@@ -109,14 +122,18 @@ func DoHttpPut(postUrl string, postContentType string, postStr string) (*HttpxRe
 	return xToHttpxResponse(resp)
 }
 
-func DoHttpPutJson(postUrl string, data interface{}, result interface{}) (*HttpxResponse, error) {
-	jsonData, err := ParseToJSONByte(data)
+func DoHttpPutJson(reqUrl string, data interface{}, result interface{}) (*HttpxResponse, error) {
+	jsonData, err := xParseReqJson(data)
 	if err != nil {
 		// logger.Error("Http Post by application/json Marshal Request Data err:" + err.Error())
 		return nil, err
 	}
 	// logger.Debug("Http Post by application/json Message of request:" + string(jsonData))
-	req, err := http.NewRequest("PUT", postUrl, bytes.NewBuffer(jsonData))
+	var reqIo io.Reader = nil
+	if nil != jsonData {
+		reqIo = bytes.NewBuffer(jsonData)
+	}
+	req, err := http.NewRequest("PUT", reqUrl, reqIo)
 	if err != nil {
 		// logger.Error("Http Post by application/json Build NewRequest err:" + err.Error())
 		return nil, err
@@ -131,7 +148,7 @@ func DoHttpPutJson(postUrl string, data interface{}, result interface{}) (*Httpx
 	return xToHttpxResponseJson(resp, result)
 }
 
-func DoHttpDelete(postUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
+func DoHttpDelete(reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
 	contentType := ""
 	if len(postContentType) > 0 {
 		contentType = postContentType
@@ -139,7 +156,11 @@ func DoHttpDelete(postUrl string, postContentType string, postStr string) (*Http
 		contentType = xParseRequestMime(postStr)
 	}
 	// logger.Debug(fmt.Sprintf("Http Post by %v Message of request:", contentType))
-	req, err := http.NewRequest("DELETE", postUrl, bytes.NewBuffer([]byte(postStr)))
+	var reqIo io.Reader = nil
+	if len(postStr) > 0 {
+		reqIo = bytes.NewBuffer([]byte(postStr))
+	}
+	req, err := http.NewRequest("DELETE", reqUrl, reqIo)
 	if err != nil {
 		// logger.Error(fmt.Sprintf("Http Post by %v Build NewRequest err: %v", contentType, err.Error()))
 		return nil, err
@@ -154,14 +175,18 @@ func DoHttpDelete(postUrl string, postContentType string, postStr string) (*Http
 	return xToHttpxResponse(resp)
 }
 
-func DoHttpDeleteJson(postUrl string, data interface{}, result interface{}) (*HttpxResponse, error) {
-	jsonData, err := ParseToJSONByte(data)
+func DoHttpDeleteJson(reqUrl string, data interface{}, result interface{}) (*HttpxResponse, error) {
+	jsonData, err := xParseReqJson(data)
 	if err != nil {
 		// logger.Error("Http Post by application/json Marshal Request Data err:" + err.Error())
 		return nil, err
 	}
 	// logger.Debug("Http Post by application/json Message of request:" + string(jsonData))
-	req, err := http.NewRequest("DELETE", postUrl, bytes.NewBuffer(jsonData))
+	var reqIo io.Reader = nil
+	if nil != jsonData {
+		reqIo = bytes.NewBuffer(jsonData)
+	}
+	req, err := http.NewRequest("DELETE", reqUrl, reqIo)
 	if err != nil {
 		// logger.Error("Http Post by application/json Build NewRequest err:" + err.Error())
 		return nil, err

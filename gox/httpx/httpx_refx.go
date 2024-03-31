@@ -177,7 +177,7 @@ func ParseToRequest(reqObj interface{}) (string, []byte, string, string, map[str
 		}
 	}
 	reqMethod, _ := xParseHttpxMethod(reqObj)
-	reqBody, err := xParseReqBody(reqObj)
+	reqBody, err := xParseReqJson(reqObj)
 	if err != nil {
 		return "", nil, "", "", nil, err
 	}
@@ -232,7 +232,10 @@ func xParseHttpxMethod(reqObj interface{}) (string, error) {
 }
 
 // 解析为JSON请求体字符串
-func xParseReqBody(reqObj interface{}) ([]byte, error) {
+func xParseReqJson(reqObj interface{}) ([]byte, error) {
+	if reqObj == nil {
+		return nil, nil
+	}
 	jsonData, err := json.Marshal(reqObj)
 	if err != nil {
 		return nil, err
