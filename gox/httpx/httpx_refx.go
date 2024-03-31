@@ -9,12 +9,18 @@ import (
 	"github.com/ruomm/goxframework/gox/refx"
 	"net/url"
 	"reflect"
+	"sort"
+	"strconv"
 	"strings"
 )
 
 const xRef_log = false
 
-const xRef_tag_key_xurl_param = "xurl_param"
+// const xRef_tag_key_xurl_param = "xurl_param"
+const xRequest_Parse_Param = "xreq_param"
+const xRequest_Parse_Query = "xreq_query"
+const xRequest_Parse_Header = "xreq_header"
+const xRequest_Option_Order = "order"
 
 /*
 *
@@ -80,7 +86,7 @@ func ParseToUrlEncodeString(origO interface{}) (string, error) {
 	resOpt := make(map[string]string)
 	resOrig := make(map[string]string)
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(origO, func(s string, field reflect.StructField, value reflect.Value) bool {
-		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_key_xurl_param)
+		tagXreft, okXreft := field.Tag.Lookup(xRequest_Parse_Query)
 		if !okXreft {
 			return false
 		}
@@ -146,5 +152,384 @@ func ParseToUrlEncodeString(origO interface{}) (string, error) {
 		return "", errG
 	} else {
 		return v.Encode(), errG
+	}
+}
+
+func ParseToRequest(reqObj interface{}) (string, []byte, string, string, map[string]string, error) {
+	if nil == reqObj {
+		//return "", errors.New("XReflectCopy error,source interface is nil")
+		return "", nil, "", "", nil, errors.New("ParseToRequest error,reqObj interface is nil")
+	}
+	reqString, reqStrOk := xParseReqToString(reqObj)
+	if reqStrOk {
+		if len(reqString) <= 0 {
+			return "GET", nil, "", "", nil, nil
+		} else if xIsJsonString(reqString) {
+			return "POST", []byte(reqString), "", "", nil, nil
+		} else if xIsUrlString(reqString) {
+			return "GET", nil, "", reqString, nil, nil
+		} else {
+			if strings.HasPrefix(reqString, "/") {
+				return "GET", nil, reqString, "", nil, nil
+			} else {
+				return "GET", nil, "/" + reqString, "", nil, nil
+			}
+		}
+	}
+	reqMethod, _ := xParseHttpxMethod(reqObj)
+	reqBody, err := xParseReqBody(reqObj)
+	if err != nil {
+		return "", nil, "", "", nil, err
+	}
+
+	reqParam, err := xParseReqParam(reqObj)
+	if err != nil {
+		return "", nil, "", "", nil, err
+	}
+	reqQuery, err := xParseReqQuery(reqObj)
+	if err != nil {
+		return "", nil, "", "", nil, err
+	}
+	reqHeaderMap, err := xParseReqHeaderMap(reqObj)
+	if err != nil {
+		return "", nil, "", "", nil, err
+	}
+	return reqMethod, reqBody, reqParam, reqQuery, reqHeaderMap, nil
+
+}
+
+type HttpxPararmValule struct {
+	Order      string
+	ParamKey   string
+	ParamValue string
+}
+
+// 解析请求参数
+func xParseHttpxMethod(reqObj interface{}) (string, error) {
+	refVals, err := xreflect.CallMethod(reqObj, "HttpxMethod")
+	if err != nil {
+		//return "POST", err
+		return "POST", nil
+	}
+	if len(refVals) <= 0 {
+		return "POST", nil
+	}
+	httpxMethod := ""
+	for _, origVal := range refVals {
+		if origVal.Kind() == reflect.String {
+			httpxMethod = origVal.String()
+		}
+		if len(httpxMethod) > 0 {
+			break
+		}
+	}
+	if len(httpxMethod) <= 0 {
+		return "POST", nil
+	} else {
+		return strings.ToUpper(httpxMethod), nil
+	}
+
+}
+
+// 解析为JSON请求体字符串
+func xParseReqBody(reqObj interface{}) ([]byte, error) {
+	jsonData, err := json.Marshal(reqObj)
+	if err != nil {
+		return nil, err
+	}
+	jsonDataStr := string(jsonData)
+	if len(jsonDataStr) <= 2 {
+		return nil, nil
+	} else {
+		trimJsonStr := strings.TrimSpace(jsonDataStr[1 : len(jsonDataStr)-1])
+		if (len(trimJsonStr)) <= 0 {
+			return nil, nil
+		} else {
+			return jsonData, nil
+		}
+	}
+
+}
+
+// 解析为URI路径字符串
+func xParseReqParam(reqObj interface{}) (string, error) {
+	resOpt := make(map[string]string)
+	resOrig := make(map[string]string)
+	reflectValueMap, errG := xreflect.SelectFieldsDeep(reqObj, func(s string, field reflect.StructField, value reflect.Value) bool {
+		tagXreft, okXreft := field.Tag.Lookup(xRequest_Parse_Param)
+		if !okXreft {
+			return false
+		}
+		// 开始分割目标控制和属性控制
+		subTags := corex.ParseToSubTag(tagXreft)
+		// 解析目标控制
+		urlKey := ""
+		if len(subTags) > 0 {
+			urlKey = subTags[0]
+		}
+		if urlKey == "-" {
+			return false
+		}
+		if urlKey == "" {
+			urlKey = strings.ToLower(s[0:1]) + s[1:len(s)]
+		}
+		resOrig[s] = urlKey
+		// 解析属性控制
+		tagOpt := ""
+		if len(subTags) > 1 {
+			tagOpt = subTags[1]
+		}
+		resOpt[s] = tagOpt
+		if xRef_log {
+			fmt.Println("解析URL参数字段，目标：" + urlKey + "，来源：" + s + "，控制协议：" + tagOpt)
+		}
+		return true
+	})
+	if errG != nil {
+		return "", errG
+	}
+	var paramList []HttpxPararmValule
+	orderInt := 0
+	for key, _ := range reflectValueMap {
+		var srcKey string
+		if resOrig[key] != "" {
+			srcKey = resOrig[key]
+		} else {
+			srcKey = key
+		}
+		srcValue, err := xreflect.EmbedFieldValue(reqObj, key)
+		if err != nil {
+			errG = err
+			continue
+		}
+		if srcValue == nil {
+			continue
+		}
+		cpOpt := resOpt[key]
+		rtVal := refx.ParseToString(srcValue, cpOpt)
+
+		if rtVal == nil {
+			continue
+		} else {
+			rtString := rtVal.(string)
+			if refx.XrefTagTidy(cpOpt) && len(rtString) <= 0 {
+				continue
+			} else {
+				orderString := xTagFindValueByKey(cpOpt, xRequest_Option_Order)
+				if len(orderString) <= 0 {
+					orderString = strconv.Itoa(orderInt)
+					orderInt = orderInt + 1
+				}
+
+				paramList = append(paramList, HttpxPararmValule{
+					Order:      orderString,
+					ParamKey:   srcKey,
+					ParamValue: rtVal.(string),
+				})
+			}
+		}
+	}
+	if paramList == nil || len(paramList) <= 0 {
+		return "", nil
+	}
+	sort.SliceIsSorted(paramList, func(i, j int) bool {
+		iOrder := paramList[i].Order
+		jOrder := paramList[j].Order
+		orderIndex := strings.Compare(iOrder, jOrder)
+		return orderIndex < 0
+	})
+	paramString := ""
+	for _, tmpPararmValule := range paramList {
+		paramString = paramString + "/" + tmpPararmValule.ParamValue
+	}
+	return paramString, nil
+}
+
+// 解析为Query请求字符串
+func xParseReqQuery(reqObj interface{}) (string, error) {
+	resOpt := make(map[string]string)
+	resOrig := make(map[string]string)
+	reflectValueMap, errG := xreflect.SelectFieldsDeep(reqObj, func(s string, field reflect.StructField, value reflect.Value) bool {
+		tagXreft, okXreft := field.Tag.Lookup(xRequest_Parse_Query)
+		if !okXreft {
+			return false
+		}
+		// 开始分割目标控制和属性控制
+		subTags := corex.ParseToSubTag(tagXreft)
+		// 解析目标控制
+		urlKey := ""
+		if len(subTags) > 0 {
+			urlKey = subTags[0]
+		}
+		if urlKey == "-" {
+			return false
+		}
+		if urlKey == "" {
+			urlKey = strings.ToLower(s[0:1]) + s[1:len(s)]
+		}
+		resOrig[s] = urlKey
+		// 解析属性控制
+		tagOpt := ""
+		if len(subTags) > 1 {
+			tagOpt = subTags[1]
+		}
+		resOpt[s] = tagOpt
+		if xRef_log {
+			fmt.Println("解析URL参数字段，目标：" + urlKey + "，来源：" + s + "，控制协议：" + tagOpt)
+		}
+		return true
+	})
+	if errG != nil {
+		return "", errG
+	}
+	v := url.Values{}
+	for key, _ := range reflectValueMap {
+		var srcKey string
+		if resOrig[key] != "" {
+			srcKey = resOrig[key]
+		} else {
+			srcKey = key
+		}
+		srcValue, err := xreflect.EmbedFieldValue(reqObj, key)
+		if err != nil {
+			errG = err
+			continue
+		}
+		if srcValue == nil {
+			continue
+		}
+		cpOpt := resOpt[key]
+		rtVal := refx.ParseToString(srcValue, cpOpt)
+
+		if rtVal == nil {
+			continue
+		} else {
+			rtString := rtVal.(string)
+			if refx.XrefTagTidy(cpOpt) && len(rtString) <= 0 {
+				continue
+			} else {
+				v.Set(srcKey, rtVal.(string))
+			}
+		}
+	}
+	if len(v) <= 0 {
+		return "", errG
+	} else {
+		return v.Encode(), errG
+	}
+}
+
+// 解析为HeaderMap数据
+func xParseReqHeaderMap(reqObj interface{}) (map[string]string, error) {
+	resOpt := make(map[string]string)
+	resOrig := make(map[string]string)
+	reflectValueMap, errG := xreflect.SelectFieldsDeep(reqObj, func(s string, field reflect.StructField, value reflect.Value) bool {
+		tagXreft, okXreft := field.Tag.Lookup(xRequest_Parse_Query)
+		if !okXreft {
+			return false
+		}
+		// 开始分割目标控制和属性控制
+		subTags := corex.ParseToSubTag(tagXreft)
+		// 解析目标控制
+		urlKey := ""
+		if len(subTags) > 0 {
+			urlKey = subTags[0]
+		}
+		if urlKey == "-" {
+			return false
+		}
+		if urlKey == "" {
+			urlKey = strings.ToLower(s[0:1]) + s[1:len(s)]
+		}
+		resOrig[s] = urlKey
+		// 解析属性控制
+		tagOpt := ""
+		if len(subTags) > 1 {
+			tagOpt = subTags[1]
+		}
+		resOpt[s] = tagOpt
+		if xRef_log {
+			fmt.Println("解析URL参数字段，目标：" + urlKey + "，来源：" + s + "，控制协议：" + tagOpt)
+		}
+		return true
+	})
+	if errG != nil {
+		return nil, errG
+	}
+	paramMap := make(map[string]string)
+	for key, _ := range reflectValueMap {
+		var srcKey string
+		if resOrig[key] != "" {
+			srcKey = resOrig[key]
+		} else {
+			srcKey = key
+		}
+		srcValue, err := xreflect.EmbedFieldValue(reqObj, key)
+		if err != nil {
+			errG = err
+			continue
+		}
+		if srcValue == nil {
+			continue
+		}
+		cpOpt := resOpt[key]
+		rtVal := refx.ParseToString(srcValue, cpOpt)
+
+		if rtVal == nil {
+			continue
+		} else {
+			rtString := rtVal.(string)
+			if refx.XrefTagTidy(cpOpt) && len(rtString) <= 0 {
+				continue
+			} else {
+				paramMap[srcKey] = rtVal.(string)
+			}
+		}
+	}
+	if len(paramMap) <= 0 {
+		return nil, errG
+	} else {
+		return paramMap, errG
+	}
+}
+
+func xTagFindValueByKey(tagValue string, key string) string {
+	tagsOptions := corex.ParseTagToOptions(tagValue)
+	if len(tagsOptions) == 0 {
+		return ""
+	}
+	var keyVal string
+	for _, tmpOption := range tagsOptions {
+		if tmpOption.Contains(key) {
+			keyVal = tmpOption.OptionValue(key)
+		}
+	}
+	return keyVal
+}
+
+func xParseReqToString(reqObj interface{}) (string, bool) {
+	origTypeOf := reflect.TypeOf(reqObj)
+	origTypeName := origTypeOf.String()
+	// 目标是字符串类型
+	if origTypeName == "string" {
+		return reqObj.(string), true
+	} else if origTypeName == "*string" {
+		return *(reqObj.(*string)), true
+	} else if origTypeName == "url.Values" {
+		v := reqObj.(url.Values)
+		if len(v) <= 0 {
+			return "", true
+		} else {
+			return v.Encode(), true
+		}
+	} else if origTypeName == "*url.Values" {
+		v := reqObj.(*url.Values)
+		if len(*v) <= 0 {
+			return "", true
+		} else {
+			return v.Encode(), true
+		}
+	} else {
+		return "", false
 	}
 }

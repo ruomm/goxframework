@@ -90,19 +90,70 @@ func xToHttpxResponseJson(resp *http.Response, result interface{}) (*HttpxRespon
 
 }
 
-func xParseRealGetUrl(urlForGet string, urlParams string) string {
-	if len(urlParams) == 0 {
+func xParseRealGetUrl(urlForGet string, urlQueryStr string) string {
+	if len(urlQueryStr) == 0 {
 		return urlForGet
 	} else if len(urlForGet) == 0 {
-		return urlParams
+		return urlQueryStr
 	} else if strings.HasSuffix(urlForGet, "?") {
-		return urlForGet + urlParams
+		return urlForGet + urlQueryStr
 	} else if strings.HasSuffix(urlForGet, "&") {
-		return urlForGet + urlParams
+		return urlForGet + urlQueryStr
 	} else if strings.Contains(urlForGet, "?") {
-		return urlForGet + "&" + urlParams
+		return urlForGet + "&" + urlQueryStr
 	} else {
-		return urlForGet + "?" + urlParams
+		return urlForGet + "?" + urlQueryStr
+	}
+}
+
+func xParseRequestUrl(reqUrl string, reqParamStr string, reqQueryStr string) string {
+	if len(reqUrl) <= 0 {
+		if len(reqParamStr) <= 0 && len(reqQueryStr) <= 0 {
+			return reqUrl
+		} else if len(reqParamStr) <= 0 {
+			return reqQueryStr
+		} else if len(reqQueryStr) <= 0 {
+			return reqParamStr
+		} else {
+			return reqParamStr + "?" + reqQueryStr
+		}
+	} else {
+		lenUrl := len(reqUrl)
+		indexWH := strings.LastIndex(reqUrl, "?")
+		url1 := ""
+		url2 := ""
+		if indexWH < 0 {
+			url1 = reqUrl
+			url2 = ""
+		} else if indexWH == 0 {
+			url1 = ""
+			url2 = reqUrl[1:]
+		} else if indexWH < lenUrl-1 {
+			url1 = reqUrl[0:indexWH]
+			url2 = reqUrl[indexWH+1:]
+		} else {
+			url1 = reqUrl[0:indexWH]
+			url2 = ""
+		}
+		if len(reqParamStr) > 0 {
+			if strings.HasSuffix(url1, "/") {
+				url1 = url1 + reqParamStr[1:]
+			} else {
+				url1 = url1 + reqParamStr
+			}
+		}
+		if len(reqQueryStr) > 0 {
+			if len(url2) > 0 {
+				url2 = url2 + "&" + reqQueryStr
+			} else {
+				url2 = reqQueryStr
+			}
+		}
+		if len(url2) > 0 {
+			return url1 + "?" + url2
+		} else {
+			return url1
+		}
 	}
 }
 
