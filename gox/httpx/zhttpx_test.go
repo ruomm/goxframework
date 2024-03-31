@@ -37,7 +37,7 @@ type CommonResult struct {
 	Data    interface{}            `json:"data,omitempty" newtag:"-"`
 }
 
-func TestS2S(t *testing.T) {
+func TestHttpxDoHttpJson(t *testing.T) {
 	//a := 123456.567
 	//a := true
 	req := ConfigGpuSpecDeleteReq{

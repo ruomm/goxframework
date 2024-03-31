@@ -40,16 +40,16 @@ func ParseTagToXrefNameOption(tag string) (string, string) {
 	if len(tag) == 0 {
 		return "", ""
 	}
-	indexMH := strings.Index(tag, ";")
+	indexFH := strings.Index(tag, ";")
 	indexDH := strings.Index(tag, ",")
-	if indexMH < 0 && indexDH < 0 {
+	if indexFH < 0 && indexDH < 0 {
 		return tag, ""
-	} else if indexMH < 0 {
+	} else if indexFH < 0 {
 		return tag[0:indexDH], tag[indexDH+1:]
 	} else if indexDH < 0 {
-		return tag[0:indexMH], tag[indexMH+1:]
-	} else if indexMH < indexDH {
-		return tag[0:indexMH], tag[indexMH+1:]
+		return tag[0:indexFH], tag[indexFH+1:]
+	} else if indexFH < indexDH {
+		return tag[0:indexFH], tag[indexFH+1:]
 	} else {
 		return tag[0:indexDH], tag[indexDH+1:]
 	}
