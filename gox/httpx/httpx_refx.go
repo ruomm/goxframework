@@ -16,7 +16,6 @@ import (
 
 const xRef_log = false
 
-// const xRef_tag_key_xurl_param = "xurl_param"
 const xRequest_Parse_Param = "xreq_param"
 const xRequest_Parse_Query = "xreq_query"
 const xRequest_Parse_Header = "xreq_header"
@@ -427,7 +426,7 @@ func xParseReqHeaderMap(reqObj interface{}) (map[string]string, error) {
 	resOpt := make(map[string]string)
 	resOrig := make(map[string]string)
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(reqObj, func(s string, field reflect.StructField, value reflect.Value) bool {
-		tagXreft, okXreft := field.Tag.Lookup(xRequest_Parse_Query)
+		tagXreft, okXreft := field.Tag.Lookup(xRequest_Parse_Header)
 		if !okXreft {
 			return false
 		}
