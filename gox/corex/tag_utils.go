@@ -36,23 +36,12 @@ func ParseTagToOptions(tag string) []TagOptions {
 }
 
 // 把tag分割为小功能块的子subTag
-func ParseTagToXrefNameOption(tag string) (string, string) {
+func ParseTagToNameOptionFenHao(tag string) (string, TagOptions) {
 	if len(tag) == 0 {
-		return "", ""
+		return "", TagOptions("")
 	}
-	indexFH := strings.Index(tag, ";")
-	indexDH := strings.Index(tag, ",")
-	if indexFH < 0 && indexDH < 0 {
-		return tag, ""
-	} else if indexFH < 0 {
-		return tag[0:indexDH], tag[indexDH+1:]
-	} else if indexDH < 0 {
-		return tag[0:indexFH], tag[indexFH+1:]
-	} else if indexFH < indexDH {
-		return tag[0:indexFH], tag[indexFH+1:]
-	} else {
-		return tag[0:indexDH], tag[indexDH+1:]
-	}
+	tag, opt, _ := strings.Cut(tag, ";")
+	return tag, TagOptions(opt)
 }
 
 // 把tag分割为小功能块的子subTag

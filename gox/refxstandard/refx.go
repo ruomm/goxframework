@@ -92,7 +92,7 @@ func XRefStructCopy(origO interface{}, destO interface{}, options ...XrefOption)
 			return false
 		}
 		// 开始分割目标控制和属性控制
-		tagOrigVal, tagOpt := corex.ParseTagToXrefNameOption(tagXreft)
+		tagOrigVal, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
 		// 判断是否可以进行复制
 		tagOrig, okCanXref := xReflect_canXCopy(tagOrigVal, origNameSpace)
 		if !okCanXref {
@@ -100,9 +100,9 @@ func XRefStructCopy(origO interface{}, destO interface{}, options ...XrefOption)
 		}
 		resOrig[s] = tagOrig
 		// 解析属性控制
-		resOpt[s] = tagOpt
+		resOpt[s] = string(tagOpt)
 		if xRef_log {
-			fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrig + "，控制协议：" + tagOpt)
+			fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrig + "，控制协议：" + string(tagOpt))
 		}
 		return true
 	})
@@ -176,7 +176,7 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 			return false
 		}
 		// 开始分割目标控制和属性控制
-		tagOrigVal, tagOpt := corex.ParseTagToXrefNameOption(tagXreft)
+		tagOrigVal, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
 		// 判断是否可以进行复制
 		tagOrig, okCanXref := xReflect_canXCopy(tagOrigVal, origNameSpace)
 		if !okCanXref {
@@ -184,9 +184,9 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 		}
 		resOrig[s] = tagOrig
 		// 解析属性控制
-		resOpt[s] = tagOpt
+		resOpt[s] = string(tagOpt)
 		if xRef_log {
-			fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrig + "，控制协议：" + tagOpt)
+			fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrig + "，控制协议：" + string(tagOpt))
 		}
 		return true
 	})
@@ -255,7 +255,7 @@ func XRefHandlerCopy(xrefOrigHandler XrefHander, destO interface{}, options ...X
 			return false
 		}
 		// 开始分割目标控制和属性控制
-		tagOrigVal, tagOpt := corex.ParseTagToXrefNameOption(tagXreft)
+		tagOrigVal, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
 		// 判断是否可以进行复制
 		tagOrig, okCanXref := xReflect_canXCopy(tagOrigVal, origNameSpace)
 		if !okCanXref {
@@ -263,9 +263,9 @@ func XRefHandlerCopy(xrefOrigHandler XrefHander, destO interface{}, options ...X
 		}
 		resOrig[s] = tagOrig
 		// 解析属性控制
-		resOpt[s] = tagOpt
+		resOpt[s] = string(tagOpt)
 		if xRef_log {
-			fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrig + "，控制协议：" + tagOpt)
+			fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrig + "，控制协议：" + string(tagOpt))
 		}
 		return true
 	})
@@ -347,7 +347,7 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 			return false
 		}
 		// 开始分割目标控制和属性控制
-		tagOrigVal, tagOpt := corex.ParseTagToXrefNameOption(tagXreft)
+		tagOrigVal, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
 		// 判断是否可以进行复制
 		tagOrig, okCanXref := xReflect_canXCopy(tagOrigVal, origNameSpace)
 		if !okCanXref {
@@ -355,9 +355,9 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 		}
 		resOrig[s] = tagOrig
 		// 解析属性控制
-		resOpt[s] = tagOpt
+		resOpt[s] = string(tagOpt)
 		if xRef_log {
-			fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrig + "，控制协议：" + tagOpt)
+			fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrig + "，控制协议：" + string(tagOpt))
 		}
 		return true
 	})
