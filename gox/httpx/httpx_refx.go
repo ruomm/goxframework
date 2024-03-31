@@ -90,12 +90,7 @@ func ParseToUrlEncodeString(origO interface{}) (string, error) {
 			return false
 		}
 		// 开始分割目标控制和属性控制
-		subTags := corex.ParseToSubTag(tagXreft)
-		// 解析目标控制
-		urlKey := ""
-		if len(subTags) > 0 {
-			urlKey = subTags[0]
-		}
+		urlKey, tagOpt := corex.ParseTagToXrefNameOption(tagXreft)
 		if urlKey == "-" {
 			return false
 		}
@@ -104,10 +99,6 @@ func ParseToUrlEncodeString(origO interface{}) (string, error) {
 		}
 		resOrig[s] = urlKey
 		// 解析属性控制
-		tagOpt := ""
-		if len(subTags) > 1 {
-			tagOpt = subTags[1]
-		}
 		resOpt[s] = tagOpt
 		if xRef_log {
 			fmt.Println("解析URL参数字段，目标：" + urlKey + "，来源：" + s + "，控制协议：" + tagOpt)
@@ -263,12 +254,7 @@ func xParseReqParam(reqObj interface{}) (string, error) {
 			return false
 		}
 		// 开始分割目标控制和属性控制
-		subTags := corex.ParseToSubTag(tagXreft)
-		// 解析目标控制
-		urlKey := ""
-		if len(subTags) > 0 {
-			urlKey = subTags[0]
-		}
+		urlKey, tagOpt := corex.ParseTagToXrefNameOption(tagXreft)
 		if urlKey == "-" {
 			return false
 		}
@@ -277,10 +263,6 @@ func xParseReqParam(reqObj interface{}) (string, error) {
 		}
 		resOrig[s] = urlKey
 		// 解析属性控制
-		tagOpt := ""
-		if len(subTags) > 1 {
-			tagOpt = subTags[1]
-		}
 		resOpt[s] = tagOpt
 		if xRef_log {
 			fmt.Println("解析URL参数字段，目标：" + urlKey + "，来源：" + s + "，控制协议：" + tagOpt)
@@ -357,12 +339,7 @@ func xParseReqQuery(reqObj interface{}) (string, error) {
 			return false
 		}
 		// 开始分割目标控制和属性控制
-		subTags := corex.ParseToSubTag(tagXreft)
-		// 解析目标控制
-		urlKey := ""
-		if len(subTags) > 0 {
-			urlKey = subTags[0]
-		}
+		urlKey, tagOpt := corex.ParseTagToXrefNameOption(tagXreft)
 		if urlKey == "-" {
 			return false
 		}
@@ -371,10 +348,6 @@ func xParseReqQuery(reqObj interface{}) (string, error) {
 		}
 		resOrig[s] = urlKey
 		// 解析属性控制
-		tagOpt := ""
-		if len(subTags) > 1 {
-			tagOpt = subTags[1]
-		}
 		resOpt[s] = tagOpt
 		if xRef_log {
 			fmt.Println("解析URL参数字段，目标：" + urlKey + "，来源：" + s + "，控制协议：" + tagOpt)
@@ -431,12 +404,7 @@ func xParseReqHeaderMap(reqObj interface{}) (map[string]string, error) {
 			return false
 		}
 		// 开始分割目标控制和属性控制
-		subTags := corex.ParseToSubTag(tagXreft)
-		// 解析目标控制
-		urlKey := ""
-		if len(subTags) > 0 {
-			urlKey = subTags[0]
-		}
+		urlKey, tagOpt := corex.ParseTagToXrefNameOption(tagXreft)
 		if urlKey == "-" {
 			return false
 		}
@@ -445,10 +413,6 @@ func xParseReqHeaderMap(reqObj interface{}) (map[string]string, error) {
 		}
 		resOrig[s] = urlKey
 		// 解析属性控制
-		tagOpt := ""
-		if len(subTags) > 1 {
-			tagOpt = subTags[1]
-		}
 		resOpt[s] = tagOpt
 		if xRef_log {
 			fmt.Println("解析URL参数字段，目标：" + urlKey + "，来源：" + s + "，控制协议：" + tagOpt)

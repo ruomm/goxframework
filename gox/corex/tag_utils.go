@@ -36,6 +36,26 @@ func ParseTagToOptions(tag string) []TagOptions {
 }
 
 // 把tag分割为小功能块的子subTag
+func ParseTagToXrefNameOption(tag string) (string, string) {
+	if len(tag) == 0 {
+		return "", ""
+	}
+	indexMH := strings.Index(tag, ";")
+	indexDH := strings.Index(tag, ",")
+	if indexMH < 0 && indexDH < 0 {
+		return tag, ""
+	} else if indexMH < 0 {
+		return tag[0:indexDH], tag[indexDH+1:]
+	} else if indexDH < 0 {
+		return tag[0:indexMH], tag[indexMH+1:]
+	} else if indexMH < indexDH {
+		return tag[0:indexMH], tag[indexMH+1:]
+	} else {
+		return tag[0:indexDH], tag[indexDH+1:]
+	}
+}
+
+// 把tag分割为小功能块的子subTag
 func ParseToSubTag(tag string) []string {
 	if len(tag) == 0 {
 		return nil
