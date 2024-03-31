@@ -28,17 +28,8 @@ func ToGormMap(gormModel interface{}, selectKeys ...string) (map[string]interfac
 			return false
 		}
 		// 开始分割目标控制和属性控制
-		subTags := ParseToSubTag(tagGorm)
-		ignoreFlag := false
-		if subTags != nil && len(subTags) > 0 {
-			for _, subTag := range subTags {
-				if len(subTag) > 0 && strings.HasPrefix(subTag, "-") {
-					ignoreFlag = true
-					break
-				}
-			}
-		}
-		if ignoreFlag {
+		subTag, _ := ParseTagToNameOptionFenHao(tagGorm)
+		if len(subTag) > 0 && strings.HasPrefix(subTag, "-") {
 			return false
 		}
 		// 判断是否需要选定特定字段
@@ -81,17 +72,8 @@ func ToGormMapIgnoreMode(gormModel interface{}, ignoreKeys ...string) (map[strin
 			return false
 		}
 		// 开始分割目标控制和属性控制
-		subTags := ParseToSubTag(tagGorm)
-		ignoreFlag := false
-		if subTags != nil && len(subTags) > 0 {
-			for _, subTag := range subTags {
-				if len(subTag) > 0 && strings.HasPrefix(subTag, "-") {
-					ignoreFlag = true
-					break
-				}
-			}
-		}
-		if ignoreFlag {
+		subTag, _ := ParseTagToNameOptionFenHao(tagGorm)
+		if len(subTag) > 0 && strings.HasPrefix(subTag, "-") {
 			return false
 		}
 		// 排除部分字段
