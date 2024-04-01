@@ -131,7 +131,9 @@ func ParseToUrlEncodeString(origO interface{}) (string, error) {
 			continue
 		} else {
 			rtString := rtVal.(string)
-			if refx.XrefTagTidy(cpOpt) && len(rtString) <= 0 {
+			// if refx.XrefTagTidy(cpOpt) && len(rtString) <= 0 {
+			// 修订为空字符串跳过参数获取
+			if len(rtString) <= 0 {
 				continue
 			} else {
 				v.Set(srcKey, rtVal.(string))
@@ -296,7 +298,9 @@ func xParseReqParam(reqObj interface{}) (string, error) {
 			continue
 		} else {
 			rtString := rtVal.(string)
-			if refx.XrefTagTidy(cpOpt) && len(rtString) <= 0 {
+			// if refx.XrefTagTidy(cpOpt) && len(rtString) <= 0 {
+			// 修订为空字符串跳过参数获取
+			if len(rtString) <= 0 {
 				continue
 			} else {
 				orderString := xTagFindValueByKey(cpOpt, xRequest_Option_Order)
@@ -380,7 +384,9 @@ func xParseReqQuery(reqObj interface{}) (string, error) {
 			continue
 		} else {
 			rtString := rtVal.(string)
-			if refx.XrefTagTidy(cpOpt) && len(rtString) <= 0 {
+			// if refx.XrefTagTidy(cpOpt) && len(rtString) <= 0 {
+			// 修订为空字符串跳过参数获取
+			if len(rtString) <= 0 {
 				continue
 			} else {
 				v.Set(srcKey, rtVal.(string))
@@ -445,7 +451,9 @@ func xParseReqHeaderMap(reqObj interface{}) (map[string]string, error) {
 			continue
 		} else {
 			rtString := rtVal.(string)
-			if refx.XrefTagTidy(cpOpt) && len(rtString) <= 0 {
+			// if refx.XrefTagTidy(cpOpt) && len(rtString) <= 0 {
+			// 修订为空字符串跳过参数获取
+			if len(rtString) <= 0 {
 				continue
 			} else {
 				paramMap[srcKey] = rtVal.(string)
