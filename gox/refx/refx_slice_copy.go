@@ -35,6 +35,8 @@ func XSliceCopy(srcSlice interface{}, destSlice interface{}) error {
 	// 如果目标切片容量不足，则扩展其容量
 	if destSliceElem.Cap() < srcSliceValue.Len() {
 		destSliceElem.Set(reflect.MakeSlice(destSliceElem.Type(), srcSliceValue.Len(), srcSliceValue.Len()))
+	} else if srcSliceValue.Len() == 0 {
+		destSliceElem.Set(reflect.MakeSlice(destSliceElem.Type(), 0, 0))
 	}
 	destSliceElem.SetLen(srcSliceValue.Len())
 	var errG error = nil
@@ -82,6 +84,8 @@ func XSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string, op
 	// 如果目标切片容量不足，则扩展其容量
 	if destSliceElem.Cap() < srcSliceValue.Len() {
 		destSliceElem.Set(reflect.MakeSlice(destSliceElem.Type(), srcSliceValue.Len(), srcSliceValue.Len()))
+	} else if srcSliceValue.Len() == 0 {
+		destSliceElem.Set(reflect.MakeSlice(destSliceElem.Type(), 0, 0))
 	}
 	destSliceElem.SetLen(srcSliceValue.Len())
 	var errG error = nil
