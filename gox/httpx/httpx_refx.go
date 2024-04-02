@@ -14,12 +14,14 @@ import (
 	"strings"
 )
 
-const xRef_log = false
-
-const xRequest_Parse_Param = "xreq_param"
-const xRequest_Parse_Query = "xreq_query"
-const xRequest_Parse_Header = "xreq_header"
-const xRequest_Option_Order = "order"
+const (
+	xRef_log                 = false
+	xRequest_Parse_Param     = "xreq_param"
+	xRequest_Parse_Query     = "xreq_query"
+	xRequest_Parse_Header    = "xreq_header"
+	xRequest_Option_Order    = "order"
+	xRequest_Option_Response = "resp"
+)
 
 /*
 *
@@ -414,6 +416,10 @@ func xParseReqHeaderMap(reqObj interface{}) (map[string]string, error) {
 		if urlKey == "-" {
 			return false
 		}
+		if xTagContainKey(string(tagOpt), xRequest_Option_Response) {
+			// 如是响应的字段信息则不设置请求返回
+			return false
+		}
 		if urlKey == "" {
 			urlKey = strings.ToLower(s[0:1]) + s[1:len(s)]
 		}
@@ -465,6 +471,10 @@ func xParseReqHeaderMap(reqObj interface{}) (map[string]string, error) {
 	} else {
 		return paramMap, errG
 	}
+}
+
+func xTagContainKey(tagValue string, key string) bool {
+	return corex.TagOptions(tagValue).Contains(key)
 }
 
 func xTagFindValueByKey(tagValue string, key string) string {
