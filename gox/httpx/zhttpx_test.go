@@ -12,7 +12,7 @@ import (
 )
 
 type ConfigGpuSpecDeleteReq struct {
-	GpuSpecId uint `json:"-" xreq_param:"id;tmp:1,dd=5,order=66,as'" validate:"min=1" xvalid_error:"GPU规格编号必须填写，且必须是正整数"`
+	GpuSpecId uint `json:"-" xreq_param:"id;order=66'" validate:"min=1" xvalid_error:"GPU规格编号必须填写，且必须是正整数"`
 	//GpuSpecName string `json:"gpuSpecName" validate:"min=1,max=64" xvalid_error:"GPU规格名称必须填写，长度1-64位字符"`
 	GpuBrand   string `json:"-" xreq_query:"gpuBrand" validate:"min=1,max=32" xvalid_error:"GPU品牌必须填写，长度1-32位字符"`
 	GpuModel   string `json:"-" xreq_header:"gpuModel" validate:"min=1,max=32" xvalid_error:"GPU型号必须填写，长度1-32位字符"`
