@@ -57,7 +57,7 @@ const (
 
 // key目标字段的key值，origKey源字段的key值
 // 返回需要往目标里面注入的值和时候有错误发生
-type XrefHander func(origKey string, key string) (interface{}, error)
+type XrefHander func(origKey string, key string, cpOpt string) (interface{}, error)
 
 /*
 *
@@ -281,7 +281,7 @@ func XRefHandlerCopy(xrefOrigHandler XrefHander, destO interface{}, options ...X
 			origKey = key
 		}
 
-		origValue, tmpErr01 := xrefOrigHandler(origKey, key)
+		origValue, tmpErr01 := xrefOrigHandler(origKey, key, resOpt[key])
 		if tmpErr01 != nil {
 			transFailsKeys = append(transFailsKeys, key)
 			errG = tmpErr01
