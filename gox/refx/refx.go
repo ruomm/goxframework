@@ -538,32 +538,13 @@ func xRef_transOrigToDestValue(key string, cpOpt string, origValue interface{}, 
 }
 
 func xTagContainKey(tagValue string, key string) bool {
-	tagsOptions := corex.ParseTagToOptions(tagValue)
-	if len(tagsOptions) == 0 {
-		return false
-	}
-	keyContain := false
-	for _, tmpOption := range tagsOptions {
-		if tmpOption.Contains(key) {
-			keyContain = true
-			break
-		}
-	}
-	return keyContain
+	return corex.TagOptions(tagValue).Contains(key)
 }
+
 func xTagFindValueByKey(tagValue string, key string) string {
-	tagsOptions := corex.ParseTagToOptions(tagValue)
-	if len(tagsOptions) == 0 {
-		return ""
-	}
-	var keyVal string
-	for _, tmpOption := range tagsOptions {
-		if tmpOption.Contains(key) {
-			keyVal = tmpOption.OptionValue(key)
-		}
-	}
-	return keyVal
+	return corex.TagOptions(tagValue).OptionValue(key)
 }
+
 func xIsIntegerKind(kind reflect.Kind) bool {
 	if kind == reflect.Int || kind == reflect.Int8 || kind == reflect.Int16 || kind == reflect.Int32 || kind == reflect.Int64 ||
 		kind == reflect.Uint || kind == reflect.Uint8 || kind == reflect.Uint16 || kind == reflect.Uint32 || kind == reflect.Uint64 {

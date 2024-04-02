@@ -468,17 +468,7 @@ func xParseReqHeaderMap(reqObj interface{}) (map[string]string, error) {
 }
 
 func xTagFindValueByKey(tagValue string, key string) string {
-	tagsOptions := corex.ParseTagToOptions(tagValue)
-	if len(tagsOptions) == 0 {
-		return ""
-	}
-	var keyVal string
-	for _, tmpOption := range tagsOptions {
-		if tmpOption.Contains(key) {
-			keyVal = tmpOption.OptionValue(key)
-		}
-	}
-	return keyVal
+	return corex.TagOptions(tagValue).OptionValue(key)
 }
 
 func xParseReqToString(reqObj interface{}) (string, bool) {

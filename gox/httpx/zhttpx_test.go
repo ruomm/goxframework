@@ -12,11 +12,11 @@ import (
 )
 
 type ConfigGpuSpecDeleteReq struct {
-	GpuSpecId uint `json:"-" xreq_param:"id" validate:"min=1" xvalid_error:"GPU规格编号必须填写，且必须是正整数"`
+	GpuSpecId uint `json:"-" xreq_param:"id;tmp:1,dd=5,order=66,as'" validate:"min=1" xvalid_error:"GPU规格编号必须填写，且必须是正整数"`
 	//GpuSpecName string `json:"gpuSpecName" validate:"min=1,max=64" xvalid_error:"GPU规格名称必须填写，长度1-64位字符"`
 	GpuBrand   string `json:"-" xreq_query:"gpuBrand" validate:"min=1,max=32" xvalid_error:"GPU品牌必须填写，长度1-32位字符"`
 	GpuModel   string `json:"-" xreq_header:"gpuModel" validate:"min=1,max=32" xvalid_error:"GPU型号必须填写，长度1-32位字符"`
-	CardMemory int    `json:"-" xreq_param:"cardMemory" validate:"min=1,max=10000" xvalid_error:"显存大小必须填写，范围1-10000G"`
+	CardMemory int    `json:"-" xreq_param:"cardMemory;order=58" validate:"min=1,max=10000" xvalid_error:"显存大小必须填写，范围1-10000G"`
 	Memory     int    `json:"-" xreq_query:"memory" validate:"min=1,max=10000" xvalid_error:"内存大小必须填写，范围1-10000G"`
 	Memory2    int    `json:"-" xreq_header:"memory2" validate:"min=1,max=10000" xvalid_error:"内存大小必须填写，范围1-10000G"`
 }
