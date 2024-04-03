@@ -79,3 +79,9 @@ func Test0003(t *testing.T) {
 	XSliceCopyByKey(sbOrigSlice, &sbDestSlice, "UserType")
 	fmt.Println(sbDestSlice)
 }
+func Test0005(t *testing.T) {
+	sbOrigSlice := GenerateOrigSlice()
+	var sbDestMap map[string]int
+	XSliceCopyToMap(sbOrigSlice, &sbDestMap, "UserType", "Age")
+	fmt.Println(sbDestMap)
+}

@@ -8,6 +8,7 @@ package refxstandard
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 )
 
@@ -238,4 +239,178 @@ func oldXSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string)
 		}
 	}
 	return errG
+}
+
+// 泛型函数，转换一个类型的Slice到另一个类型的Map，使用xref库进行转换。
+func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, valueTag string, optionTags ...string) error {
+	if nil == destMap {
+		return errors.New("destSlice must not nil")
+	}
+	cpOpt := ""
+	if len(optionTags) > 0 {
+		for _, tmp := range optionTags {
+			if len(tmp) <= 0 {
+				continue
+			}
+			if len(cpOpt) > 0 {
+				cpOpt = cpOpt + ","
+			}
+			cpOpt = cpOpt + tmp
+		}
+	}
+	//isTidy := xTagContainKey(cpOpt, xRef_key_tidy)
+	checkUnsigned := xTagContainKey(cpOpt, xRef_key_unsigned)
+	destMapValue := reflect.ValueOf(destMap)
+	if destMapValue.Kind() != reflect.Ptr && destMapValue.Elem().Kind() != reflect.Map {
+		return errors.New("destSlice must be a slice pointer")
+	}
+	if nil == srcSlice {
+		return nil
+	}
+	destMapElem := destMapValue.Elem()
+	// 获取map的键(key)类型
+
+	keyType := reflect.TypeOf(destMapElem.Interface()).Key().Kind()
+	keyTypeName := reflect.TypeOf(destMapElem.Interface()).Key().Name()
+
+	// 获取map的值(value)类型
+	valueType := reflect.TypeOf(destMapElem.Interface()).Elem().Kind()
+	valueTypeName := reflect.TypeOf(destMapElem.Interface()).Elem().String()
+
+	srcSliceValue := reflect.ValueOf(srcSlice)
+	if srcSliceValue.Kind() != reflect.Slice {
+		return errors.New("srcSlice must be a slice")
+	}
+	destMapElem.Set(reflect.MakeMap(destMapElem.Type()))
+
+	var errG error = nil
+	for i := 0; i < srcSliceValue.Len(); i++ {
+		keyItem := srcSliceValue.Index(i).FieldByName(keyTag)
+		keyItemValue := keyItem.Interface()
+		keyRtValue, keyTransOk, keyTransErr := xRefMap_transOrigToDestValue(valueTag, cpOpt, keyItemValue, keyType, keyTypeName, checkUnsigned)
+		if keyTransErr != nil {
+			errG = keyTransErr
+		}
+		if !keyTransOk {
+			errG = errors.New("XSliceCopyByKey excute failed")
+		}
+		if keyRtValue == nil {
+			continue
+		}
+		valItem := srcSliceValue.Index(i).FieldByName(valueTag)
+		valItemValue := valItem.Interface()
+		valRtValue, valueTransOk, valueTransErr := xRefMap_transOrigToDestValue(valueTag, cpOpt, valItemValue, valueType, valueTypeName, checkUnsigned)
+		if valueTransErr != nil {
+			errG = valueTransErr
+		}
+		if !valueTransOk {
+			errG = errors.New("XSliceCopyByKey excute failed")
+		}
+		// 赋值
+		destMapElem.SetMapIndex(reflect.ValueOf(xCopyToMapTypeTrans(keyType, keyRtValue)), reflect.ValueOf(xCopyToMapTypeTrans(valueType, valRtValue)))
+	}
+	return errG
+}
+
+// 解析来源字段值为目标待赋值字段
+func xRefMap_transOrigToDestValue(key string, cpOpt string, origValue interface{}, destActualTypeKind reflect.Kind, destTypeName string, checkUnsigned bool) (interface{}, bool, error) {
+
+	isTidy := xTagContainKey(cpOpt, xRef_key_tidy)
+	//if xRef_log {
+	//	fmt.Println(fmt.Sprintf("来源类型:%d-%s,目标类型:%d-%s,Tidy:%t", origKind, origType, destKind, destTypeName, isTidy))
+	//}
+	if xIsIntegerKind(destActualTypeKind) {
+		return xParseToInt(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy, checkUnsigned)
+	} else if xIsFloatKind(destActualTypeKind) {
+		parseVal, parseFlag := xParseToFloat(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		return parseVal, parseFlag, nil
+	} else if destActualTypeKind == reflect.Bool {
+		parseVal, parseFlag := xParseToBool(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		return parseVal, parseFlag, nil
+	} else if destActualTypeKind == reflect.String {
+		parseVal, parseFlag := xParseToString(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
+		return parseVal, parseFlag, nil
+	} else if xIsTimeType(destTypeName) {
+		parseVal, parseFlag := xParseToTime(key, origValue, destTypeName, cpOpt, isTidy)
+		return parseVal, parseFlag, nil
+	} else {
+		// 目标是切片数组，来源是字符串时候解析字符串为数组
+		if destActualTypeKind == reflect.Slice {
+			// 获取真实的数值
+			actualValue := reflect.ValueOf(origValue)
+			if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
+				if actualValue.IsNil() {
+					return nil, true, nil
+				}
+				actualValue = actualValue.Elem()
+			}
+			actualKind := actualValue.Kind()
+			if actualKind == reflect.String {
+				stringType := reflect.TypeOf("")
+				if stringType != actualValue.Type() {
+					actualValue = actualValue.Convert(stringType)
+				}
+				viString := actualValue.Interface().(string)
+				parseVal, parseFlag := xParseStringToSlice(key, viString, destTypeName, destActualTypeKind, cpOpt)
+				return parseVal, parseFlag, nil
+			}
+		}
+
+		origTypeOf := reflect.TypeOf(origValue)
+		origKind := origTypeOf.Kind()
+		origType := origTypeOf.String()
+		if origKind != destActualTypeKind {
+			if xRef_log {
+				fmt.Println(key + "字段无法赋值，切片错误，目标和来源切片类型不同")
+			}
+			return nil, false, nil
+		} else if origType != destTypeName {
+			if xRef_log {
+				fmt.Println(key + "字段无法赋值，结构错误，目标和来源结构类型不同")
+			}
+			return nil, false, nil
+		} else {
+			return origValue, true, nil
+		}
+	}
+}
+
+func xCopyToMapTypeTrans(destActualTypeKind reflect.Kind, vi interface{}) interface{} {
+	if nil == vi {
+		return nil
+	}
+	if destActualTypeKind == reflect.Int {
+		viInt64 := vi.(int64)
+		return int(viInt64)
+	} else if destActualTypeKind == reflect.Int8 {
+		viInt64 := vi.(int64)
+		return int8(viInt64)
+	} else if destActualTypeKind == reflect.Int16 {
+		viInt64 := vi.(int64)
+		return int16(viInt64)
+	} else if destActualTypeKind == reflect.Int32 {
+		viInt64 := vi.(int64)
+		return int32(viInt64)
+	} else if destActualTypeKind == reflect.Int64 {
+		viInt64 := vi.(int64)
+		return viInt64
+	} else if destActualTypeKind == reflect.Uint {
+		viInt64 := vi.(int64)
+		return uint(viInt64)
+	} else if destActualTypeKind == reflect.Uint8 {
+		viInt64 := vi.(int64)
+		return uint8(viInt64)
+	} else if destActualTypeKind == reflect.Uint16 {
+		viInt64 := vi.(int64)
+		return uint16(viInt64)
+	} else if destActualTypeKind == reflect.Uint32 {
+		viInt64 := vi.(int64)
+		return uint32(viInt64)
+	} else if destActualTypeKind == reflect.Uint64 {
+		viInt64 := vi.(int64)
+		return uint64(viInt64)
+	} else {
+		return vi
+	}
+
 }
