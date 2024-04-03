@@ -128,3 +128,44 @@ func TimeToFileName(pTime *time.Time, filehead string, filetype string, fileTime
 	dataStr := TimeFormatByString(timeLayout, timeFile)
 	return filehead + dataStr + filetype
 }
+
+/*
+*
+判断是否闰年
+*/
+func IsLeapyear(year int) bool {
+	if year%4 == 0 && year%100 != 0 {
+		return true
+	} else if year%400 == 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+// 获取一个月有多少天
+func GetDayCountByMonth(year int, month int) int {
+	daysnumberinmonth := 30
+	if month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12 {
+		daysnumberinmonth = 31
+	} else if month == 4 || month == 6 || month == 9 || month == 11 {
+		daysnumberinmonth = 30
+	} else if month == 2 {
+		if IsLeapyear(year) {
+			daysnumberinmonth = 29
+		} else {
+			daysnumberinmonth = 28
+		}
+	}
+	return daysnumberinmonth
+}
+
+// 判断是否一个月的最右一天
+func IsLastDayInMonth(year int, month int, day int) bool {
+	daysnumberinmonth := GetDayCountByMonth(year, month)
+	if day >= daysnumberinmonth {
+		return true
+	} else {
+		return false
+	}
+}
