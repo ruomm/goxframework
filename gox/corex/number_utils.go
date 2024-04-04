@@ -40,6 +40,10 @@ func Int64ToStr(i int64) string {
 	return strconv.FormatInt(i, 10)
 }
 
+func Int64ToStrFill(i int64, len_total int) string {
+	return FillStringLeft(strconv.FormatInt(i, 10), "0", len_total)
+}
+
 func StrToInt64(str string) int64 {
 	i, _ := strconv.ParseInt(str, 10, 64)
 	return i
@@ -47,6 +51,10 @@ func StrToInt64(str string) int64 {
 
 func Uint64ToStr(i uint64) string {
 	return strconv.FormatUint(i, 10)
+}
+
+func Uint64ToStrFill(i uint64, len_total int) string {
+	return FillStringLeft(strconv.FormatUint(i, 10), "0", len_total)
 }
 
 func StrToUInt64(str string) uint64 {
