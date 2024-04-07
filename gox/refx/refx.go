@@ -452,7 +452,8 @@ func xReflect_canXCopy(tagOrigVal string, origNameSpace string) (string, bool) {
 				cpEnable = true
 			}
 		} else if lenVList == 2 && len(origNameSpace) > 0 {
-			if len(subVList[0]) > 0 && (strings.HasSuffix(origNameSpace, subVList[0]) || strings.HasPrefix(origNameSpace, subVList[0])) {
+			//if len(subVList[0]) > 0 && strings.Contains(origNameSpace, subVList[0])(strings.HasSuffix(origNameSpace, subVList[0]) || strings.HasPrefix(origNameSpace, subVList[0])) {
+			if len(subVList[0]) > 0 && strings.Contains(origNameSpace, subVList[0]) {
 				cpEnable = true
 				cpOrigKey = subVList[1]
 				break

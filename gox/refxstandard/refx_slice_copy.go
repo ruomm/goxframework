@@ -17,7 +17,7 @@ const (
 )
 
 // 泛型函数，转换一个类型的Slice到另一个类型的Slice，使用xref库进行转换。
-func XSliceCopy(srcSlice interface{}, destSlice interface{}) error {
+func XSliceCopy(srcSlice interface{}, destSlice interface{}, options ...XrefOption) error {
 	if nil == destSlice {
 		return errors.New("destSlice must not nil")
 	}
@@ -43,7 +43,7 @@ func XSliceCopy(srcSlice interface{}, destSlice interface{}) error {
 	var errG error = nil
 	for i := 0; i < srcSliceValue.Len(); i++ {
 		destValue := destSliceElem.Index(i)
-		err, _ := XRefValueCopy(srcSliceValue.Index(i).Interface(), destValue)
+		err, _ := XRefValueCopy(srcSliceValue.Index(i).Interface(), destValue, options...)
 		if err != nil {
 			errG = err
 		}
