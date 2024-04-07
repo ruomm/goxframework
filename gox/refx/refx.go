@@ -442,7 +442,7 @@ func xReflect_canXCopy(tagOrigVal string, origNameSpace string) (string, bool) {
 		if tagOrigItem == "" {
 			continue
 		}
-		subVList := strings.Split(tagOrigItem, "-")
+		subVList := strings.Split(tagOrigItem, ":")
 		lenVList := len(subVList)
 		if lenVList == 0 {
 			continue
