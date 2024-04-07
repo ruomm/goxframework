@@ -49,7 +49,7 @@ func initCMDConfigYsy() *CommondConfigs {
 * 解析yaml配置文件为对象
 * 依据envKey激活环境配置文件，读取环境配置文件和指定的yaml配置文件，环境配置文件的值会覆盖指定的yaml配置文件的值。
  */
-func ParseYamlFileByFlag(obj interface{}, options ...YamlxOption) error {
+func ParseYamlFileByFlag(obj interface{}, options ...YamlxOption) (string, error) {
 	cmdCofig := initCMDConfig()
 	err := ParseYamlFileByEnv(*cmdCofig.ConfYaml, "profileActive", *cmdCofig.ProfileActive, obj, options...)
 	if err != nil {
@@ -59,7 +59,7 @@ func ParseYamlFileByFlag(obj interface{}, options ...YamlxOption) error {
 	if errXcp != nil {
 		panic(fmt.Sprintf("config load error, cause by XReflectCopy:", err))
 	} else {
-		return nil
+		return *cmdCofig.ConfYaml, nil
 	}
 }
 
@@ -67,17 +67,17 @@ func ParseYamlFileByFlag(obj interface{}, options ...YamlxOption) error {
 * 解析yaml配置文件为对象
 * 依据envKey激活环境配置文件，读取环境配置文件和指定的yaml配置文件，环境配置文件的值会覆盖指定的yaml配置文件的值。
  */
-func ParseYamlFileByFlagLite(obj interface{}, options ...YamlxOption) error {
+func ParseYamlFileByFlagLite(obj interface{}, options ...YamlxOption) (string, error) {
 	cmdCofig := initCMDConfigLite()
 	err := ParseYamlFileByEnv(*cmdCofig.ConfYaml, "profileActive", *cmdCofig.ProfileActive, obj, options...)
 	if err != nil {
-		panic(fmt.Sprintf("config load error, cause by ParseYamlFileByFlag: %v", err))
+		panic(fmt.Sprintf("config load error, cause by ParseYamlFileByFlagLite: %v", err))
 	}
 	errXcp, _ := refx.XRefStructCopy(cmdCofig, obj)
 	if errXcp != nil {
 		panic(fmt.Sprintf("config load error, cause by XReflectCopy:", err))
 	} else {
-		return nil
+		return *cmdCofig.ConfYaml, nil
 	}
 }
 
@@ -85,7 +85,7 @@ func ParseYamlFileByFlagLite(obj interface{}, options ...YamlxOption) error {
 * 解析yaml配置文件为对象
 * 依据envKey激活环境配置文件，读取环境配置文件和指定的yaml配置文件，环境配置文件的值会覆盖指定的yaml配置文件的值。
  */
-func ParseYamlFileByFlagWithPath(filePath string, obj interface{}, options ...YamlxOption) error {
+func ParseYamlFileByFlagWithPath(filePath string, obj interface{}, options ...YamlxOption) (string, error) {
 	cmdCofig := initCMDConfigYsy()
 	confFilePath := *cmdCofig.ConfYaml
 	if len(confFilePath) <= 0 {
@@ -96,12 +96,12 @@ func ParseYamlFileByFlagWithPath(filePath string, obj interface{}, options ...Ya
 	}
 	err := ParseYamlFileByEnv(confFilePath, "profileActive", *cmdCofig.ProfileActive, obj, options...)
 	if err != nil {
-		panic(fmt.Sprintf("config load error, cause by ParseYamlFileByFlag: %v", err))
+		panic(fmt.Sprintf("config load error, cause by ParseYamlFileByFlagWithPath: %v", err))
 	}
 	errXcp, _ := refx.XRefStructCopy(cmdCofig, obj)
 	if errXcp != nil {
 		panic(fmt.Sprintf("config load error, cause by XReflectCopy:", err))
 	} else {
-		return nil
+		return confFilePath, nil
 	}
 }
