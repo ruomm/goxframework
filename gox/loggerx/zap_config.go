@@ -4,7 +4,7 @@
  * @create 2024/1/19 16:38
  * @version 1.0
  */
-package logger
+package loggerx
 
 type LogConfigs struct {
 	Level        string `xref:"Level"`
