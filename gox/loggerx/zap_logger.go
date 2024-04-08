@@ -1,9 +1,8 @@
-package loggerx
+package logger
 
 import (
 	"errors"
 	"fmt"
-	"github.com/ruomm/goxframework/gox/corex"
 	"github.com/ruomm/goxframework/gox/refx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -11,15 +10,19 @@ import (
 	"os"
 	"path"
 	"runtime"
-	"strconv"
 	"strings"
 )
 
-var Logger *zap.Logger
-var rootDirPath string
-var rootDirLength int
-var serviceField zap.Field
-var instanceField zap.Field
+type LoggerX struct {
+	ZapLogger   *zap.Logger
+	Development bool
+}
+
+// var Logger *zap.Logger
+var Logger *LoggerX
+
+var workPath string = ""
+var lenWorkPath int = 0
 
 type XCallerSkipHandler func(file string, line int) int
 
@@ -28,17 +31,10 @@ var xCallerSkipHandler XCallerSkipHandler = nil
 func ConfigCallerSkipHandler(handler XCallerSkipHandler) {
 	xCallerSkipHandler = handler
 }
-func InitLogger(logConfig interface{}, callerSkipHandler XCallerSkipHandler) error {
-	// 获取当前文件绝对路径，可以减少路径长度
-	//var thisPath = "logger/zap_logger.go"
-	//_, file, _, _ := runtime.Caller(0)
-	//if len(file) > len(thisPath) {
-	//	rootDirLength = len(file) - len(thisPath)
-	//	rootDirPath = file[0:rootDirLength]
-	//} else {
-	//	rootDirLength = 0
-	//	rootDirPath = ""
-	//}
+func InitLogger(logConfig interface{}, workDirPath string) error {
+	workPath = workDirPath
+	lenWorkPath = len(workPath)
+	//加载配置文件
 	logConfigInit := LogConfigs{}
 	errG, transFailsKeys := refx.XRefStructCopy(logConfig, &logConfigInit)
 	if errG != nil {
@@ -47,12 +43,16 @@ func InitLogger(logConfig interface{}, callerSkipHandler XCallerSkipHandler) err
 	if len(transFailsKeys) > 0 {
 		return errors.New("logger config init err, some field config err:" + strings.Join(transFailsKeys, ","))
 	}
-	xCallerSkipHandler = callerSkipHandler
-	rootDirPath = corex.GetCurrentPath()
-	rootDirLength = len(rootDirPath)
-	serviceField = zap.String("service", logConfigInit.ServiceName)
-	instanceField = zap.String("instance", logConfigInit.InstanceName)
-	//initFields := getInitFields(&logConfigInit)
+	//xCallerSkipHandler = callerSkipHandler
+	//serviceField = zap.String("service", logConfigInit.ServiceName)
+	//if len(logConfigInit.InstanceName) > 0 {
+	//	zapField := zap.String("instance", logConfigInit.InstanceName)
+	//	instanceField = &zapField
+	//} else {
+	//	instanceField = nil
+	//}
+	// 开始配置文件
+	initFields := getInitFields(&logConfigInit)
 	encoder := getLogEncoder()
 	writer := getLogWriter(&logConfigInit)
 	level := getLogLevel(&logConfigInit)
@@ -60,16 +60,27 @@ func InitLogger(logConfig interface{}, callerSkipHandler XCallerSkipHandler) err
 	caller := zap.AddCaller()
 	zap.AddCallerSkip(1)
 	// 开启文件及行号
-	//development := zap.Development()
+	development := zap.Development()
 	// 构造日志
-	//Logger = zap.New(core, caller, development, zap.Fields(initFields...))
+	zapLogger := zap.New(core, caller, development, zap.Fields(initFields...))
+	// 构造日志
 	//Logger = zap.New(core, caller, zap.Fields(initFields...))
-	Logger = zap.New(core, caller)
+	//Logger = zap.New(core, caller)
+	//Logger = zapLogger
+	Logger = &LoggerX{
+		zapLogger,
+		true,
+	}
 	return nil
 }
 
 func getLogWriter(logConfig *LogConfigs) zapcore.WriteSyncer {
-	fileName := fmt.Sprintf("./logs/%s-%s.log", logConfig.ServiceName, logConfig.InstanceName)
+	fileName := ""
+	if len(logConfig.InstanceName) > 0 {
+		fileName = fmt.Sprintf("./logs/%s-%s.log", logConfig.ServiceName, logConfig.InstanceName)
+	} else {
+		fileName = fmt.Sprintf("./logs/%s.log", logConfig.ServiceName)
+	}
 	lumberJackLogger := &lumberjack.Logger{
 		Filename:   fileName,
 		MaxSize:    logConfig.MaxSize,
@@ -127,32 +138,77 @@ func getInitFields(logConfig *LogConfigs) (fields []zap.Field) {
 	if len(logConfig.InstanceName) == 0 {
 		logConfig.InstanceName, _ = os.Hostname()
 	}
-	fields = append(fields, zap.String("instance", logConfig.InstanceName))
+	if len(logConfig.InstanceName) > 0 {
+		fields = append(fields, zap.String("instance", logConfig.InstanceName))
+	}
 	return fields
 }
 
-func Info(message string, fields ...zap.Field) {
-	callerFields := getCallerInfoForLog()
-	fields = append(fields, callerFields...)
-	Logger.Info(message, fields...)
+func (looger LoggerX) Log(lvl zapcore.Level, msg string, fields ...zap.Field) {
+	if looger.Development {
+		callerFields := getCallerInfoForLog()
+		fields = append(fields, callerFields...)
+	}
+	looger.ZapLogger.Log(lvl, msg, fields...)
 }
-func Debug(message string, fields ...zap.Field) {
-	callerFields := getCallerInfoForLog()
-	fields = append(fields, callerFields...)
-	Logger.Debug(message, fields...)
-}
-func Error(message string, fields ...zap.Field) {
-	callerFields := getCallerInfoForLog()
-	fields = append(fields, callerFields...)
-	Logger.Error(message, fields...)
-}
-func Warn(message string, fields ...zap.Field) {
-	callerFields := getCallerInfoForLog()
-	fields = append(fields, callerFields...)
-	Logger.Warn(message, fields...)
-}
-func getCallerInfoForLog() (callerFields []zap.Field) {
 
+func (looger LoggerX) Debug(message string, fields ...zap.Field) {
+	if looger.Development {
+		callerFields := getCallerInfoForLog()
+		fields = append(fields, callerFields...)
+	}
+	looger.ZapLogger.Debug(message, fields...)
+}
+
+func (looger LoggerX) Info(message string, fields ...zap.Field) {
+	if looger.Development {
+		callerFields := getCallerInfoForLog()
+		fields = append(fields, callerFields...)
+	}
+	looger.ZapLogger.Info(message, fields...)
+}
+
+func (looger LoggerX) Warn(message string, fields ...zap.Field) {
+	if looger.Development {
+		callerFields := getCallerInfoForLog()
+		fields = append(fields, callerFields...)
+	}
+	looger.ZapLogger.Warn(message, fields...)
+}
+
+func (looger LoggerX) Error(message string, fields ...zap.Field) {
+	if looger.Development {
+		callerFields := getCallerInfoForLog()
+		fields = append(fields, callerFields...)
+	}
+	looger.ZapLogger.Error(message, fields...)
+}
+
+func (looger LoggerX) DPanic(message string, fields ...zap.Field) {
+	if looger.Development {
+		callerFields := getCallerInfoForLog()
+		fields = append(fields, callerFields...)
+	}
+	looger.ZapLogger.DPanic(message, fields...)
+}
+
+func (looger LoggerX) Panic(message string, fields ...zap.Field) {
+	if looger.Development {
+		callerFields := getCallerInfoForLog()
+		fields = append(fields, callerFields...)
+	}
+	looger.ZapLogger.Panic(message, fields...)
+}
+
+func (looger LoggerX) Fatal(message string, fields ...zap.Field) {
+	if looger.Development {
+		callerFields := getCallerInfoForLog()
+		fields = append(fields, callerFields...)
+	}
+	looger.ZapLogger.Fatal(message, fields...)
+}
+
+func getCallerInfoForLog() (callerFields []zap.Field) {
 	pc, file, line, ok := runtime.Caller(2) // 回溯两层，拿到写日志的调用方的函数信息
 	if nil != xCallerSkipHandler {
 		callSkip := xCallerSkipHandler(file, line)
@@ -163,15 +219,44 @@ func getCallerInfoForLog() (callerFields []zap.Field) {
 	if !ok {
 		return
 	}
-	var realFile string
-	if rootDirLength > 0 && len(file) > rootDirLength {
-		realFile = file[rootDirLength:]
-	} else {
-		realFile = file
-	}
+	var realFile = parseRealFile(file)
 	funcName := runtime.FuncForPC(pc).Name()
 	funcName = path.Base(funcName) //Base函数返回路径的最后一个元素，只保留函数名
 	//callerFields = append(callerFields, zap.String("func", funcName), zap.String("file", realFile), zap.Int("line", line))
-	callerFields = append(callerFields, serviceField, instanceField, zap.String("func", funcName), zap.String("lineNo", realFile+":"+strconv.Itoa(line)))
+	//callerFields = append(callerFields, initFields...)
+	callerFields = append(callerFields, zap.String("func", funcName), zap.String("file", realFile), zap.Int("lineNo", line))
 	return
+}
+
+func parseRealFile(filePath string) string {
+	lenFile := len(filePath)
+	if lenFile <= 0 {
+		return filePath
+	}
+	//Users/qx/go/pkg/mod/gitlab.idr.ai/turing/charging-bill.git@v0.0.0-20240407094215-5b376be23fed/logger/zap_logger.go
+	indexAt := strings.Index(filePath, "@v")
+	if indexAt > 0 && indexAt < lenFile {
+		tmpFilePath := filePath[0:indexAt]
+		indexSpec01 := strings.LastIndex(tmpFilePath, "/")
+		indexSpec02 := strings.LastIndex(tmpFilePath, "\\")
+		indexSepc := -1
+		if indexSpec01 >= indexSpec02 {
+			indexSepc = indexSpec01
+		} else {
+			indexSepc = indexSpec02
+		}
+		if indexSepc >= 0 {
+			return filePath[indexSepc+1:]
+		} else {
+			return filePath
+		}
+	} else if lenWorkPath > 0 {
+		if strings.HasPrefix(filePath, workPath) {
+			return filePath[lenWorkPath:]
+		} else {
+			return filePath
+		}
+	} else {
+		return filePath
+	}
 }
