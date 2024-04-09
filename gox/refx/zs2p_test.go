@@ -23,7 +23,7 @@ type OrigS2P struct {
 
 type DestS2P struct {
 	Vint     *int       `xref:"Orig;tidy" json:""`
-	Vint8    *int8      `xref:"Orig;tidy" json:""`
+	Vint8    *int8      `xref:"Orig;tidy,mt:TransMethodExaple" json:""`
 	Vint16   *int16     `xref:"Orig;tidy" json:""`
 	Vint32   *int32     `xref:"Orig;tidy" json:""`
 	Vint64   *int64     `xref:"Orig;tidy" json:""`
@@ -37,6 +37,10 @@ type DestS2P struct {
 	Vstring  *string    `xref:"Orig;tidy" json:""`
 	Vbool    *bool      `xref:"Orig;tidy" json:""`
 	VTime    *time.Time `xref:"Orig;tidy" json:""`
+}
+
+func (d DestS2P) TransMethodExaple(orig time.Time) int {
+	return 456
 }
 
 func TestS2P(t *testing.T) {

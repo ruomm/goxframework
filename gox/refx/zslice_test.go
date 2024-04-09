@@ -38,8 +38,12 @@ type SBDest struct {
 
 type SBDestExt struct {
 	SBDest
-	Role2 SType  `xref:"SBOrigExt:UserType;tidy"`
+	Role2 SType  `xref:"SBOrigExt:UserType;tidy,mt:TransMethodExaple"`
 	Name  string `xref:"dBOrigfasd:Age;tidy"`
+}
+
+func (d SBDestExt) TransMethodExaple(orig SType) int {
+	return 546
 }
 
 func GenerateOrigStuct() SBOrigExt {
@@ -77,7 +81,7 @@ func Test0002(t *testing.T) {
 func Test0003(t *testing.T) {
 	sbOrigSlice := GenerateOrigSlice()
 	var sbDestSlice []time.Time
-	XSliceCopyByKey(sbOrigSlice, &sbDestSlice, "UserType")
+	XSliceCopyByKey(sbOrigSlice, &sbDestSlice, "UserType", "tidy,mt:TransMethodExaple")
 	fmt.Println(sbDestSlice)
 }
 func Test0005(t *testing.T) {

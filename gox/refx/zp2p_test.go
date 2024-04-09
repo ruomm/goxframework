@@ -7,7 +7,6 @@
 package refx
 
 import (
-	"errors"
 	"fmt"
 	"github.com/ruomm/goxframework/gox/corex"
 	"reflect"
@@ -25,7 +24,7 @@ type OrigP2P struct {
 type UserT int
 type DestP2P struct {
 	Vint     *reflect.Kind `xref:"Orig;tidy" json:""`
-	Vint8    *int8         `xref:"Orig;tidy" json:""`
+	Vint8    *int8         `xref:"Orig;tidy,mt:TransMethodExaple,mv" json:""`
 	Vint16   *int16        `xref:"Orig;tidy" json:""`
 	Vint32   *int32        `xref:"Orig;tidy" json:""`
 	Vint64   *int64        `xref:"Orig;tidy" json:""`
@@ -39,6 +38,10 @@ type DestP2P struct {
 	Vstring  *string       `xref:"Orig;tidy" json:""`
 	Vbool    *bool         `xref:"Orig;tidy,snb" json:""`
 	VTime    *time.Time    `xref:"Orig;tidy" json:""`
+}
+
+func (d DestP2P) TransMethodExaple(orig string) int {
+	return 456
 }
 
 func TestP2P(t *testing.T) {
@@ -60,18 +63,18 @@ func TestP2P(t *testing.T) {
 	dest := DestP2P{
 		//Vint: &a,
 	}
-	//XRefStructCopy(orig, &dest)
-	//	XRefMapCopy(origMap, &dest)
-	origHandler := XrefHander(func(origKey string, key string, cpOpt string) (interface{}, error) {
-		origValue, ok := origMap[origKey]
-		if ok {
-			return origValue, nil
-		} else {
-			return nil, errors.New("不存在此字段")
-		}
-
-	})
-	XRefHandlerCopy(origHandler, &dest)
+	XRefStructCopy(orig, &dest)
+	//XRefMapCopy(origMap, &dest)
+	//origHandler := XrefHander(func(origKey string, key string, cpOpt string) (interface{}, error) {
+	//	origValue, ok := origMap[origKey]
+	//	if ok {
+	//		return origValue, nil
+	//	} else {
+	//		return nil, errors.New("不存在此字段")
+	//	}
+	//
+	//})
+	//XRefHandlerCopy(origHandler, &dest)
 
 	jsonStr, _ := corex.JsonFormatByString(dest)
 	fmt.Println(jsonStr)

@@ -8,7 +8,9 @@ package refxstandard
 
 import (
 	"errors"
+	"github.com/morrisxyang/xreflect"
 	"github.com/ruomm/goxframework/gox/corex"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -248,4 +250,36 @@ func xTransTimeToInt64(pTime *time.Time, optStr string) int64 {
 	} else {
 		return pTime.UnixMilli()
 	}
+}
+
+// 来源方法转换赋值
+func xParseOrigValueByMethod(cpOpt string, origVal interface{}, destO interface{}) (interface{}, error) {
+	method_trans := xTagFindValueByKey(cpOpt, xRef_key_method_trans)
+	if len(method_trans) <= 0 {
+		return origVal, nil
+	}
+	actualValue := reflect.ValueOf(origVal)
+	if xTagContainKey(cpOpt, xRef_key_method_trans_value_mode) {
+		if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
+			if actualValue.IsNil() {
+				return nil, errors.New("字段无需赋值，来源字段值为nil，来源字段转换方法无法执行。")
+			}
+			actualValue = actualValue.Elem()
+		}
+	}
+	callResultValues, err := xreflect.CallMethod(destO, method_trans, actualValue.Interface())
+	if err != nil {
+		return nil, errors.New("字段无法赋值，来源字段转换方法执行错误。")
+	}
+	if callResultValues == nil || len(callResultValues) <= 0 {
+		return nil, errors.New("字段无需赋值，来源字段转换方法无有效值返回。")
+	}
+	actualDestValue := callResultValues[0]
+	if actualDestValue.Kind() == reflect.Pointer || actualDestValue.Kind() == reflect.Interface {
+		if actualDestValue.IsNil() {
+			return nil, errors.New("字段无需赋值，来源字段值为nil，来源字段转换方法无法执行。")
+		}
+		actualDestValue = actualDestValue.Elem()
+	}
+	return actualDestValue.Interface(), nil
 }

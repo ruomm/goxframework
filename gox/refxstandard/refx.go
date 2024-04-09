@@ -17,7 +17,7 @@ import (
 
 /**
 xref可以来源控制
-	`xref:"Name,User-UserName,Role-RoleName"`表示如是来源模型以User开始或结束则从UserName来赋值，来源模型以Role开始或结束则从RoleName来赋值，其他来源从Name来赋值。
+	`xref:"Name,User:UserName,Role:RoleName"`表示如是来源模型以User开始或结束则从UserName来赋值，来源模型以Role开始或结束则从RoleName来赋值，其他来源从Name来赋值。
 其他控制参数：
 bs：字符串转换为int类型时候按照存储空间模式计算，可以转换kb、mb、gb、tb的单位。
 tns：字符串转换为int类型时候以秒为单位按照时间模式计算，可以转换ms、s、m、h、d、w、mon、y的单位。
@@ -27,9 +27,11 @@ tf：字符串和时间类型相互转换时候的格式化设置，默认：yyy
 p：Float类型转换成字符串时候保留小数位数，默认不设置。
 snb：字符串转换成int类型时候，true解析为1，false解析为0，字符串转换成boolean类型时候，大于0的解析为true，小于0的解析为false。
 z8：字符串转为数字类型时候，以0开头的字符串以8进制进行解析。0x固定以16进制解析。
+mt：定义字段转换方法，可以使用转换方法赋值
+mv：定义字段转换方法时候是否使用value模式
 
 完整示例如下：
-`xref:"Name,User-UserName,Role-RoleName;bs,tns,tnm,t:sec,tf:2006-01-02 15:04:05,p:2,snb,z8"`
+`xref:"Name,User:UserName,Role:RoleName;bs,tns,tnm,t:sec,tf:2006-01-02 15:04:05,p:2,snb,z8,mt:TransMethodInt,mv"`
 */
 
 const (
@@ -41,14 +43,16 @@ const (
 
 	xRef_time_layout = "2006-01-02 15:04:05"
 
-	xRef_key_time_t             = "t"
-	xRef_key_bytesize           = "bs"
-	xRef_key_timenumber_seconds = "tns"
-	xRef_key_timenumber_millis  = "tnm"
-	xRef_key_zero_to_8          = "z8"
-	xRef_key_string_bool_number = "snb"
-	xRef_key_time_tf            = "tf"
-	xRef_key_number_point       = "p"
+	xRef_key_time_t                  = "t"
+	xRef_key_bytesize                = "bs"
+	xRef_key_timenumber_seconds      = "tns"
+	xRef_key_timenumber_millis       = "tnm"
+	xRef_key_zero_to_8               = "z8"
+	xRef_key_string_bool_number      = "snb"
+	xRef_key_time_tf                 = "tf"
+	xRef_key_number_point            = "p"
+	xRef_key_method_trans            = "mt"
+	xRef_key_method_trans_value_mode = "mv"
 
 	// 如是omitempty参数存在，来源的数字类型的0、bool类型的false、字符串类型的空、时间类型的0或负数不会赋值的目标里面
 	xRef_key_tidy        = "tidy"
@@ -131,6 +135,18 @@ func XRefStructCopy(origO interface{}, destO interface{}, options ...XrefOption)
 			continue
 		}
 		cpOpt := resOpt[key]
+		method_trans := xTagFindValueByKey(cpOpt, xRef_key_method_trans)
+		if len(method_trans) > 0 {
+			origValueByMethod, errByMethod := xParseOrigValueByMethod(cpOpt, origValue, destO)
+			if errByMethod != nil {
+				if xRef_log {
+					fmt.Println(key + errByMethod.Error())
+				}
+				continue
+			} else {
+				origValue = origValueByMethod
+			}
+		}
 		rtVal, transOk, transErr := xRef_transOrigToDestValue(key, cpOpt, origValue, value, do.checkUnsigned)
 		if transErr != nil {
 			errG = transErr
@@ -202,7 +218,7 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 			origKey = key
 		}
 
-		origValue, ok := origMap[origKey]
+		origValueStr, ok := origMap[origKey]
 		if !ok {
 			if xRef_log {
 				fmt.Println(key + "字段无需赋值，来源字段值为空。")
@@ -210,6 +226,20 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 			continue
 		}
 		cpOpt := resOpt[key]
+		var origValue interface{}
+		origValue = origValueStr
+		method_trans := xTagFindValueByKey(cpOpt, xRef_key_method_trans)
+		if len(method_trans) > 0 {
+			origValueByMethod, errByMethod := xParseOrigValueByMethod(cpOpt, origValue, destO)
+			if errByMethod != nil {
+				if xRef_log {
+					fmt.Println(key + errByMethod.Error())
+				}
+				continue
+			} else {
+				origValue = origValueByMethod
+			}
+		}
 		rtVal, transOk, transErr := xRef_transOrigToDestValue(key, cpOpt, origValue, value, do.checkUnsigned)
 		if transErr != nil {
 			errG = transErr
@@ -294,6 +324,18 @@ func XRefHandlerCopy(xrefOrigHandler XrefHander, destO interface{}, options ...X
 			continue
 		}
 		cpOpt := resOpt[key]
+		method_trans := xTagFindValueByKey(cpOpt, xRef_key_method_trans)
+		if len(method_trans) > 0 {
+			origValueByMethod, errByMethod := xParseOrigValueByMethod(cpOpt, origValue, destO)
+			if errByMethod != nil {
+				if xRef_log {
+					fmt.Println(key + errByMethod.Error())
+				}
+				continue
+			} else {
+				origValue = origValueByMethod
+			}
+		}
 		rtVal, transOk, transErr := xRef_transOrigToDestValue(key, cpOpt, origValue, value, do.checkUnsigned)
 		if transErr != nil {
 			errG = transErr
@@ -386,6 +428,18 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 			continue
 		}
 		cpOpt := resOpt[key]
+		method_trans := xTagFindValueByKey(cpOpt, xRef_key_method_trans)
+		if len(method_trans) > 0 {
+			origValueByMethod, errByMethod := xParseOrigValueByMethod(cpOpt, origValue, refValue.Interface())
+			if errByMethod != nil {
+				if xRef_log {
+					fmt.Println(key + errByMethod.Error())
+				}
+				continue
+			} else {
+				origValue = origValueByMethod
+			}
+		}
 		rtVal, transOk, transErr := xRef_transOrigToDestValue(key, cpOpt, origValue, value, do.checkUnsigned)
 		if transErr != nil {
 			errG = transErr

@@ -24,7 +24,7 @@ type OrigS2S struct {
 }
 
 type DestS2S struct {
-	Vint     int       `xref:"Orig;tidy" json:""`
+	Vint     int       `xref:"Orig;tidy,mt:TransMethodExaple" json:""`
 	Vint8    int8      `xref:"Orig;tidy" json:""`
 	Vint16   int16     `xref:"Orig;tidy" json:""`
 	Vint32   int32     `xref:"Orig;tidy" json:""`
@@ -41,6 +41,10 @@ type DestS2S struct {
 	VTime    time.Time `xref:"Orig;tidy" json:""`
 	Obyte    byte      `xref:"Obyte;tidy" json:""`
 	Obytes   []byte    `xref:"Obytes;tidy" json:""`
+}
+
+func (d DestS2S) TransMethodExaple(orig time.Time) int {
+	return 456
 }
 
 func TestS2S(t *testing.T) {
