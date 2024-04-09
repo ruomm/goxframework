@@ -137,7 +137,7 @@ func XRefStructCopy(origO interface{}, destO interface{}, options ...XrefOption)
 		cpOpt := resOpt[key]
 		method_trans := xTagFindValueByKey(cpOpt, xRef_key_method_trans)
 		if len(method_trans) > 0 {
-			origValueByMethod, errByMethod := xParseOrigValueByMethod(cpOpt, origValue, destO)
+			origValueByMethod, errByMethod := xParseOrigValueByMethod(method_trans, cpOpt, origValue, destO)
 			if errByMethod != nil {
 				if xRef_log {
 					fmt.Println(key + errByMethod.Error())
@@ -230,7 +230,7 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 		origValue = origValueStr
 		method_trans := xTagFindValueByKey(cpOpt, xRef_key_method_trans)
 		if len(method_trans) > 0 {
-			origValueByMethod, errByMethod := xParseOrigValueByMethod(cpOpt, origValue, destO)
+			origValueByMethod, errByMethod := xParseOrigValueByMethod(method_trans, cpOpt, origValue, destO)
 			if errByMethod != nil {
 				if xRef_log {
 					fmt.Println(key + errByMethod.Error())
@@ -326,7 +326,7 @@ func XRefHandlerCopy(xrefOrigHandler XrefHander, destO interface{}, options ...X
 		cpOpt := resOpt[key]
 		method_trans := xTagFindValueByKey(cpOpt, xRef_key_method_trans)
 		if len(method_trans) > 0 {
-			origValueByMethod, errByMethod := xParseOrigValueByMethod(cpOpt, origValue, destO)
+			origValueByMethod, errByMethod := xParseOrigValueByMethod(method_trans, cpOpt, origValue, destO)
 			if errByMethod != nil {
 				if xRef_log {
 					fmt.Println(key + errByMethod.Error())
@@ -430,7 +430,7 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 		cpOpt := resOpt[key]
 		method_trans := xTagFindValueByKey(cpOpt, xRef_key_method_trans)
 		if len(method_trans) > 0 {
-			origValueByMethod, errByMethod := xParseOrigValueByMethod(cpOpt, origValue, refValue.Interface())
+			origValueByMethod, errByMethod := xParseOrigValueByMethod(method_trans, cpOpt, origValue, refValue.Interface())
 			if errByMethod != nil {
 				if xRef_log {
 					fmt.Println(key + errByMethod.Error())

@@ -253,11 +253,7 @@ func xTransTimeToInt64(pTime *time.Time, optStr string) int64 {
 }
 
 // 来源方法转换赋值
-func xParseOrigValueByMethod(cpOpt string, origVal interface{}, destO interface{}) (interface{}, error) {
-	method_trans := xTagFindValueByKey(cpOpt, xRef_key_method_trans)
-	if len(method_trans) <= 0 {
-		return origVal, nil
-	}
+func xParseOrigValueByMethod(method_trans string, cpOpt string, origVal interface{}, destO interface{}) (interface{}, error) {
 	actualValue := reflect.ValueOf(origVal)
 	if xTagContainKey(cpOpt, xRef_key_method_trans_value_mode) {
 		if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
