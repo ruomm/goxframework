@@ -81,12 +81,12 @@ func Test0002(t *testing.T) {
 func Test0003(t *testing.T) {
 	sbOrigSlice := GenerateOrigSlice()
 	var sbDestSlice []time.Time
-	XSliceCopyByKey(sbOrigSlice, &sbDestSlice, "UserType", "tidy,mt:TransMethodExaple")
+	XSliceCopyByKey(sbOrigSlice, &sbDestSlice, "UserType", XrefOptCopyOption("tidy,mt:TransMethodExaple"))
 	fmt.Println(sbDestSlice)
 }
 func Test0005(t *testing.T) {
 	sbOrigSlice := GenerateOrigSlice()
 	var sbDestMap map[string]int
-	XSliceCopyToMap(sbOrigSlice, &sbDestMap, "UserType", "Age")
+	XSliceCopyToMap(sbOrigSlice, &sbDestMap, "UserType", "Age", XrefOptMapKeyAppend("Key-"))
 	fmt.Println(sbDestMap)
 }
