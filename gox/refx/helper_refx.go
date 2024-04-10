@@ -64,6 +64,8 @@ type xrefOptions struct {
 	optTag        string //关联的tag的名称
 	optNameSpace  string //关联源的nameSpace
 	checkUnsigned bool   //无符号字符串是否严格匹配校验
+	copyOption    string //复制时候的控制属性
+	mapKeyAppend  string //设置Map赋值时候的拼接Key值
 }
 
 // 设置关联tag的名称，不设置默认为xref
@@ -84,6 +86,20 @@ func XrefOptNameSpace(nameSpace string) XrefOption {
 func XrefOptCheckUnsigned(checkUnsigned bool) XrefOption {
 	return XrefOption{func(do *xrefOptions) {
 		do.checkUnsigned = checkUnsigned
+	}}
+}
+
+// 设置复制时候的控制属性
+func XrefOptCopyOption(copyOption string) XrefOption {
+	return XrefOption{func(do *xrefOptions) {
+		do.copyOption = copyOption
+	}}
+}
+
+// 设置Map赋值时候的拼接Key值
+func XrefOptMapKeyAppend(mapKeyAppend string) XrefOption {
+	return XrefOption{func(do *xrefOptions) {
+		do.mapKeyAppend = mapKeyAppend
 	}}
 }
 

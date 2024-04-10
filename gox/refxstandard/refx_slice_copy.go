@@ -52,24 +52,16 @@ func XSliceCopy(srcSlice interface{}, destSlice interface{}, options ...XrefOpti
 }
 
 // 泛型函数，转换一个类型的Slice到另一个类型的Slice，使用xref库进行转换。
-func XSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string, optionTags ...string) error {
+func XSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string, options ...XrefOption) error {
 	if nil == destSlice {
 		return errors.New("destSlice must not nil")
 	}
-	cpOpt := ""
-	if len(optionTags) > 0 {
-		for _, tmp := range optionTags {
-			if len(tmp) <= 0 {
-				continue
-			}
-			if len(cpOpt) > 0 {
-				cpOpt = cpOpt + ","
-			}
-			cpOpt = cpOpt + tmp
-		}
+	do := xrefOptions{}
+	for _, option := range options {
+		option.f(&do)
 	}
 	//isTidy := xTagContainKey(cpOpt, xRef_key_tidy)
-	checkUnsigned := xTagContainKey(cpOpt, xRef_key_unsigned)
+	checkUnsigned := xTagContainKey(do.copyOption, xRef_key_unsigned)
 	destSliceValue := reflect.ValueOf(destSlice)
 	if destSliceValue.Kind() != reflect.Ptr && destSliceValue.Elem().Kind() != reflect.Slice {
 		return errors.New("destSlice must be a slice pointer")
@@ -94,7 +86,7 @@ func XSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string, op
 		destValue := destSliceElem.Index(i)
 		srcItemValue := srcSliceValue.Index(i).FieldByName(key)
 		origValue := srcItemValue.Interface()
-		rtVal, transOk, transErr := xRef_transOrigToDestValue(key, cpOpt, origValue, destValue, checkUnsigned)
+		rtVal, transOk, transErr := xRef_transOrigToDestValue(key, do.copyOption, origValue, destValue, checkUnsigned)
 		if transErr != nil {
 			errG = transErr
 		}
@@ -242,24 +234,16 @@ func oldXSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string)
 }
 
 // 泛型函数，转换一个类型的Slice到另一个类型的Map，使用xref库进行转换。
-func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, valueTag string, optionTags ...string) error {
+func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, valueTag string, options ...XrefOption) error {
 	if nil == destMap {
 		return errors.New("destSlice must not nil")
 	}
-	cpOpt := ""
-	if len(optionTags) > 0 {
-		for _, tmp := range optionTags {
-			if len(tmp) <= 0 {
-				continue
-			}
-			if len(cpOpt) > 0 {
-				cpOpt = cpOpt + ","
-			}
-			cpOpt = cpOpt + tmp
-		}
+	do := xrefOptions{}
+	for _, option := range options {
+		option.f(&do)
 	}
 	//isTidy := xTagContainKey(cpOpt, xRef_key_tidy)
-	checkUnsigned := xTagContainKey(cpOpt, xRef_key_unsigned)
+	checkUnsigned := xTagContainKey(do.copyOption, xRef_key_unsigned)
 	destMapValue := reflect.ValueOf(destMap)
 	if destMapValue.Kind() != reflect.Ptr && destMapValue.Elem().Kind() != reflect.Map {
 		return errors.New("destSlice must be a slice pointer")
@@ -287,7 +271,7 @@ func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, v
 	for i := 0; i < srcSliceValue.Len(); i++ {
 		keyItem := srcSliceValue.Index(i).FieldByName(keyTag)
 		keyItemValue := keyItem.Interface()
-		keyRtValue, keyTransOk, keyTransErr := xRefMap_transOrigToDestValue(valueTag, cpOpt, keyItemValue, keyType, keyTypeName, checkUnsigned)
+		keyRtValue, keyTransOk, keyTransErr := xRefMap_transOrigToDestValue(valueTag, do.copyOption, keyItemValue, keyType, keyTypeName, checkUnsigned)
 		if keyTransErr != nil {
 			errG = keyTransErr
 		}
@@ -297,9 +281,12 @@ func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, v
 		if keyRtValue == nil {
 			continue
 		}
+		if len(do.mapKeyAppend) > 0 && keyType == reflect.String {
+			keyRtValue = do.mapKeyAppend + keyRtValue.(string)
+		}
 		valItem := srcSliceValue.Index(i).FieldByName(valueTag)
 		valItemValue := valItem.Interface()
-		valRtValue, valueTransOk, valueTransErr := xRefMap_transOrigToDestValue(valueTag, cpOpt, valItemValue, valueType, valueTypeName, checkUnsigned)
+		valRtValue, valueTransOk, valueTransErr := xRefMap_transOrigToDestValue(valueTag, do.copyOption, valItemValue, valueType, valueTypeName, checkUnsigned)
 		if valueTransErr != nil {
 			errG = valueTransErr
 		}
