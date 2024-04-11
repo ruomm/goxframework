@@ -14,34 +14,49 @@ import (
 )
 
 type LoggerX struct {
-	ZapLogger   *zap.Logger
-	Development bool
+	ZapLogger          *zap.Logger
+	Development        bool
+	xCallerSkipHandler XCallerSkipHandler
+	workPath           string
+	lenWorkPath        int
 }
 
 // var Logger *zap.Logger
 var Logger *LoggerX
 
-var workPath string = ""
-var lenWorkPath int = 0
-
 type XCallerSkipHandler func(file string, line int) int
 
-var xCallerSkipHandler XCallerSkipHandler = nil
-
 func ConfigCallerSkipHandler(handler XCallerSkipHandler) {
-	xCallerSkipHandler = handler
+	if nil == Logger {
+		return
+	} else {
+		Logger.xCallerSkipHandler = handler
+	}
 }
-func InitLogger(logConfig interface{}, workDirPath string) error {
-	workPath = workDirPath
-	lenWorkPath = len(workPath)
+func InitLogger(logConfig interface{}, workDirPath string, handler XCallerSkipHandler) error {
+	loggerx, err := generateLoggerX(logConfig, workDirPath, "", 1, handler)
+	if err != nil {
+		return err
+	} else {
+		Logger = loggerx
+		return nil
+	}
+}
+
+func generateLoggerX(logConfig interface{}, workDirPath string, instanceName string, callerSkip int, handler XCallerSkipHandler) (*LoggerX, error) {
+	//workPath = workDirPath
+	//lenWorkPath = len(workPath)
 	//加载配置文件
 	logConfigInit := LogConfigs{}
 	errG, transFailsKeys := refx.XRefStructCopy(logConfig, &logConfigInit)
+	if len(instanceName) > 0 {
+		logConfigInit.InstanceName = instanceName
+	}
 	if errG != nil {
-		return errG
+		return nil, errG
 	}
 	if len(transFailsKeys) > 0 {
-		return errors.New("logger config init err, some field config err:" + strings.Join(transFailsKeys, ","))
+		return nil, errors.New("logger config init err, some field config err:" + strings.Join(transFailsKeys, ","))
 	}
 	//xCallerSkipHandler = callerSkipHandler
 	//serviceField = zap.String("service", logConfigInit.ServiceName)
@@ -67,11 +82,56 @@ func InitLogger(logConfig interface{}, workDirPath string) error {
 	//Logger = zap.New(core, caller, zap.Fields(initFields...))
 	//Logger = zap.New(core, caller)
 	//Logger = zapLogger
-	Logger = &LoggerX{
-		zapLogger,
-		true,
+	loogerx := LoggerX{
+		ZapLogger:          zapLogger,
+		Development:        true,
+		xCallerSkipHandler: handler,
+		workPath:           workDirPath,
+		lenWorkPath:        len(workDirPath),
 	}
-	return nil
+	return &loogerx, nil
+}
+
+func generateZapLogger(logConfig interface{}, workDirPath string, instanceName string, handler XCallerSkipHandler) (*zap.Logger, error) {
+	//workPath = workDirPath
+	//lenWorkPath = len(workPath)
+	//加载配置文件
+	logConfigInit := LogConfigs{}
+	errG, transFailsKeys := refx.XRefStructCopy(logConfig, &logConfigInit)
+	if len(instanceName) > 0 {
+		logConfigInit.InstanceName = instanceName
+	}
+	if errG != nil {
+		return nil, errG
+	}
+	if len(transFailsKeys) > 0 {
+		return nil, errors.New("logger config init err, some field config err:" + strings.Join(transFailsKeys, ","))
+	}
+	//xCallerSkipHandler = callerSkipHandler
+	//serviceField = zap.String("service", logConfigInit.ServiceName)
+	//if len(logConfigInit.InstanceName) > 0 {
+	//	zapField := zap.String("instance", logConfigInit.InstanceName)
+	//	instanceField = &zapField
+	//} else {
+	//	instanceField = nil
+	//}
+	// 开始配置文件
+	initFields := getInitFields(&logConfigInit)
+	encoder := getLogEncoder()
+	writer := getLogWriter(&logConfigInit)
+	level := getLogLevel(&logConfigInit)
+	core := zapcore.NewCore(encoder, writer, level)
+	caller := zap.AddCaller()
+	zap.AddCallerSkip(1)
+	// 开启文件及行号
+	development := zap.Development()
+	// 构造日志
+	zapLogger := zap.New(core, caller, development, zap.Fields(initFields...))
+	// 构造日志
+	//Logger = zap.New(core, caller, zap.Fields(initFields...))
+	//Logger = zap.New(core, caller)
+	//Logger = zapLogger
+	return zapLogger, nil
 }
 
 func getLogWriter(logConfig *LogConfigs) zapcore.WriteSyncer {
@@ -146,7 +206,7 @@ func getInitFields(logConfig *LogConfigs) (fields []zap.Field) {
 
 func (looger LoggerX) Log(lvl zapcore.Level, msg string, fields ...zap.Field) {
 	if looger.Development {
-		callerFields := getCallerInfoForLog()
+		callerFields := looger.getCallerInfoForLog()
 		fields = append(fields, callerFields...)
 	}
 	looger.ZapLogger.Log(lvl, msg, fields...)
@@ -154,7 +214,7 @@ func (looger LoggerX) Log(lvl zapcore.Level, msg string, fields ...zap.Field) {
 
 func (looger LoggerX) Debug(message string, fields ...zap.Field) {
 	if looger.Development {
-		callerFields := getCallerInfoForLog()
+		callerFields := looger.getCallerInfoForLog()
 		fields = append(fields, callerFields...)
 	}
 	looger.ZapLogger.Debug(message, fields...)
@@ -162,7 +222,7 @@ func (looger LoggerX) Debug(message string, fields ...zap.Field) {
 
 func (looger LoggerX) Info(message string, fields ...zap.Field) {
 	if looger.Development {
-		callerFields := getCallerInfoForLog()
+		callerFields := looger.getCallerInfoForLog()
 		fields = append(fields, callerFields...)
 	}
 	looger.ZapLogger.Info(message, fields...)
@@ -170,7 +230,7 @@ func (looger LoggerX) Info(message string, fields ...zap.Field) {
 
 func (looger LoggerX) Warn(message string, fields ...zap.Field) {
 	if looger.Development {
-		callerFields := getCallerInfoForLog()
+		callerFields := looger.getCallerInfoForLog()
 		fields = append(fields, callerFields...)
 	}
 	looger.ZapLogger.Warn(message, fields...)
@@ -178,7 +238,7 @@ func (looger LoggerX) Warn(message string, fields ...zap.Field) {
 
 func (looger LoggerX) Error(message string, fields ...zap.Field) {
 	if looger.Development {
-		callerFields := getCallerInfoForLog()
+		callerFields := looger.getCallerInfoForLog()
 		fields = append(fields, callerFields...)
 	}
 	looger.ZapLogger.Error(message, fields...)
@@ -186,7 +246,7 @@ func (looger LoggerX) Error(message string, fields ...zap.Field) {
 
 func (looger LoggerX) DPanic(message string, fields ...zap.Field) {
 	if looger.Development {
-		callerFields := getCallerInfoForLog()
+		callerFields := looger.getCallerInfoForLog()
 		fields = append(fields, callerFields...)
 	}
 	looger.ZapLogger.DPanic(message, fields...)
@@ -194,7 +254,7 @@ func (looger LoggerX) DPanic(message string, fields ...zap.Field) {
 
 func (looger LoggerX) Panic(message string, fields ...zap.Field) {
 	if looger.Development {
-		callerFields := getCallerInfoForLog()
+		callerFields := looger.getCallerInfoForLog()
 		fields = append(fields, callerFields...)
 	}
 	looger.ZapLogger.Panic(message, fields...)
@@ -202,16 +262,16 @@ func (looger LoggerX) Panic(message string, fields ...zap.Field) {
 
 func (looger LoggerX) Fatal(message string, fields ...zap.Field) {
 	if looger.Development {
-		callerFields := getCallerInfoForLog()
+		callerFields := looger.getCallerInfoForLog()
 		fields = append(fields, callerFields...)
 	}
 	looger.ZapLogger.Fatal(message, fields...)
 }
 
-func getCallerInfoForLog() (callerFields []zap.Field) {
+func (looger LoggerX) getCallerInfoForLog() (callerFields []zap.Field) {
 	pc, file, line, ok := runtime.Caller(2) // 回溯两层，拿到写日志的调用方的函数信息
-	if nil != xCallerSkipHandler {
-		callSkip := xCallerSkipHandler(file, line)
+	if nil != looger.xCallerSkipHandler {
+		callSkip := looger.xCallerSkipHandler(file, line)
 		if callSkip > 0 {
 			pc, file, line, ok = runtime.Caller(2 + callSkip)
 		}
@@ -219,7 +279,7 @@ func getCallerInfoForLog() (callerFields []zap.Field) {
 	if !ok {
 		return
 	}
-	var realFile = parseRealFile(file)
+	var realFile = looger.parseRealFile(file)
 	funcName := runtime.FuncForPC(pc).Name()
 	funcName = path.Base(funcName) //Base函数返回路径的最后一个元素，只保留函数名
 	//callerFields = append(callerFields, zap.String("func", funcName), zap.String("file", realFile), zap.Int("line", line))
@@ -228,7 +288,7 @@ func getCallerInfoForLog() (callerFields []zap.Field) {
 	return
 }
 
-func parseRealFile(filePath string) string {
+func (looger LoggerX) parseRealFile(filePath string) string {
 	lenFile := len(filePath)
 	if lenFile <= 0 {
 		return filePath
@@ -250,9 +310,9 @@ func parseRealFile(filePath string) string {
 		} else {
 			return filePath
 		}
-	} else if lenWorkPath > 0 {
-		if strings.HasPrefix(filePath, workPath) {
-			return filePath[lenWorkPath:]
+	} else if looger.lenWorkPath > 0 {
+		if strings.HasPrefix(filePath, looger.workPath) {
+			return filePath[looger.lenWorkPath:]
 		} else {
 			return filePath
 		}
