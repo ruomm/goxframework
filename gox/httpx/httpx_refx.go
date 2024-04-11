@@ -222,7 +222,6 @@ func xParseHttpxMethod(reqObj interface{}) (string, error) {
 	} else {
 		return strings.ToUpper(httpxMethod), nil
 	}
-
 }
 
 // 解析为JSON请求体字符串

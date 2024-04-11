@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -75,18 +76,38 @@ func xToHttpxResponse(resp *http.Response) (*HttpxResponse, error) {
 		return &httpxResponse, err
 	}
 	httpxResponse.Body = body
+	if !Success2xx(&httpxResponse) {
+		return &httpxResponse, errors.New("http请求失败，响应码为：" + strconv.Itoa(httpxResponse.StatusCode) + "，响应信息为：" + httpxResponse.Status)
+	}
 	return &httpxResponse, nil
 }
-func xToHttpxResponseJson(resp *http.Response, result interface{}) (*HttpxResponse, error) {
+func xToHttpxResponseJson(resp *http.Response, resultObjs ...interface{}) (*HttpxResponse, error) {
 	pHttpxResponse, err := xToHttpxResponse(resp)
 	if err != nil {
+		return pHttpxResponse, err
+	}
+	if resultObjs == nil || len(resultObjs) <= 0 {
 		return pHttpxResponse, err
 	}
 	if len(pHttpxResponse.Body) <= 0 {
 		return pHttpxResponse, errors.New("Http Response Body is Empty,Can Not Unmarshal Response By JSON")
 	}
-	err = json.Unmarshal(pHttpxResponse.Body, result)
-	return pHttpxResponse, err
+	str := string(pHttpxResponse.Body)
+	fmt.Println(str)
+	// 只有第一个主对象析失败才会返回JSON解析错误，其他对象解析失败，不返回JSON解析错误
+	var errResult error = nil
+	resultLen := len(resultObjs)
+	for i := 0; i < resultLen; i++ {
+		resultObj := resultObjs[i]
+		if nil == resultObj {
+			continue
+		}
+		errTemp := json.Unmarshal(pHttpxResponse.Body, resultObj)
+		if i == 0 {
+			errResult = errTemp
+		}
+	}
+	return pHttpxResponse, errResult
 
 }
 
