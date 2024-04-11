@@ -11,6 +11,10 @@ import (
 	"strings"
 )
 
+const (
+	file_extension_separator = "."
+)
+
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
@@ -59,7 +63,7 @@ func IsStartWithFileSeparator(filePath string) bool {
  */
 func LastIndexOfFileSeparator(filePath string) int {
 	if len(filePath) <= 0 {
-		return -99
+		return -1
 	}
 	filePosi1 := strings.LastIndex(filePath, "\\")
 	filePosi2 := strings.LastIndex(filePath, "/")
@@ -411,4 +415,121 @@ func CopyFile(pathSrc string, pathDest string) error {
 		return errFlush
 	}
 	return nil
+}
+
+/**
+ * 从路径获取文件名，包括后缀
+ *
+ * <pre>
+ *      getFileName(null)               =   null
+ *      getFileName("")                 =   ""
+ *      getFileName("   ")              =   "   "
+ *      getFileName("a.mp3")            =   "a.mp3"
+ *      getFileName("a.b.rmvb")         =   "a.b.rmvb"
+ *      getFileName("abc")              =   "abc"
+ *      getFileName("c:\\")              =   ""
+ *      getFileName("c:\\a")             =   "a"
+ *      getFileName("c:\\a.b")           =   "a.b"
+ *      getFileName("c:a.txt\\a")        =   "a"
+ *      getFileName("/home/admin")      =   "admin"
+ *      getFileName("/home/admin/a.txt/b.mp3")  =   "b.mp3"
+ * </pre>
+ *
+ * @param filePath 文件路径 -
+ * @return 从路径文件名，包括后缀
+ */
+func GetFileName(filePath string) string {
+	if len(filePath) <= 0 {
+		return filePath
+	}
+
+	filePosi := LastIndexOfFileSeparator(filePath)
+	if filePosi < 0 {
+		return filePath
+	} else {
+		return filePath[filePosi+1:]
+	}
+}
+
+/**
+ * 从路径获取文件名，不包括后缀
+ *
+ * <pre>
+ *      getFileNameWithoutExtension(null)               =   null
+ *      getFileNameWithoutExtension("")                 =   ""
+ *      getFileNameWithoutExtension("   ")              =   "   "
+ *      getFileNameWithoutExtension("abc")              =   "abc"
+ *      getFileNameWithoutExtension("a.mp3")            =   "a"
+ *      getFileNameWithoutExtension("a.b.rmvb")         =   "a.b"
+ *      getFileNameWithoutExtension("c:\\")              =   ""
+ *      getFileNameWithoutExtension("c:\\a")             =   "a"
+ *      getFileNameWithoutExtension("c:\\a.b")           =   "a"
+ *      getFileNameWithoutExtension("c:a.txt\\a")        =   "a"
+ *      getFileNameWithoutExtension("/home/admin")      =   "admin"
+ *      getFileNameWithoutExtension("/home/admin/a.txt/b.mp3")  =   "b"
+ * </pre>
+ *
+ * @param filePath 文件路径 -
+ * @return 从路径文件名，不包括后缀
+ * @see
+ */
+func GetFileNameWithoutExtension(filePath string) string {
+	if len(filePath) <= 0 {
+		return filePath
+	}
+	extenPosi := strings.LastIndex(filePath, file_extension_separator)
+	filePosi := LastIndexOfFileSeparator(filePath)
+	if filePosi < 0 {
+		if extenPosi < 0 {
+			return filePath
+		} else {
+			return filePath[0:extenPosi]
+		}
+	}
+	if extenPosi < 0 {
+		return filePath[filePosi+1:]
+	} else {
+		if filePosi < extenPosi {
+			return filePath[filePosi+1 : extenPosi]
+		} else {
+			return filePath[filePosi+1:]
+		}
+	}
+}
+
+/**
+ * 获取文件的后缀从路径
+ *
+ * <pre>
+ *      getFileExtension(null)               =   ""
+ *      getFileExtension("")                 =   ""
+ *      getFileExtension("   ")              =   "   "
+ *      getFileExtension("a.mp3")            =   "mp3"
+ *      getFileExtension("a.b.rmvb")         =   "rmvb"
+ *      getFileExtension("abc")              =   ""
+ *      getFileExtension("c:\\")              =   ""
+ *      getFileExtension("c:\\a")             =   ""
+ *      getFileExtension("c:\\a.b")           =   "b"
+ *      getFileExtension("c:a.txt\\a")        =   ""
+ *      getFileExtension("/home/admin")      =   ""
+ *      getFileExtension("/home/admin/a.txt/b")  =   ""
+ *      getFileExtension("/home/admin/a.txt/b.mp3")  =   "mp3"
+ * </pre>
+ *
+ * @param filePath
+ * @return
+ */
+func GetFileExtension(filePath string) string {
+	if len(filePath) <= 0 {
+		return ""
+	}
+	extenPosi := strings.LastIndex(filePath, file_extension_separator)
+	filePosi := LastIndexOfFileSeparator(filePath)
+	if extenPosi < 0 {
+		return ""
+	} else if filePosi >= extenPosi {
+		return ""
+	} else {
+		return filePath[extenPosi+1:]
+	}
 }
