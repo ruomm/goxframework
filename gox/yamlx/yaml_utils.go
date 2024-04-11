@@ -85,7 +85,7 @@ func ParseYamlFileByEnv(filePath string, envKey string, envValue string, obj int
  */
 func ParseYamlFileToMap(filePath string) (*map[string]interface{}, error) {
 	yamlFilePath := corex.GetAbsDir(filePath)
-	_, errFile := corex.IsFileExit(yamlFilePath)
+	_, errFile := corex.IsFileExitWithErr(yamlFilePath)
 	if errFile != nil {
 		return nil, errFile
 	}
