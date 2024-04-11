@@ -227,6 +227,15 @@ func QueryDayParseEnd(queryEnd string) string {
 	}
 }
 
+// 获取当前天
+func TimeCurrentDay(currentDay *time.Time) string {
+	if currentDay == nil {
+		return ""
+	}
+	currentDayString := TimeFormatByString(TIME_PATTERN_STANDARD_DAY, currentDay)
+	return currentDayString
+}
+
 // 获取前一天的时间
 func TimePreDay(currentDay *time.Time) string {
 	if currentDay == nil {
@@ -277,6 +286,15 @@ func TimeNextDay(currentDay *time.Time) string {
 	}
 	nextDayTimeString := Int64ToStrFill(year, 4) + "-" + Int64ToStrFill(month, 2) + "-" + Int64ToStrFill(day, 2)
 	return nextDayTimeString
+}
+
+// 获取当前月
+func TimeCurrentMonth(currentDay *time.Time) string {
+	if currentDay == nil {
+		return ""
+	}
+	currentDayString := TimeFormatByString(TIME_PATTERN_STANDARD_DAY, currentDay)
+	return currentDayString[0:7]
 }
 
 // 获取前一月的时间
