@@ -73,7 +73,7 @@ func generateLoggerX(logConfig interface{}, workDirPath string, instanceName str
 	level := getLogLevel(&logConfigInit)
 	core := zapcore.NewCore(encoder, writer, level)
 	caller := zap.AddCaller()
-	zap.AddCallerSkip(1)
+	zap.AddCallerSkip(callerSkip)
 	// 开启文件及行号
 	development := zap.Development()
 	// 构造日志
