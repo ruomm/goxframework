@@ -173,9 +173,8 @@ func IsLastDayInMonth(year int, month int, day int) bool {
 	}
 }
 
-// 获取下一天
-
-func ParseQueryStartDay(queryStart string) string {
+// 解析查询的开始时间
+func QueryDayParseStart(queryStart string) string {
 	lenQuery := len(queryStart)
 	if lenQuery <= 0 {
 		return ""
@@ -188,8 +187,48 @@ func ParseQueryStartDay(queryStart string) string {
 	}
 }
 
+// 解析查询的结束时间
+func QueryDayParseEnd(queryEnd string) string {
+	lenQuery := len(queryEnd)
+	if lenQuery <= 0 {
+		return ""
+	} else if lenQuery == 7 {
+		timeArr := strings.Split(queryEnd, "-")
+		year := StrToInt64(timeArr[0])
+		month := StrToInt64(timeArr[1])
+		if month >= 12 {
+			year = year + 1
+			month = 1
+		} else {
+			month = month + 1
+		}
+		return Int64ToStrFill(year, 4) + "-" + Int64ToStrFill(month, 2) + "-01" + " 00:00:00"
+	} else if lenQuery == 10 {
+		timeArr := strings.Split(queryEnd, "-")
+		year := StrToInt64(timeArr[0])
+		month := StrToInt64(timeArr[1])
+		day := StrToInt64(timeArr[2])
+		isLastDayInMonth := IsLastDayInMonth(int(year), int(month), int(day))
+		if isLastDayInMonth {
+			if month >= 12 {
+				year = year + 1
+				month = 1
+				day = 1
+			} else {
+				month = month + 1
+				day = 1
+			}
+		} else {
+			day = day + 1
+		}
+		return Int64ToStrFill(year, 4) + "-" + Int64ToStrFill(month, 2) + "-" + Int64ToStrFill(day, 2) + " 00:00:00"
+	} else {
+		return ""
+	}
+}
+
 // 获取前一天的时间
-func ParsePreDay(currentDay *time.Time) string {
+func TimePreDay(currentDay *time.Time) string {
 	if currentDay == nil {
 		return ""
 	}
@@ -214,7 +253,7 @@ func ParsePreDay(currentDay *time.Time) string {
 }
 
 // 获取后一天的时间
-func ParseNextDay(currentDay *time.Time) string {
+func TimeNextDay(currentDay *time.Time) string {
 	if currentDay == nil {
 		return ""
 	}
@@ -241,7 +280,7 @@ func ParseNextDay(currentDay *time.Time) string {
 }
 
 // 获取前一月的时间
-func ParsePreMonth(currentDay *time.Time) string {
+func TimePreMonth(currentDay *time.Time) string {
 	if currentDay == nil {
 		return ""
 	}
@@ -259,7 +298,7 @@ func ParsePreMonth(currentDay *time.Time) string {
 }
 
 // 获取后一月的时间
-func ParseNextMonth(currentDay *time.Time) string {
+func TimeNextMonth(currentDay *time.Time) string {
 	if currentDay == nil {
 		return ""
 	}

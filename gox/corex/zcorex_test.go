@@ -20,10 +20,10 @@ const (
 func TestNextAndPreDayMonth(t *testing.T) {
 	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
 	time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-12-31 00:50:11")
-	fmt.Println(ParsePreDay(time))
-	fmt.Println(ParseNextDay(time))
-	fmt.Println(ParsePreMonth(time))
-	fmt.Println(ParseNextMonth(time))
+	fmt.Println(TimePreDay(time))
+	fmt.Println(TimeNextDay(time))
+	fmt.Println(TimePreMonth(time))
+	fmt.Println(TimeNextMonth(time))
 }
 
 func TestFileNameAndExtension(t *testing.T) {
