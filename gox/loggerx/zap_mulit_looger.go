@@ -22,7 +22,7 @@ type MutilLoggerX struct {
 var MutilLogger *MutilLoggerX
 
 func InitMutilLogger(logConfig interface{}, workDirPath string, instanceName string, handler XCallerSkipHandler) error {
-	loggerx, err := generateLoggerX(logConfig, workDirPath, instanceName, 2, handler)
+	loggerx, err := generateLoggerX(logConfig, workDirPath, instanceName, 3, handler)
 	if err != nil {
 		return err
 	}
