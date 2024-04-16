@@ -4,7 +4,7 @@
  * @create 2024/1/19 21:38
  * @version 1.0
  */
-package timex
+package utils
 
 import (
 	"fmt"

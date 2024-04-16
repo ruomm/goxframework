@@ -4,7 +4,7 @@
  * @create 2024/4/11 08:53
  * @version 1.0
  */
-package timex
+package utils
 
 import (
 	"errors"
