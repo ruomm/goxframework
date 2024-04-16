@@ -9,6 +9,7 @@ package loggerx
 import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"strings"
 )
 
 type MutilLoggerX struct {
@@ -54,59 +55,63 @@ func ConfigMutilLoggerHandler(handler XMutilLoggerHandler) {
 	MutilLogger.mutilHandler = handler
 }
 
-func (mutilLogger MutilLoggerX) getLoogerX(msg string) *LoggerX {
+func (mutilLogger MutilLoggerX) getLoogerX(msg string) (*LoggerX, string) {
 	if nil == mutilLogger.mutilHandler {
-		return mutilLogger.loggerX
+		return mutilLogger.loggerX, msg
 	} else {
 		instanceName := mutilLogger.mutilHandler(msg)
 		if len(instanceName) <= 0 {
-			return mutilLogger.loggerX
+			return mutilLogger.loggerX, msg
 		}
 		_, exists := mutilLogger.mutilLoggerXMap[instanceName]
 		if exists {
-			return mutilLogger.mutilLoggerXMap[instanceName]
+			if strings.HasSuffix(msg, instanceName) {
+				return mutilLogger.mutilLoggerXMap[instanceName], msg[len(instanceName):]
+			} else {
+				return mutilLogger.mutilLoggerXMap[instanceName], msg
+			}
 		} else {
-			return mutilLogger.loggerX
+			return mutilLogger.loggerX, msg
 		}
 	}
 }
 
-func (mutilLogger MutilLoggerX) Log(lvl zapcore.Level, msg string, fields ...zap.Field) {
-	looger := mutilLogger.getLoogerX(msg)
+func (mutilLogger MutilLoggerX) Log(lvl zapcore.Level, message string, fields ...zap.Field) {
+	looger, msg := mutilLogger.getLoogerX(message)
 	looger.Log(lvl, msg, fields...)
 }
 
 func (mutilLogger MutilLoggerX) Debug(message string, fields ...zap.Field) {
-	looger := mutilLogger.getLoogerX(message)
-	looger.Debug(message, fields...)
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.Debug(msg, fields...)
 }
 
 func (mutilLogger MutilLoggerX) Info(message string, fields ...zap.Field) {
-	looger := mutilLogger.getLoogerX(message)
-	looger.Info(message, fields...)
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.Info(msg, fields...)
 }
 
 func (mutilLogger MutilLoggerX) Warn(message string, fields ...zap.Field) {
-	looger := mutilLogger.getLoogerX(message)
-	looger.Warn(message, fields...)
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.Warn(msg, fields...)
 }
 
 func (mutilLogger MutilLoggerX) Error(message string, fields ...zap.Field) {
-	looger := mutilLogger.getLoogerX(message)
-	looger.Error(message, fields...)
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.Error(msg, fields...)
 }
 
 func (mutilLogger MutilLoggerX) DPanic(message string, fields ...zap.Field) {
-	looger := mutilLogger.getLoogerX(message)
-	looger.DPanic(message, fields...)
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.DPanic(msg, fields...)
 }
 
 func (mutilLogger MutilLoggerX) Panic(message string, fields ...zap.Field) {
-	looger := mutilLogger.getLoogerX(message)
-	looger.Panic(message, fields...)
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.Panic(msg, fields...)
 }
 
 func (mutilLogger MutilLoggerX) Fatal(message string, fields ...zap.Field) {
-	looger := mutilLogger.getLoogerX(message)
-	looger.Fatal(message, fields...)
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.Fatal(msg, fields...)
 }
