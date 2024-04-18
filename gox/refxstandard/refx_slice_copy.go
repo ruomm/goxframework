@@ -9,6 +9,7 @@ package refxstandard
 import (
 	"errors"
 	"fmt"
+	"github.com/ruomm/goxframework/gox/corex"
 	"reflect"
 )
 
@@ -16,14 +17,90 @@ const (
 	xRef_key_unsigned = "unsigned"
 )
 
+// 泛型函数，转换字符串为特定类型的Slice
+func XStringToSlice(str string, sep string, emptyRetain bool, destSlice interface{}, options ...XrefOption) error {
+	tag := "XStringToSlice:"
+	if nil == destSlice {
+		return errors.New(tag + "destSlice must not nil")
+	}
+	srcSlice := corex.StringToSlice(str, sep, emptyRetain)
+	lenSrcSlice := len(srcSlice)
+	do := xrefOptions{}
+	for _, option := range options {
+		option.f(&do)
+	}
+	//isTidy := xTagContainKey(cpOpt, xRef_key_tidy)
+	checkUnsigned := xTagContainKey(do.copyOption, xRef_key_unsigned)
+	destSliceValue := reflect.ValueOf(destSlice)
+	if destSliceValue.Kind() != reflect.Ptr && destSliceValue.Elem().Kind() != reflect.Slice {
+		return errors.New(tag + "destSlice must be a slice pointer")
+	}
+	if nil == srcSlice {
+		return nil
+	}
+	destSliceElem := destSliceValue.Elem()
+	// 如果目标切片容量不足，则扩展其容量
+	if destSliceElem.Cap() < lenSrcSlice {
+		destSliceElem.Set(reflect.MakeSlice(destSliceElem.Type(), lenSrcSlice, lenSrcSlice))
+	} else if lenSrcSlice == 0 {
+		destSliceElem.Set(reflect.MakeSlice(destSliceElem.Type(), 0, 0))
+	}
+	destSliceElem.SetLen(lenSrcSlice)
+	var errG error = nil
+	for i := 0; i < lenSrcSlice; i++ {
+		destValue := destSliceElem.Index(i)
+		origValue := srcSlice[i]
+		key := origValue
+		if len(key) <= 0 {
+			key = "EmptyString"
+		}
+		rtVal, transOk, transErr := xRef_transOrigToDestValue(key, do.copyOption, origValue, destValue, checkUnsigned)
+		if transErr != nil {
+			errG = transErr
+		}
+		if !transOk {
+			errG = errors.New(tag + "excute failed")
+		}
+		if rtVal == nil {
+			continue
+		}
+		// 赋值
+		if destValue.CanSet() {
+			kind := destValue.Type().Kind()
+			if xIsIntegerKind(kind) {
+				if xIsUnsignedIntegerKind(kind) {
+					rtConvert := uint64(rtVal.(int64))
+					destValue.SetUint(rtConvert)
+				} else {
+					rtConvert := rtVal.(int64)
+					destValue.SetInt(rtConvert)
+				}
+			} else if xIsStringKind(kind) {
+				rtConvert := rtVal.(string)
+				destValue.SetString(rtConvert)
+			} else if xIsFloatKind(kind) {
+				rtConvert := rtVal.(float64)
+				destValue.SetFloat(rtConvert)
+			} else if kind == reflect.Bool {
+				rtConvert := rtVal.(bool)
+				destValue.SetBool(rtConvert)
+			} else {
+				destValue.Set(reflect.ValueOf(rtVal))
+			}
+		}
+	}
+	return errG
+}
+
 // 泛型函数，转换一个类型的Slice到另一个类型的Slice，使用xref库进行转换。
 func XSliceCopy(srcSlice interface{}, destSlice interface{}, options ...XrefOption) error {
+	tag := "XSliceCopy:"
 	if nil == destSlice {
-		return errors.New("destSlice must not nil")
+		return errors.New(tag + "destSlice must not nil")
 	}
 	destSliceValue := reflect.ValueOf(destSlice)
 	if destSliceValue.Kind() != reflect.Ptr && destSliceValue.Elem().Kind() != reflect.Slice {
-		return errors.New("destSlice must be a slice pointer")
+		return errors.New(tag + "destSlice must be a slice pointer")
 	}
 	if nil == srcSlice {
 		return nil
@@ -31,7 +108,7 @@ func XSliceCopy(srcSlice interface{}, destSlice interface{}, options ...XrefOpti
 	destSliceElem := destSliceValue.Elem()
 	srcSliceValue := reflect.ValueOf(srcSlice)
 	if srcSliceValue.Kind() != reflect.Slice {
-		return errors.New("srcSlice must be a slice")
+		return errors.New(tag + "srcSlice must be a slice")
 	}
 	// 如果目标切片容量不足，则扩展其容量
 	if destSliceElem.Cap() < srcSliceValue.Len() {
@@ -53,8 +130,9 @@ func XSliceCopy(srcSlice interface{}, destSlice interface{}, options ...XrefOpti
 
 // 泛型函数，转换一个类型的Slice到另一个类型的Slice，使用xref库进行转换。
 func XSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string, options ...XrefOption) error {
+	tag := "XSliceCopyByKey:"
 	if nil == destSlice {
-		return errors.New("destSlice must not nil")
+		return errors.New(tag + "destSlice must not nil")
 	}
 	do := xrefOptions{}
 	for _, option := range options {
@@ -64,7 +142,7 @@ func XSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string, op
 	checkUnsigned := xTagContainKey(do.copyOption, xRef_key_unsigned)
 	destSliceValue := reflect.ValueOf(destSlice)
 	if destSliceValue.Kind() != reflect.Ptr && destSliceValue.Elem().Kind() != reflect.Slice {
-		return errors.New("destSlice must be a slice pointer")
+		return errors.New(tag + "destSlice must be a slice pointer")
 	}
 	if nil == srcSlice {
 		return nil
@@ -72,7 +150,7 @@ func XSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string, op
 	destSliceElem := destSliceValue.Elem()
 	srcSliceValue := reflect.ValueOf(srcSlice)
 	if srcSliceValue.Kind() != reflect.Slice {
-		return errors.New("srcSlice must be a slice")
+		return errors.New(tag + "srcSlice must be a slice")
 	}
 	// 如果目标切片容量不足，则扩展其容量
 	if destSliceElem.Cap() < srcSliceValue.Len() {
@@ -91,7 +169,7 @@ func XSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string, op
 			errG = transErr
 		}
 		if !transOk {
-			errG = errors.New("XSliceCopyByKey excute failed")
+			errG = errors.New(tag + "excute failed")
 		}
 		if rtVal == nil {
 			continue
@@ -126,12 +204,13 @@ func XSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string, op
 
 // 泛型函数，转换一个类型的Slice到另一个类型的Slice，使用xref库进行转换。
 func oldXSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string) error {
+	tag := "oldXSliceCopyByKey:"
 	if nil == destSlice {
-		return errors.New("destSlice must not nil")
+		return errors.New(tag + "destSlice must not nil")
 	}
 	destSliceValue := reflect.ValueOf(destSlice)
 	if destSliceValue.Kind() != reflect.Ptr && destSliceValue.Elem().Kind() != reflect.Slice {
-		return errors.New("destSlice must be a slice pointer")
+		return errors.New(tag + "destSlice must be a slice pointer")
 	}
 	if nil == srcSlice {
 		return nil
@@ -139,7 +218,7 @@ func oldXSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string)
 	destSliceElem := destSliceValue.Elem()
 	srcSliceValue := reflect.ValueOf(srcSlice)
 	if srcSliceValue.Kind() != reflect.Slice {
-		return errors.New("srcSlice must be a slice")
+		return errors.New(tag + "srcSlice must be a slice")
 	}
 	// 如果目标切片容量不足，则扩展其容量
 	if destSliceElem.Cap() < srcSliceValue.Len() {
@@ -235,8 +314,9 @@ func oldXSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string)
 
 // 泛型函数，转换一个类型的Slice到另一个类型的Map，使用xref库进行转换。
 func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, valueTag string, options ...XrefOption) error {
+	tag := ":XSliceCopyToMap"
 	if nil == destMap {
-		return errors.New("destSlice must not nil")
+		return errors.New(tag + "destMap must not nil")
 	}
 	do := xrefOptions{}
 	for _, option := range options {
@@ -246,7 +326,7 @@ func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, v
 	checkUnsigned := xTagContainKey(do.copyOption, xRef_key_unsigned)
 	destMapValue := reflect.ValueOf(destMap)
 	if destMapValue.Kind() != reflect.Ptr && destMapValue.Elem().Kind() != reflect.Map {
-		return errors.New("destSlice must be a slice pointer")
+		return errors.New(tag + "destMap must be a map pointer")
 	}
 	if nil == srcSlice {
 		return nil
@@ -263,7 +343,7 @@ func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, v
 
 	srcSliceValue := reflect.ValueOf(srcSlice)
 	if srcSliceValue.Kind() != reflect.Slice {
-		return errors.New("srcSlice must be a slice")
+		return errors.New(tag + "srcSlice must be a slice")
 	}
 	destMapElem.Set(reflect.MakeMap(destMapElem.Type()))
 
@@ -276,7 +356,7 @@ func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, v
 			errG = keyTransErr
 		}
 		if !keyTransOk {
-			errG = errors.New("XSliceCopyByKey excute failed")
+			errG = errors.New(tag + "excute failed")
 		}
 		if keyRtValue == nil {
 			continue
@@ -291,7 +371,7 @@ func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, v
 			errG = valueTransErr
 		}
 		if !valueTransOk {
-			errG = errors.New("XSliceCopyByKey excute failed")
+			errG = errors.New(tag + "excute failed")
 		}
 		// 赋值
 		destMapElem.SetMapIndex(reflect.ValueOf(xCopyToMapTypeTrans(keyType, keyRtValue)), reflect.ValueOf(xCopyToMapTypeTrans(valueType, valRtValue)))

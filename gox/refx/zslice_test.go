@@ -90,3 +90,13 @@ func Test0005(t *testing.T) {
 	XSliceCopyToMap(sbOrigSlice, &sbDestMap, "UserType", "Age", XrefOptMapKeyAppend("Key-"))
 	fmt.Println(sbDestMap)
 }
+
+func Test0006(t *testing.T) {
+	//str := ""
+	str := "123,456789"
+	var sbDestSlice []int
+	//XSliceCopy(sbOrigSlice, &sbDestSlice, XrefOptNameSpace("dBOrigfasd"))
+	err := XStringToSlice(str, "", true, &sbDestSlice)
+	fmt.Println(err)
+	fmt.Println(sbDestSlice)
+}

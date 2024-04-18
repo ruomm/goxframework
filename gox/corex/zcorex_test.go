@@ -39,4 +39,5 @@ func TestContainsDuplicates(t *testing.T) {
 	slice2 := []int{1, 2, 3, 3, 5}
 	fmt.Println(SliceDuplicates(slice1)) // 输出：false
 	fmt.Println(SliceDuplicates(slice2))
+	fmt.Println(SliceContains(slice1, 6))
 }
