@@ -32,3 +32,11 @@ func TestFileNameAndExtension(t *testing.T) {
 	fmt.Println(GetFileNameWithoutExtension(file_path))
 	fmt.Println(GetFileExtension(file_path))
 }
+
+func TestContainsDuplicates(t *testing.T) {
+	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
+	slice1 := []int{1, 2, 3, 4, 5}
+	slice2 := []int{1, 2, 3, 3, 5}
+	fmt.Println(SliceDuplicates(slice1)) // 输出：false
+	fmt.Println(SliceDuplicates(slice2))
+}
