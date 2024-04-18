@@ -83,7 +83,7 @@ func SliceDuplicatesByKey(srcSlice interface{}, key string) bool {
 }
 
 // 判断Slice是否含有特定元素
-func SliceContains(srcSlice interface{}, value interface{}) bool {
+func SliceContains(srcSlice interface{}, values ...interface{}) bool {
 	if nil == srcSlice {
 		return false
 	}
@@ -99,12 +99,139 @@ func SliceContains(srcSlice interface{}, value interface{}) bool {
 	itemContains := false
 	for i := 0; i < lenSlice; i++ {
 		tmpItemValueI := srcSliceValue.Index(i).Interface()
-		if tmpItemValueI == value {
-			itemContains = true
-			break
+		lenValues := len(values)
+		for j := 0; j < lenValues; j++ {
+			value := values[j]
+			if tmpItemValueI == value {
+				itemContains = true
+				break
+			}
+		}
+
+	}
+	return itemContains
+}
+
+// 判断Slice是否含有特定元素
+func SliceContainsByKey(srcSlice interface{}, key string, values ...interface{}) bool {
+	if nil == srcSlice {
+		return false
+	}
+	srcSliceValue := reflect.ValueOf(srcSlice)
+	if srcSliceValue.Kind() != reflect.Slice {
+		return false
+	}
+	// 开始判断重复
+	lenSlice := srcSliceValue.Len()
+	if lenSlice <= 0 {
+		return false
+	}
+	itemContains := false
+	if len(key) <= 0 {
+		for i := 0; i < lenSlice; i++ {
+			tmpItemValueI := srcSliceValue.Index(i).Interface()
+			lenValues := len(values)
+			for j := 0; j < lenValues; j++ {
+				value := values[j]
+				if tmpItemValueI == value {
+					itemContains = true
+					break
+				}
+			}
+		}
+	} else {
+		for i := 0; i < lenSlice; i++ {
+			tmpItemValueI := srcSliceValue.Index(i).FieldByName(key).Interface()
+			lenValues := len(values)
+			for j := 0; j < lenValues; j++ {
+				value := values[j]
+				if tmpItemValueI == value {
+					itemContains = true
+					break
+				}
+			}
 		}
 	}
 	return itemContains
+}
+
+// 判断Slice是否仅仅含有特定元素
+func SliceOnlyContains(srcSlice interface{}, values ...interface{}) bool {
+	if nil == srcSlice {
+		return false
+	}
+	srcSliceValue := reflect.ValueOf(srcSlice)
+	if srcSliceValue.Kind() != reflect.Slice {
+		return false
+	}
+	// 开始判断重复
+	lenSlice := srcSliceValue.Len()
+	if lenSlice <= 0 {
+		return true
+	}
+	for i := 0; i < lenSlice; i++ {
+		itemContains := false
+		tmpItemValueI := srcSliceValue.Index(i).Interface()
+		lenValues := len(values)
+		for j := 0; j < lenValues; j++ {
+			value := values[j]
+			if tmpItemValueI == value {
+				itemContains = true
+			}
+		}
+		if !itemContains {
+			return false
+		}
+	}
+	return true
+}
+
+// 判断Slice是否仅仅含有特定元素
+func SliceOnlyContainsByKey(srcSlice interface{}, key string, values ...interface{}) bool {
+	if nil == srcSlice {
+		return false
+	}
+	srcSliceValue := reflect.ValueOf(srcSlice)
+	if srcSliceValue.Kind() != reflect.Slice {
+		return false
+	}
+	// 开始判断重复
+	lenSlice := srcSliceValue.Len()
+	if lenSlice <= 0 {
+		return false
+	}
+	if len(key) <= 0 {
+		itemContains := false
+		for i := 0; i < lenSlice; i++ {
+			tmpItemValueI := srcSliceValue.Index(i).Interface()
+			lenValues := len(values)
+			for j := 0; j < lenValues; j++ {
+				value := values[j]
+				if tmpItemValueI == value {
+					itemContains = true
+				}
+			}
+			if !itemContains {
+				return false
+			}
+		}
+	} else {
+		itemContains := false
+		for i := 0; i < lenSlice; i++ {
+			tmpItemValueI := srcSliceValue.Index(i).FieldByName(key).Interface()
+			lenValues := len(values)
+			for j := 0; j < lenValues; j++ {
+				value := values[j]
+				if tmpItemValueI == value {
+					itemContains = true
+				}
+			}
+			if !itemContains {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // 转换string为slice

@@ -41,18 +41,22 @@ type SliceDuplicatesByKeyTest struct {
 func TestContainsDuplicates(t *testing.T) {
 	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
 	slice1 := []int{1, 2, 3, 4, 5}
-	slice2 := []int{1, 2, 3, 3, 5}
+	slice2 := []int{1, 2, 3, 3, 5, 6}
 	fmt.Println(SliceDuplicates(slice1)) // 输出：false
 	fmt.Println(SliceDuplicates(slice2))
-	fmt.Println(SliceContains(slice1, 6))
+	fmt.Println(SliceContains(slice1, 6, 5))
+	fmt.Println(SliceOnlyContains(slice2, 1, 2, 3, 4, 5, 6))
 }
 
 func TestContainsDuplicatesByKey(t *testing.T) {
 	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
-	slice1 := []SliceDuplicatesByKeyTest{SliceDuplicatesByKeyTest{Name: "张三"},
-		SliceDuplicatesByKeyTest{Name: "李四"}, SliceDuplicatesByKeyTest{Name: "王五"},
-		SliceDuplicatesByKeyTest{Name: "赵六"}, SliceDuplicatesByKeyTest{Name: "张三2"}}
-	fmt.Println(SliceDuplicatesByKey(slice1, "Age")) // 输出：false
+	slice1 := []SliceDuplicatesByKeyTest{SliceDuplicatesByKeyTest{Name: "张三", Age: 10},
+		SliceDuplicatesByKeyTest{Name: "李四", Age: 11}, SliceDuplicatesByKeyTest{Name: "王五", Age: 12},
+		SliceDuplicatesByKeyTest{Name: "赵六", Age: 13}, SliceDuplicatesByKeyTest{Name: "张三", Age: 14}}
+	fmt.Println(SliceDuplicatesByKey(slice1, "Age"))
+	fmt.Println(SliceContainsByKey(slice1, "Name", "张三2", "王五"))
+	fmt.Println(SliceOnlyContainsByKey(slice1, "Name", "张三", "王五", "李四", "王五", "赵六"))
+	// 输出：false
 	//fmt.Println(SliceDuplicates(slice2))
 	//fmt.Println(SliceContains(slice1, 6))
 }
