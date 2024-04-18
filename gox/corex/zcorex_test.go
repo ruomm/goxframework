@@ -33,6 +33,11 @@ func TestFileNameAndExtension(t *testing.T) {
 	fmt.Println(GetFileExtension(file_path))
 }
 
+type SliceDuplicatesByKeyTest struct {
+	Name string
+	Age  int
+}
+
 func TestContainsDuplicates(t *testing.T) {
 	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
 	slice1 := []int{1, 2, 3, 4, 5}
@@ -40,4 +45,14 @@ func TestContainsDuplicates(t *testing.T) {
 	fmt.Println(SliceDuplicates(slice1)) // 输出：false
 	fmt.Println(SliceDuplicates(slice2))
 	fmt.Println(SliceContains(slice1, 6))
+}
+
+func TestContainsDuplicatesByKey(t *testing.T) {
+	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
+	slice1 := []SliceDuplicatesByKeyTest{SliceDuplicatesByKeyTest{Name: "张三"},
+		SliceDuplicatesByKeyTest{Name: "李四"}, SliceDuplicatesByKeyTest{Name: "王五"},
+		SliceDuplicatesByKeyTest{Name: "赵六"}, SliceDuplicatesByKeyTest{Name: "张三2"}}
+	fmt.Println(SliceDuplicatesByKey(slice1, "Age")) // 输出：false
+	//fmt.Println(SliceDuplicates(slice2))
+	//fmt.Println(SliceContains(slice1, 6))
 }
