@@ -295,3 +295,31 @@ func xParseOrigValueByMethod(method_trans string, cpOpt string, origVal interfac
 	}
 	return actualDestValue.Interface(), nil
 }
+
+// 来源复制方法转换为复制的值
+func xGetOrigValueByMethod(origO interface{}, origKey string, cpOpt string) (interface{}, error) {
+	actualValue := reflect.ValueOf(origO)
+	if xTagContainKey(cpOpt, xRef_key_getvalue_by_method_mode) {
+		if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
+			if actualValue.IsNil() {
+				return nil, errors.New("字段无需赋值，来源对象为nil，来源复制方法无法执行。")
+			}
+			actualValue = actualValue.Elem()
+		}
+	}
+	callResultValues, err := xreflect.CallMethod(actualValue.Interface(), origKey)
+	if err != nil {
+		return nil, errors.New("字段无法赋值，来源复制方法执行错误。")
+	}
+	if callResultValues == nil || len(callResultValues) <= 0 {
+		return nil, errors.New("字段无需赋值，来源复制方法无有效值返回。")
+	}
+	actualDestValue := callResultValues[0]
+	if actualDestValue.Kind() == reflect.Pointer || actualDestValue.Kind() == reflect.Interface {
+		if actualDestValue.IsNil() {
+			return nil, errors.New("字段无需赋值，来源复制方法返回值为nil。")
+		}
+		actualDestValue = actualDestValue.Elem()
+	}
+	return actualDestValue.Interface(), nil
+}

@@ -23,7 +23,7 @@ type OrigS2P struct {
 
 type DestS2P struct {
 	Vint     *int       `xref:"Orig;tidy" json:""`
-	Vint8    *int8      `xref:"Orig;tidy,mt:TransMethodExaple" json:""`
+	Vint8    *int8      `xref:"Orig;tidy,tomt:TransMethodExaple" json:""`
 	Vint16   *int16     `xref:"Orig;tidy" json:""`
 	Vint32   *int32     `xref:"Orig;tidy" json:""`
 	Vint64   *int64     `xref:"Orig;tidy" json:""`

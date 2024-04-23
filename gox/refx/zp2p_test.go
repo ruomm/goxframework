@@ -24,7 +24,7 @@ type OrigP2P struct {
 type UserT int
 type DestP2P struct {
 	Vint     *reflect.Kind `xref:"Orig;tidy" json:""`
-	Vint8    *int8         `xref:"Orig;tidy,mt:TransMethodExaple,mv" json:""`
+	Vint8    *int8         `xref:"Orig;tidy,tomt:TransMethodExaple,tomv" json:""`
 	Vint16   *int16        `xref:"Orig;tidy" json:""`
 	Vint32   *int32        `xref:"Orig;tidy" json:""`
 	Vint64   *int64        `xref:"Orig;tidy" json:""`
