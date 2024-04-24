@@ -156,10 +156,10 @@ func xGormIsContainKey(fieldName string, fieldKeys ...string) bool {
 }
 
 func ParseConditionMap(conditionMap map[string]interface{}) (string, []interface{}) {
-	return ParseConditionMapWithTable(conditionMap, "")
+	return ParseConditionMapWithTable(conditionMap, "", false)
 }
 
-func ParseConditionMapWithTable(conditionMap map[string]interface{}, tableName string) (string, []interface{}) {
+func ParseConditionMapWithTable(conditionMap map[string]interface{}, tableName string, deleteAtNotNull bool) (string, []interface{}) {
 	conditionKey := ""
 	var conditionArgs []interface{}
 	for keyTemp, value := range conditionMap {
@@ -205,6 +205,9 @@ func ParseConditionMapWithTable(conditionMap map[string]interface{}, tableName s
 				conditionKey = conditionKey + key
 			}
 		}
+	}
+	if deleteAtNotNull {
+		conditionKey = conditionKey + " and " + xGromParseKeyName("deleted_at", tableName) + " is NULL"
 	}
 	return conditionKey, conditionArgs
 }
