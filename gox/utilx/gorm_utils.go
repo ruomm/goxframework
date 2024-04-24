@@ -207,7 +207,10 @@ func ParseConditionMapWithTable(conditionMap map[string]interface{}, tableName s
 		}
 	}
 	if deleteAtNotNull {
-		conditionKey = conditionKey + " and " + xGromParseKeyName("deleted_at", tableName) + " is NULL"
+		if len(conditionKey) > 0 {
+			conditionKey = conditionKey + " and "
+		}
+		conditionKey = conditionKey + xGromParseKeyName("deleted_at", tableName) + " is NULL"
 	}
 	return conditionKey, conditionArgs
 }
