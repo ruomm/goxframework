@@ -60,3 +60,12 @@ func TestContainsDuplicatesByKey(t *testing.T) {
 	//fmt.Println(SliceDuplicates(slice2))
 	//fmt.Println(SliceContains(slice1, 6))
 }
+
+func TestTimeValidDayString(t *testing.T) {
+	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
+	validResult := TimeNextMonthByString("2024-03-05")
+	fmt.Println(validResult)
+	// 输出：false
+	//fmt.Println(SliceDuplicates(slice2))
+	//fmt.Println(SliceContains(slice1, 6))
+}

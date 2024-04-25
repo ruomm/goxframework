@@ -7,6 +7,8 @@
 package corex
 
 import (
+	"fmt"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -288,6 +290,56 @@ func TimeNextDay(currentDay *time.Time) string {
 	return nextDayTimeString
 }
 
+// 获取前一天的时间
+func TimePreDayByString(dayString string) string {
+	if !TimeValidDayString(dayString) {
+		return ""
+	}
+	timeArr := strings.Split(dayString, "-")
+	year := StrToInt64(timeArr[0])
+	month := StrToInt64(timeArr[1])
+	day := StrToInt64(timeArr[2])
+	if day <= 1 {
+		if month <= 1 {
+			month = 12
+			year = year - 1
+		} else {
+			month = month - 1
+		}
+		day = int64(GetDayCountByMonth(int(year), int(month)))
+	} else {
+		day = day - 1
+	}
+	preDayTimeString := Int64ToStrFill(year, 4) + "-" + Int64ToStrFill(month, 2) + "-" + Int64ToStrFill(day, 2)
+	return preDayTimeString
+}
+
+// 获取后一天的时间
+func TimeNextDayByString(dayString string) string {
+	if !TimeValidDayString(dayString) {
+		return ""
+	}
+	timeArr := strings.Split(dayString, "-")
+	year := StrToInt64(timeArr[0])
+	month := StrToInt64(timeArr[1])
+	day := StrToInt64(timeArr[2])
+	isLastDayInMonth := IsLastDayInMonth(int(year), int(month), int(day))
+	if isLastDayInMonth {
+		if month >= 12 {
+			year = year + 1
+			month = 1
+			day = 1
+		} else {
+			month = month + 1
+			day = 1
+		}
+	} else {
+		day = day + 1
+	}
+	nextDayTimeString := Int64ToStrFill(year, 4) + "-" + Int64ToStrFill(month, 2) + "-" + Int64ToStrFill(day, 2)
+	return nextDayTimeString
+}
+
 // 获取当前月
 func TimeCurrentMonth(currentDay *time.Time) string {
 	if currentDay == nil {
@@ -331,4 +383,85 @@ func TimeNextMonth(currentDay *time.Time) string {
 		month = month + 1
 	}
 	return Int64ToStrFill(year, 4) + "-" + Int64ToStrFill(month, 2)
+}
+
+// 获取前一月的时间
+func TimePreMonthByString(monthString string) string {
+	if !TimeValidMonthString(monthString) && !TimeValidDayString(monthString) {
+		return ""
+	}
+	timeArr := strings.Split(monthString, "-")
+	year := StrToInt64(timeArr[0])
+	month := StrToInt64(timeArr[1])
+	if month <= 1 {
+		month = 12
+		year = year - 1
+	} else {
+		month = month - 1
+	}
+	return Int64ToStrFill(year, 4) + "-" + Int64ToStrFill(month, 2)
+}
+
+// 获取后一月的时间
+func TimeNextMonthByString(monthString string) string {
+	if !TimeValidMonthString(monthString) && !TimeValidDayString(monthString) {
+		return ""
+	}
+	timeArr := strings.Split(monthString, "-")
+	year := StrToInt64(timeArr[0])
+	month := StrToInt64(timeArr[1])
+	if month >= 12 {
+		year = year + 1
+		month = 1
+	} else {
+		month = month + 1
+	}
+	return Int64ToStrFill(year, 4) + "-" + Int64ToStrFill(month, 2)
+}
+
+func TimeValidDayString(dayString string) bool {
+	re, err := regexp.Compile("^\\d{4}-\\d{2}-\\d{2}$")
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	if !re.MatchString(dayString) {
+		return false
+	}
+	timeArr := strings.Split(dayString, "-")
+	year := StrToInt64(timeArr[0])
+	month := StrToInt64(timeArr[1])
+	day := StrToInt64(timeArr[2])
+	if year < 0 || year >= 3000 {
+		return false
+	}
+	if month < 1 || month > 12 {
+		return false
+	}
+	dayCountByMonth := GetDayCountByMonth(int(year), int(month))
+	if day < 1 || day > int64(dayCountByMonth) {
+		return false
+	}
+	return true
+}
+
+func TimeValidMonthString(monthString string) bool {
+	re, err := regexp.Compile("^\\d{4}-\\d{2}$")
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	if !re.MatchString(monthString) {
+		return false
+	}
+	timeArr := strings.Split(monthString, "-")
+	year := StrToInt64(timeArr[0])
+	month := StrToInt64(timeArr[1])
+	if year < 0 || year >= 3000 {
+		return false
+	}
+	if month < 1 || month > 12 {
+		return false
+	}
+	return true
 }
