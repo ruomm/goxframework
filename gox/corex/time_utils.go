@@ -290,6 +290,19 @@ func TimeNextDay(currentDay *time.Time) string {
 	return nextDayTimeString
 }
 
+// 获取间隔特定天数的时间
+func TimeOffsetDay(currentDay *time.Time, offsetDay int) string {
+	if currentDay == nil {
+		return ""
+	}
+	monthStr := TimeFormatByString(TIME_PATTERN_STANDARD_DAY, currentDay)
+	timeOffsetString := TimeOffsetDayByString(monthStr, offsetDay)
+	return timeOffsetString
+	//timeOffset := (*currentDay).AddDate(0, 0, offsetDay)
+	//timeOffsetString := TimeFormatByString(TIME_PATTERN_STANDARD_DAY, &timeOffset)
+	//return timeOffsetString
+}
+
 // 获取前一天的时间
 func TimePreDayByString(dayString string) string {
 	if !TimeValidDayString(dayString) {
@@ -340,6 +353,20 @@ func TimeNextDayByString(dayString string) string {
 	return nextDayTimeString
 }
 
+// 获取间隔特定天数的时间
+func TimeOffsetDayByString(dayString string, offsetDay int) string {
+	if !TimeValidDayString(dayString) {
+		return ""
+	}
+	currentDay, err := TimeParseByString(TIME_PATTERN_STANDARD, dayString+" 12:00:00")
+	if err != nil {
+		return ""
+	}
+	timeOffset := (*currentDay).AddDate(0, 0, offsetDay)
+	timeOffsetString := TimeFormatByString(TIME_PATTERN_STANDARD_DAY, &timeOffset)
+	return timeOffsetString
+}
+
 // 获取当前月
 func TimeCurrentMonth(currentDay *time.Time) string {
 	if currentDay == nil {
@@ -385,6 +412,18 @@ func TimeNextMonth(currentDay *time.Time) string {
 	return Int64ToStrFill(year, 4) + "-" + Int64ToStrFill(month, 2)
 }
 
+// 获取间隔特定月数的时间
+func TimeOffsetMonth(currentDay *time.Time, offsetMonth int) string {
+	if currentDay == nil {
+		return ""
+	}
+	//timeOffset := (*currentDay).AddDate(0, offsetMonth, 0)
+	//return TimeFormatByString(TIME_PATTERN_STANDARD_MONTH, &timeOffset)
+	monthStr := TimeFormatByString(TIME_PATTERN_STANDARD_MONTH, currentDay)
+	timeOffsetString := TimeOffsetMonthByString(monthStr, offsetMonth)
+	return timeOffsetString
+}
+
 // 获取前一月的时间
 func TimePreMonthByString(monthString string) string {
 	if !TimeValidMonthString(monthString) && !TimeValidDayString(monthString) {
@@ -417,6 +456,25 @@ func TimeNextMonthByString(monthString string) string {
 		month = month + 1
 	}
 	return Int64ToStrFill(year, 4) + "-" + Int64ToStrFill(month, 2)
+}
+
+// 获取间隔特定月数的时间
+func TimeOffsetMonthByString(monthString string, offsetMonth int) string {
+	dayString := ""
+	if TimeValidMonthString(monthString) {
+		dayString = monthString + "-15"
+	} else if TimeValidDayString(monthString) {
+		dayString = monthString[0:7] + "-15"
+	} else {
+		return ""
+	}
+	currentDay, err := TimeParseByString(TIME_PATTERN_STANDARD_DAY, dayString)
+	if err != nil {
+		return ""
+	}
+	timeOffset := (*currentDay).AddDate(0, offsetMonth, 0)
+	timeOffsetString := TimeFormatByString(TIME_PATTERN_STANDARD_MONTH, &timeOffset)
+	return timeOffsetString
 }
 
 func TimeToYearMonthDay(dayString string) (int64, int64, int64) {

@@ -69,3 +69,15 @@ func TestTimeValidDayString(t *testing.T) {
 	//fmt.Println(SliceDuplicates(slice2))
 	//fmt.Println(SliceContains(slice1, 6))
 }
+
+func TestTimeOffsetFunctions(t *testing.T) {
+	time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-31 00:50:11")
+	timeResultString := TimeOffsetDay(time, -5)
+	fmt.Println(timeResultString)
+	timeResultString = TimeOffsetDayByString("2024-03-05", -5)
+	fmt.Println(timeResultString)
+	timeResultString = TimeOffsetMonth(time, -4)
+	fmt.Println(timeResultString)
+	timeResultString = TimeOffsetMonthByString("2024-03-12", -4)
+	fmt.Println(timeResultString)
+}
