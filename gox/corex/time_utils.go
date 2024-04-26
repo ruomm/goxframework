@@ -419,6 +419,21 @@ func TimeNextMonthByString(monthString string) string {
 	return Int64ToStrFill(year, 4) + "-" + Int64ToStrFill(month, 2)
 }
 
+func TimeToYearMonthDay(dayString string) (int64, int64, int64) {
+	if !TimeValidMonthString(dayString) && !TimeValidDayString(dayString) {
+		return 0, 0, 0
+	}
+	timeArr := strings.Split(dayString, "-")
+	year := StrToInt64(timeArr[0])
+	month := StrToInt64(timeArr[1])
+	if len(timeArr) > 2 {
+		day := StrToInt64(timeArr[2])
+		return year, month, day
+	} else {
+		return year, month, 0
+	}
+}
+
 func TimeValidDayString(dayString string) bool {
 	re, err := regexp.Compile("^\\d{4}-\\d{2}-\\d{2}$")
 	if err != nil {
