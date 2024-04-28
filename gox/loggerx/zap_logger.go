@@ -160,9 +160,9 @@ func getLogWriter(logConfig *LogConfigs) zapcore.WriteSyncer {
 
 func getLogEncoder(textMode bool) zapcore.Encoder {
 	encodeLevel := zapcore.LowercaseLevelEncoder
-	//if textMode {
-	//	encodeLevel = zapcore.CapitalLevelEncoder
-	//}
+	if textMode {
+		encodeLevel = zapcore.CapitalLevelEncoder
+	}
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:  "time",
 		LevelKey: "level",
