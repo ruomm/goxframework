@@ -18,10 +18,13 @@ import (
 import "errors"
 
 const (
-	db_args_separator_space = " ?"
-	db_args_in_space        = " (?)"
-	db_args_like_space      = " concat('%',?,'%')"
-	db_args_equal_space     = " = ?"
+	db_args_separator_space       = " ?"
+	db_args_in_space              = " (?)"
+	db_args_like_space            = " concat('%',?,'%')"
+	db_args_equal_space           = " = ?"
+	xRef_key_grom_order_by        = "xorderby"
+	xRef_key_grom_order_by_table  = "table"
+	xRef_key_grom_order_by_option = "opt"
 )
 
 /*
@@ -420,5 +423,202 @@ func GormParseQueryEnd(queryEnd string) string {
 		return corex.Int64ToStrFill(year, 4) + "-" + corex.Int64ToStrFill(month, 2) + "-" + corex.Int64ToStrFill(day, 2) + " 00:00:00"
 	} else {
 		return ""
+	}
+}
+
+type xGromOrderByTag struct {
+	Index     int
+	FieldName string
+	Table     string
+	Opt       string
+}
+
+type XOrderBy struct {
+	SortField int  // 排序字段索引 1.编号(ID)排序 2.创建时间(CreatedAt)排序 3.更新时间(UpdatedAt)排序 >=4.其他自定义字段排序，参考说明中的排序编号说明
+	SortDesc  bool // 是否降序排序 true：降序 false：升序
+}
+
+// 解析gorm排序规则,如是tableName传入"-"则依据model解析tableName，注解含有table:=-则依据model解析tableName
+func GormParseOrderByID(model interface{}, tableName string, xOrderByList []XOrderBy, sortDesc bool) string {
+	return GormParseOrderBy(model, tableName, xOrderByList, &XOrderBy{SortField: 1, SortDesc: sortDesc})
+}
+
+// 解析gorm排序规则,如是tableName传入"-"则依据model解析tableName，注解含有table:=-则依据model解析tableName
+func GormParseOrderByCreatedAt(model interface{}, tableName string, xOrderByList []XOrderBy, sortDesc bool) string {
+	return GormParseOrderBy(model, tableName, xOrderByList, &XOrderBy{SortField: 2, SortDesc: sortDesc})
+}
+
+// 解析gorm排序规则,如是tableName传入"-"则依据model解析tableName，注解含有table:=-则依据model解析tableName
+func GormParseOrderByUpdatedAt(model interface{}, tableName string, xOrderByList []XOrderBy, sortDesc bool) string {
+	return GormParseOrderBy(model, tableName, xOrderByList, &XOrderBy{SortField: 3, SortDesc: sortDesc})
+}
+
+// 解析gorm排序规则,如是tableName传入"-"则依据model解析tableName，注解含有table:=-则依据model解析tableName
+func GormParseOrderBy(model interface{}, tableName string, xOrderByList []XOrderBy, xOrderByDefault *XOrderBy) string {
+	orderByList := xOrderByList
+	if nil != xOrderByDefault && xOrderByDefault.SortField > 0 {
+		if !corex.SliceContainsByKey(orderByList, "SortField", xOrderByDefault.SortField) {
+			orderByList = append(orderByList, *xOrderByDefault)
+		}
+	}
+	if nil == orderByList || len(orderByList) <= 0 {
+		return ""
+	}
+	// 解析排序tag
+	orderByMap := xGormParseOrderByTag(model, tableName)
+	if nil == orderByMap || len(orderByMap) <= 0 {
+		return ""
+	}
+	var build strings.Builder
+	for _, xOrderBy := range orderByList {
+		orderByItem := parseOrderByItem(&orderByMap, &xOrderBy)
+		if len(orderByItem) <= 0 {
+			continue
+		}
+		if build.Len() > 0 {
+			build.WriteString(",")
+		}
+		build.WriteString(orderByItem)
+	}
+	return build.String()
+}
+
+// 解析gorm排序规则,如是tableName传入"-"则依据model解析tableName，注解含有table:=-则依据model解析tableName
+func xGormParseOrderByTag(model interface{}, tableName string) map[int]xGromOrderByTag {
+	tableNameDefault := ""
+	if tableName == "-" {
+		tableNameDefault = corex.ToSnakeCase(XreflectNameToSimply(reflect.TypeOf(model).String()))
+	} else {
+		tableNameDefault = corex.ToSnakeCase(tableName)
+	}
+	orderByMap := make(map[int]xGromOrderByTag)
+	orderByMapDefault := make(map[int]xGromOrderByTag)
+	xreflect.SelectFieldsDeep(model, func(s string, field reflect.StructField, value reflect.Value) bool {
+		fieldName := XreflectNameToSimply(field.Name)
+		if len(fieldName) <= 0 {
+			return false
+		}
+		if fieldName == "ID" {
+			gromOrderBy := xGromOrderByTag{
+				Index:     1,
+				Table:     tableNameDefault,
+				FieldName: fieldName,
+				Opt:       "",
+			}
+			orderByMapDefault[gromOrderBy.Index] = gromOrderBy
+			return true
+		} else if fieldName == "CreatedAt" {
+			gromOrderBy := xGromOrderByTag{
+				Index:     2,
+				Table:     tableNameDefault,
+				FieldName: fieldName,
+				Opt:       "",
+			}
+			orderByMapDefault[gromOrderBy.Index] = gromOrderBy
+			return true
+		} else if fieldName == "UpdatedAt" {
+			gromOrderBy := xGromOrderByTag{
+				Index:     3,
+				Table:     tableNameDefault,
+				FieldName: fieldName,
+				Opt:       "",
+			}
+			orderByMapDefault[gromOrderBy.Index] = gromOrderBy
+			return true
+		}
+		tagXreft, okXreft := field.Tag.Lookup(xRef_key_grom_order_by)
+		if !okXreft {
+			return false
+		}
+		// 开始分割目标控制和属性控制
+		// 开始分割目标控制和属性控制
+		tagOrigVal, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
+		if len(tagOrigVal) <= 0 {
+			return false
+		}
+		i, err := strconv.ParseInt(tagOrigVal, 10, 64)
+		if err != nil {
+			return false
+		}
+		if i < 0 {
+			return false
+		}
+		tagOption := corex.TagOptions(tagOpt)
+		tagOrderByTable := tagOption.OptionValue(xRef_key_grom_order_by_table)
+		if tagOrderByTable == "-" {
+			tagOrderByTable = tableNameDefault
+		} else if len(tagOrderByTable) > 0 {
+			tagOrderByTable = corex.ToSnakeCase(tagOrderByTable)
+		}
+		tagOrderByOpt := strings.ToLower(tagOption.OptionValue(xRef_key_grom_order_by_option))
+		if "desc" != tagOrderByOpt && "asc" != tagOrderByOpt {
+			tagOrderByOpt = ""
+		}
+		gromOrderBy := xGromOrderByTag{
+			Index:     int(i),
+			Table:     tagOrderByTable,
+			FieldName: fieldName,
+			Opt:       tagOrderByOpt,
+		}
+		orderByMap[gromOrderBy.Index] = gromOrderBy
+		return true
+	})
+
+	for key, value := range orderByMapDefault {
+		_, exitOk := orderByMap[key]
+		if exitOk {
+			continue
+		} else {
+			orderByMap[key] = value
+		}
+	}
+	return orderByMap
+}
+
+func parseOrderByItem(pOrderByMap *map[int]xGromOrderByTag, xOrderBy *XOrderBy) string {
+	orderByItem := ""
+	if nil == pOrderByMap || nil == xOrderBy || xOrderBy.SortField <= 0 {
+		return orderByItem
+	}
+	orderByMap := *pOrderByMap
+	_, exitOk := orderByMap[xOrderBy.SortField]
+	if !exitOk {
+		return orderByItem
+	}
+	xOrderByTag := orderByMap[xOrderBy.SortField]
+	if len(xOrderByTag.FieldName) <= 0 {
+		return orderByItem
+	}
+	if len(xOrderByTag.Table) > 0 {
+		if strings.HasSuffix(xOrderByTag.Table, ".") {
+			orderByItem = xOrderByTag.Table + corex.ToSnakeCase(xOrderByTag.FieldName)
+		} else {
+			orderByItem = xOrderByTag.Table + "." + corex.ToSnakeCase(xOrderByTag.FieldName)
+		}
+	} else {
+		orderByItem = corex.ToSnakeCase(xOrderByTag.FieldName)
+	}
+	if len(xOrderByTag.Opt) > 0 {
+		orderByItem = orderByItem + " " + xOrderByTag.Opt
+	} else if xOrderBy.SortDesc {
+		orderByItem = orderByItem + " " + "desc"
+	} else {
+		orderByItem = orderByItem + " " + "asc"
+	}
+	return orderByItem
+
+}
+
+// field名称简化
+func XreflectNameToSimply(reflectName string) string {
+	lenFieldName := len(reflectName)
+	if lenFieldName <= 0 {
+		return reflectName
+	}
+	lastIndex := strings.LastIndex(reflectName, ".")
+	if lastIndex >= 0 && lastIndex < lenFieldName-1 {
+		return reflectName[lastIndex+1:]
+	} else {
+		return reflectName
 	}
 }
