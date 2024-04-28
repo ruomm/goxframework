@@ -434,8 +434,8 @@ type xGromOrderByTag struct {
 }
 
 type XOrderBy struct {
-	SortField int  // 排序字段索引 1.编号(ID)排序 2.创建时间(CreatedAt)排序 3.更新时间(UpdatedAt)排序 >=4.其他自定义字段排序，参考说明中的排序编号说明
-	SortDesc  bool // 是否降序排序 true：降序 false：升序
+	SortField int  `json:"sortField" xreq_query:"sortField;tidy" xref:"SortField" validate:"min=0" xvalid_error:"排序字段索引不合法"` // 排序字段索引 1.编号(ID)排序 2.创建时间(CreatedAt)排序 3.更新时间(UpdatedAt)排序 >=4.其他自定义字段排序，参考说明中的排序编号说明
+	SortDesc  bool `json:"sortDesc" xreq_query:"sortDesc;tidy" xref:"SortDesc"`                                              // 是否降序排序 true：降序 false：升序
 }
 
 // 解析gorm排序规则,如是tableName传入"-"则依据model解析tableName，注解含有table:=-则依据model解析tableName
