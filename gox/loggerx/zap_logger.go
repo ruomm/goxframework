@@ -160,9 +160,9 @@ func getLogWriter(logConfig *LogConfigs) zapcore.WriteSyncer {
 
 func getLogEncoder(textMode bool) zapcore.Encoder {
 	encodeLevel := zapcore.LowercaseLevelEncoder
-	if textMode {
-		encodeLevel = zapcore.CapitalLevelEncoder
-	}
+	//if textMode {
+	//	encodeLevel = zapcore.CapitalLevelEncoder
+	//}
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:  "time",
 		LevelKey: "level",
@@ -177,7 +177,11 @@ func getLogEncoder(textMode bool) zapcore.Encoder {
 		EncodeCaller:   zapcore.FullCallerEncoder,      // 全路径编码器
 		EncodeName:     zapcore.FullNameEncoder,
 	}
-	return zapcore.NewJSONEncoder(encoderConfig)
+	if textMode {
+		return zapcore.NewConsoleEncoder(encoderConfig)
+	} else {
+		return zapcore.NewJSONEncoder(encoderConfig)
+	}
 }
 
 func getLogLevel(logConfig *LogConfigs) zap.AtomicLevel {
