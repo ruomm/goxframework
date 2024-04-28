@@ -42,7 +42,9 @@ func InitLogger(logConfig interface{}, workDirPath string, handler XCallerSkipHa
 		return nil
 	}
 }
-
+func GenerateLogger(logConfig interface{}, workDirPath string, instanceName string, callerSkip int, handler XCallerSkipHandler) (*LoggerX, error) {
+	return generateLoggerX(logConfig, workDirPath, instanceName, callerSkip, handler)
+}
 func generateLoggerX(logConfig interface{}, workDirPath string, instanceName string, callerSkip int, handler XCallerSkipHandler) (*LoggerX, error) {
 	//workPath = workDirPath
 	//lenWorkPath = len(workPath)
@@ -68,7 +70,7 @@ func generateLoggerX(logConfig interface{}, workDirPath string, instanceName str
 	//}
 	// 开始配置文件
 	initFields := getInitFields(&logConfigInit)
-	encoder := getLogEncoder()
+	encoder := getLogEncoder(logConfigInit.TextMode)
 	writer := getLogWriter(&logConfigInit)
 	level := getLogLevel(&logConfigInit)
 	core := zapcore.NewCore(encoder, writer, level)
@@ -117,7 +119,7 @@ func generateZapLogger(logConfig interface{}, workDirPath string, instanceName s
 	//}
 	// 开始配置文件
 	initFields := getInitFields(&logConfigInit)
-	encoder := getLogEncoder()
+	encoder := getLogEncoder(logConfigInit.TextMode)
 	writer := getLogWriter(&logConfigInit)
 	level := getLogLevel(&logConfigInit)
 	core := zapcore.NewCore(encoder, writer, level)
@@ -156,7 +158,11 @@ func getLogWriter(logConfig *LogConfigs) zapcore.WriteSyncer {
 	}
 }
 
-func getLogEncoder() zapcore.Encoder {
+func getLogEncoder(textMode bool) zapcore.Encoder {
+	encodeLevel := zapcore.LowercaseLevelEncoder
+	if textMode {
+		encodeLevel = zapcore.CapitalLevelEncoder
+	}
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:  "time",
 		LevelKey: "level",
@@ -165,7 +171,7 @@ func getLogEncoder() zapcore.Encoder {
 		MessageKey:     "msg",
 		StacktraceKey:  "stacktrace",
 		LineEnding:     zapcore.DefaultLineEnding,
-		EncodeLevel:    zapcore.LowercaseLevelEncoder,  // 小写编码器
+		EncodeLevel:    encodeLevel,                    // 小写编码器
 		EncodeTime:     zapcore.ISO8601TimeEncoder,     // ISO8601 UTC 时间格式
 		EncodeDuration: zapcore.SecondsDurationEncoder, //
 		EncodeCaller:   zapcore.FullCallerEncoder,      // 全路径编码器

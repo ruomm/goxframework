@@ -15,4 +15,5 @@ type LogConfigs struct {
 	Compress     bool   `xref:"Compress"`
 	ServiceName  string `xref:"ServiceName"`
 	InstanceName string `xref:"InstanceName"`
+	TextMode     bool   `xref:"TextMode;tidy"`
 }
