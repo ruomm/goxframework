@@ -46,6 +46,7 @@ const (
 	xRef_time_layout = "2006-01-02 15:04:05"
 
 	xRef_key_origvalue_by_method     = ".bymt"
+	xRef_len_origvalue_by_method     = len(xRef_key_origvalue_by_method)
 	xRef_key_getvalue_by_method_mode = "bymv"
 	xRef_key_time_t                  = "t"
 	xRef_key_bytesize                = "bs"
@@ -129,8 +130,8 @@ func XRefStructCopy(origO interface{}, destO interface{}, options ...XrefOption)
 		cpOpt := resOpt[key]
 		var origValue interface{} = nil
 		var tmpErr01 error = nil
-		if strings.HasSuffix(origKey, xRef_key_origvalue_by_method) {
-			origValue, tmpErr01 = xGetOrigValueByMethod(origO, origKey[0:len(origKey)-len(xRef_key_origvalue_by_method)], cpOpt)
+		if strings.HasSuffix(origKey, xRef_key_origvalue_by_method) && len(origKey) > xRef_len_origvalue_by_method {
+			origValue, tmpErr01 = xGetOrigValueByMethod(origO, origKey[0:len(origKey)-xRef_len_origvalue_by_method], cpOpt)
 		} else {
 			origValue, tmpErr01 = xreflect.EmbedFieldValue(origO, origKey)
 		}
@@ -429,8 +430,8 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 		cpOpt := resOpt[key]
 		var origValue interface{} = nil
 		var tmpErr01 error = nil
-		if strings.HasSuffix(origKey, xRef_key_origvalue_by_method) {
-			origValue, tmpErr01 = xGetOrigValueByMethod(origO, origKey[0:len(origKey)-len(xRef_key_origvalue_by_method)], cpOpt)
+		if strings.HasSuffix(origKey, xRef_key_origvalue_by_method) && len(origKey) > xRef_len_origvalue_by_method {
+			origValue, tmpErr01 = xGetOrigValueByMethod(origO, origKey[0:len(origKey)-xRef_len_origvalue_by_method], cpOpt)
 		} else {
 			origValue, tmpErr01 = xreflect.EmbedFieldValue(origO, origKey)
 		}
