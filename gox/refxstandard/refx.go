@@ -27,13 +27,13 @@ tf：字符串和时间类型相互转换时候的格式化设置，默认：yyy
 p：Float类型转换成字符串时候保留小数位数，默认不设置。
 snb：字符串转换成int类型时候，true解析为1，false解析为0，字符串转换成boolean类型时候，大于0的解析为true，小于0的解析为false。
 z8：字符串转为数字类型时候，以0开头的字符串以8进制进行解析。0x固定以16进制解析。
-bymt：定义字段使用方法复制，可以使用复制方法复制
+.bymt：定义字段使用方法复制，可以使用复制方法复制
 bymv：定义字段使用方法复制时候是否使用value模式
 tomt：定义字段转换方法，可以使用转换方法赋值
 tomv：定义字段转换方法时候是否使用value模式
 
 完整示例如下：
-`xref:"Name,User:UserName,Role:RoleName;bs,tns,tnm,t:sec,tf:2006-01-02 15:04:05,p:2,snb,z8,bymt:TransOrigMethod,bymv,tomt:TransMethodInt,tomv"`
+`xref:"Name,User:UserName,Role:ParseRoleName.bymt;bs,tns,tnm,t:sec,tf:2006-01-02 15:04:05,p:2,snb,z8,bymv,tomt:TransMethodInt,tomv"`
 */
 
 const (
@@ -45,7 +45,7 @@ const (
 
 	xRef_time_layout = "2006-01-02 15:04:05"
 
-	xRef_key_getvalue_by_method      = "bymt"
+	xRef_key_origvalue_by_method     = ".bymt"
 	xRef_key_getvalue_by_method_mode = "bymv"
 	xRef_key_time_t                  = "t"
 	xRef_key_bytesize                = "bs"
@@ -129,8 +129,8 @@ func XRefStructCopy(origO interface{}, destO interface{}, options ...XrefOption)
 		cpOpt := resOpt[key]
 		var origValue interface{} = nil
 		var tmpErr01 error = nil
-		if xTagContainKey(cpOpt, xRef_key_getvalue_by_method) {
-			origValue, tmpErr01 = xGetOrigValueByMethod(origO, origKey, cpOpt)
+		if strings.HasSuffix(origKey, xRef_key_origvalue_by_method) {
+			origValue, tmpErr01 = xGetOrigValueByMethod(origO, origKey[0:len(origKey)-len(xRef_key_origvalue_by_method)], cpOpt)
 		} else {
 			origValue, tmpErr01 = xreflect.EmbedFieldValue(origO, origKey)
 		}
@@ -429,8 +429,8 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 		cpOpt := resOpt[key]
 		var origValue interface{} = nil
 		var tmpErr01 error = nil
-		if xTagContainKey(cpOpt, xRef_key_getvalue_by_method) {
-			origValue, tmpErr01 = xGetOrigValueByMethod(origO, origKey, cpOpt)
+		if strings.HasSuffix(origKey, xRef_key_origvalue_by_method) {
+			origValue, tmpErr01 = xGetOrigValueByMethod(origO, origKey[0:len(origKey)-len(xRef_key_origvalue_by_method)], cpOpt)
 		} else {
 			origValue, tmpErr01 = xreflect.EmbedFieldValue(origO, origKey)
 		}
