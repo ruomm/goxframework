@@ -692,14 +692,14 @@ func xIsStringKind(kind reflect.Kind) bool {
 
 func xIsIntegerPointer(typeName string) bool {
 	if typeName == "*int" || typeName == "*int8" || typeName == "*int16" || typeName == "*int32" || typeName == "*int64" ||
-		typeName == "*uint" || typeName == "*uint8" || typeName == "*uint16" || typeName == "*uint32" || typeName == "*uint64" {
+		typeName == "*uint" || typeName == "*uint8" || typeName == "*uint16" || typeName == "*uint32" || typeName == "*uint64" || typeName == "*uintptr" {
 		return true
 	} else {
 		return false
 	}
 }
 func xIsUnsignedIntegerPointer(typeName string) bool {
-	if typeName == "*uint" || typeName == "*uint8" || typeName == "*uint16" || typeName == "*uint32" || typeName == "*uint64" {
+	if typeName == "*uint" || typeName == "*uint8" || typeName == "*uint16" || typeName == "*uint32" || typeName == "*uint64" || typeName == "*uintptr" {
 		return true
 	} else {
 		return false
