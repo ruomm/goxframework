@@ -250,6 +250,28 @@ func ParseStringToSlice(key string, viString string, splitTag string, destSliceK
 		} else {
 			return viArr, nil
 		}
+	} else if destSliceKind == reflect.Uintptr {
+		var viArr []uintptr = nil
+		for _, tmpStr := range destStrArr {
+			if len(tmpStr) <= 0 {
+				continue
+			}
+			tmpVal, tmpErr := strconv.ParseUint(tmpStr, 10, 64)
+			if tmpErr != nil {
+				return nil, tmpErr
+			} else {
+				viArr = append(viArr, uintptr(tmpVal))
+			}
+		}
+		if strings.HasPrefix(destTypeName, "*") {
+			if nil == viArr {
+				return nil, nil
+			} else {
+				return &viArr, nil
+			}
+		} else {
+			return viArr, nil
+		}
 	} else if destSliceKind == reflect.Float32 {
 		var viArr []float32 = nil
 		for _, tmpStr := range destStrArr {

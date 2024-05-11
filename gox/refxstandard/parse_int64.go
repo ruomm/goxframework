@@ -65,6 +65,9 @@ func xParseToInt(key string, origVal interface{}, destTypeName string, destActua
 	} else if destActualTypeKind == reflect.Uint64 {
 		rtVal := uint64(viInt64)
 		return &rtVal, true, validUnsignedString(vStr, checkUnsigned)
+	} else if destActualTypeKind == reflect.Uintptr {
+		rtVal := uintptr(viInt64)
+		return &rtVal, true, validUnsignedString(vStr, checkUnsigned)
 	} else {
 		if xRef_log {
 			fmt.Println(key + "字段无需赋值，目标指针类型未知。")

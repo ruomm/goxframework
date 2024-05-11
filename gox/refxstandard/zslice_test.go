@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-type SType int
+type SType uintptr
 type SRType int8
 type SBOrig struct {
 	//Orig *int
@@ -33,7 +33,9 @@ type SBOrigExt struct {
 }
 
 type SBDest struct {
-	RoleType SRType `xref:"UserType;tidy"`
+	UserType SRType
+	Time     *time.Time
+	RoleType SRType
 }
 
 type SBDestExt struct {
@@ -66,7 +68,10 @@ func GenerateOrigSlice() []SBOrigExt {
 func Test0001(t *testing.T) {
 	sbOrig := GenerateOrigStuct()
 	sbDest := SBDestExt{}
-	XRefStructCopy(sbOrig, &sbDest)
+	XRefStructCopy(sbOrig, &sbDest, XrefOptCopyMap(map[string]string{
+		"RoleType": "UserType",
+	}))
+	XRefStructCopy(sbOrig, &sbDest, XrefOptCopyDefault(true))
 	fmt.Println(sbDest)
 }
 

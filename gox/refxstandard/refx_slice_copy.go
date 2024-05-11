@@ -297,6 +297,12 @@ func oldXSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string)
 			} else {
 				destValue.SetInt(int64(srcItemValue.Interface().(uint64)))
 			}
+		} else if origKind == reflect.Uintptr {
+			if xIsUnsignedIntegerKind(destKind) {
+				destValue.SetUint(uint64(srcItemValue.Interface().(uintptr)))
+			} else {
+				destValue.SetInt(int64(srcItemValue.Interface().(uintptr)))
+			}
 		} else if origKind == reflect.Float32 {
 			destValue.SetFloat(float64(srcItemValue.Interface().(float32)))
 		} else if origKind == reflect.Float64 {
@@ -476,6 +482,9 @@ func xCopyToMapTypeTrans(destActualTypeKind reflect.Kind, vi interface{}) interf
 	} else if destActualTypeKind == reflect.Uint64 {
 		viInt64 := vi.(int64)
 		return uint64(viInt64)
+	} else if destActualTypeKind == reflect.Uintptr {
+		viInt64 := vi.(int64)
+		return uintptr(viInt64)
 	} else {
 		return vi
 	}
