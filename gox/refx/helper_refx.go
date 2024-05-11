@@ -339,3 +339,43 @@ func xGetOrigValueByMethod(origO interface{}, origKey string, cpOpt string) (int
 	}
 	return actualDestValue.Interface(), nil
 }
+
+// 依据copyDefault、copyMap、copyMapList获取复制的Key值
+func xParseOrigCopyKeyByXrefOptions(fieldName string, do *xrefOptions) (string, bool) {
+	fileNameSimply := corex.FieldNameToSimply(fieldName)
+	if len(fileNameSimply) <= 0 {
+		return "", false
+	}
+	//tagOrig, okCanXref :=
+	tagOrig := ""
+	if len(do.mapKeyAppend) > 0 {
+		for itemKey, itemValue := range do.copyMap {
+			if fileNameSimply == itemKey {
+				tagOrig = itemValue
+				break
+			}
+		}
+	}
+	if len(tagOrig) > 0 {
+		return tagOrig, true
+	}
+	if len(do.copyList) > 0 {
+		for _, itemKey := range do.copyList {
+			if fileNameSimply == itemKey {
+				tagOrig = itemKey
+				break
+			}
+		}
+	}
+	if len(tagOrig) > 0 {
+		return tagOrig, true
+	}
+	if do.copyDefault {
+		tagOrig = fileNameSimply
+	}
+	if len(tagOrig) > 0 {
+		return tagOrig, true
+	} else {
+		return "", false
+	}
+}

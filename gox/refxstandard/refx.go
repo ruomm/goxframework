@@ -98,7 +98,18 @@ func XRefStructCopy(origO interface{}, destO interface{}, options ...XrefOption)
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
-			return false
+			tagOrigByDo, okCanXrefByDo := xParseOrigCopyKeyByXrefOptions(s, &do)
+			if !okCanXrefByDo {
+				return false
+			}
+			resOrig[s] = tagOrigByDo
+			// 解析属性控制
+			tagOptByDo := do.copyOption
+			resOpt[s] = tagOptByDo
+			if xRef_log {
+				fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrigByDo + "，控制协议：" + tagOptByDo)
+			}
+			return true
 		}
 		// 开始分割目标控制和属性控制
 		tagOrigVal, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
@@ -201,7 +212,18 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
-			return false
+			tagOrigByDo, okCanXrefByDo := xParseOrigCopyKeyByXrefOptions(s, &do)
+			if !okCanXrefByDo {
+				return false
+			}
+			resOrig[s] = tagOrigByDo
+			// 解析属性控制
+			tagOptByDo := do.copyOption
+			resOpt[s] = tagOptByDo
+			if xRef_log {
+				fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrigByDo + "，控制协议：" + tagOptByDo)
+			}
+			return true
 		}
 		// 开始分割目标控制和属性控制
 		tagOrigVal, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
@@ -294,7 +316,18 @@ func XRefHandlerCopy(xrefOrigHandler XrefHander, destO interface{}, options ...X
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
-			return false
+			tagOrigByDo, okCanXrefByDo := xParseOrigCopyKeyByXrefOptions(s, &do)
+			if !okCanXrefByDo {
+				return false
+			}
+			resOrig[s] = tagOrigByDo
+			// 解析属性控制
+			tagOptByDo := do.copyOption
+			resOpt[s] = tagOptByDo
+			if xRef_log {
+				fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrigByDo + "，控制协议：" + tagOptByDo)
+			}
+			return true
 		}
 		// 开始分割目标控制和属性控制
 		tagOrigVal, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
@@ -398,7 +431,18 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(refValue.Interface(), func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
-			return false
+			tagOrigByDo, okCanXrefByDo := xParseOrigCopyKeyByXrefOptions(s, &do)
+			if !okCanXrefByDo {
+				return false
+			}
+			resOrig[s] = tagOrigByDo
+			// 解析属性控制
+			tagOptByDo := do.copyOption
+			resOpt[s] = tagOptByDo
+			if xRef_log {
+				fmt.Println("解析复制字段，目标：" + s + "，来源：" + tagOrigByDo + "，控制协议：" + tagOptByDo)
+			}
+			return true
 		}
 		// 开始分割目标控制和属性控制
 		tagOrigVal, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
