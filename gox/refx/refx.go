@@ -98,7 +98,7 @@ func XRefStructCopy(origO interface{}, destO interface{}, options ...XrefOption)
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
-			tagOrigByDo, okCanXrefByDo := xParseOrigCopyKeyByXrefOptions(s, &do)
+			tagOrigByDo, okCanXrefByDo := xParseOrigCopyKeyByXrefOptions(s, &field, &do)
 			if !okCanXrefByDo {
 				return false
 			}
@@ -212,7 +212,7 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
-			tagOrigByDo, okCanXrefByDo := xParseOrigCopyKeyByXrefOptions(s, &do)
+			tagOrigByDo, okCanXrefByDo := xParseOrigCopyKeyByXrefOptions(s, &field, &do)
 			if !okCanXrefByDo {
 				return false
 			}
@@ -316,7 +316,7 @@ func XRefHandlerCopy(xrefOrigHandler XrefHander, destO interface{}, options ...X
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
-			tagOrigByDo, okCanXrefByDo := xParseOrigCopyKeyByXrefOptions(s, &do)
+			tagOrigByDo, okCanXrefByDo := xParseOrigCopyKeyByXrefOptions(s, &field, &do)
 			if !okCanXrefByDo {
 				return false
 			}
@@ -431,7 +431,7 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(refValue.Interface(), func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
-			tagOrigByDo, okCanXrefByDo := xParseOrigCopyKeyByXrefOptions(s, &do)
+			tagOrigByDo, okCanXrefByDo := xParseOrigCopyKeyByXrefOptions(s, &field, &do)
 			if !okCanXrefByDo {
 				return false
 			}

@@ -349,8 +349,8 @@ func xGetOrigValueByMethod(origO interface{}, origKey string, cpOpt string) (int
 }
 
 // 依据copyDefault、copyMap、copyMapList获取复制的Key值
-func xParseOrigCopyKeyByXrefOptions(fieldName string, do *xrefOptions) (string, bool) {
-	fileNameSimply := corex.FieldNameToSimply(fieldName)
+func xParseOrigCopyKeyByXrefOptions(s string, pField *reflect.StructField, do *xrefOptions) (string, bool) {
+	fileNameSimply := corex.FieldNameToSimply(s)
 	if len(fileNameSimply) <= 0 {
 		return "", false
 	}
@@ -378,8 +378,40 @@ func xParseOrigCopyKeyByXrefOptions(fieldName string, do *xrefOptions) (string, 
 	if len(tagOrig) > 0 {
 		return tagOrig, true
 	}
-	if do.copyDefault {
-		tagOrig = fileNameSimply
+	if do.copyDefault && nil != pField {
+		actualType := pField.Type
+		if actualType.Kind() == reflect.Ptr {
+			actualType = actualType.Elem()
+		}
+		actualKind := actualType.Kind()
+		canCopy := false
+		switch actualKind {
+		case reflect.Bool:
+			canCopy = true
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			canCopy = true
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+			canCopy = true
+		case reflect.Float32, reflect.Float64:
+			canCopy = true
+		case reflect.String:
+			canCopy = false
+		case reflect.Array, reflect.Map, reflect.Slice:
+			canCopy = false
+		case reflect.Struct:
+			canCopy = xIsTimeType(actualType.String())
+		case reflect.Interface, reflect.Ptr:
+			canCopy = false
+		case reflect.Func:
+			canCopy = false
+		case reflect.Invalid:
+			canCopy = false
+		default:
+			canCopy = false
+		}
+		if canCopy {
+			tagOrig = fileNameSimply
+		}
 	}
 	if len(tagOrig) > 0 {
 		return tagOrig, true
