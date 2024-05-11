@@ -356,7 +356,7 @@ func xParseOrigCopyKeyByXrefOptions(fieldName string, do *xrefOptions) (string, 
 	}
 	//tagOrig, okCanXref :=
 	tagOrig := ""
-	if len(do.mapKeyAppend) > 0 {
+	if len(do.copyMap) > 0 {
 		for itemKey, itemValue := range do.copyMap {
 			if fileNameSimply == itemKey {
 				tagOrig = itemValue
