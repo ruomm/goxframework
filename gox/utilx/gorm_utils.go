@@ -487,14 +487,14 @@ func GormParseOrderBy(model interface{}, tableName string, xOrderByList []XOrder
 func xGormParseOrderByTag(model interface{}, tableName string) map[int]xGromOrderByTag {
 	tableNameDefault := ""
 	if tableName == "-" {
-		tableNameDefault = corex.ToSnakeCase(XreflectNameToSimply(reflect.TypeOf(model).String()))
+		tableNameDefault = corex.ToSnakeCase(corex.FieldNameToSimply(reflect.TypeOf(model).String()))
 	} else {
 		tableNameDefault = corex.ToSnakeCase(tableName)
 	}
 	orderByMap := make(map[int]xGromOrderByTag)
 	orderByMapDefault := make(map[int]xGromOrderByTag)
 	xreflect.SelectFieldsDeep(model, func(s string, field reflect.StructField, value reflect.Value) bool {
-		fieldName := XreflectNameToSimply(field.Name)
+		fieldName := corex.FieldNameToSimply(field.Name)
 		if len(fieldName) <= 0 {
 			return false
 		}
@@ -607,18 +607,4 @@ func parseOrderByItem(pOrderByMap *map[int]xGromOrderByTag, xOrderBy *XOrderBy) 
 	}
 	return orderByItem
 
-}
-
-// field名称简化
-func XreflectNameToSimply(reflectName string) string {
-	lenFieldName := len(reflectName)
-	if lenFieldName <= 0 {
-		return reflectName
-	}
-	lastIndex := strings.LastIndex(reflectName, ".")
-	if lastIndex >= 0 && lastIndex < lenFieldName-1 {
-		return reflectName[lastIndex+1:]
-	} else {
-		return reflectName
-	}
 }

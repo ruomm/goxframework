@@ -111,20 +111,6 @@ func XrefOptDefaultCopy(defaultCopy bool) XrefOption {
 	}}
 }
 
-// field名称简化
-func FiledNameToSimply(fieldName string) string {
-	lenFieldName := len(fieldName)
-	if lenFieldName <= 0 {
-		return fieldName
-	}
-	lastIndex := strings.LastIndex(fieldName, ".")
-	if lastIndex >= 0 && lastIndex < lenFieldName-1 {
-		return fieldName[lastIndex+1:]
-	} else {
-		return fieldName
-	}
-}
-
 // 字符串转换为int64
 func xTransStringToInt64(viString string, cpOpt string) (int64, error) {
 	if xTagContainKey(cpOpt, xRef_key_bytesize) {

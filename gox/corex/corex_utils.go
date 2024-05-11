@@ -41,6 +41,20 @@ func GetMd5WithSlat(data, slat string) string {
 	return hex.EncodeToString(bs)
 }
 
+// field名称简化
+func FieldNameToSimply(fieldName string) string {
+	lenFieldName := len(fieldName)
+	if lenFieldName <= 0 {
+		return fieldName
+	}
+	lastIndex := strings.LastIndex(fieldName, ".")
+	if lastIndex >= 0 && lastIndex < lenFieldName-1 {
+		return fieldName[lastIndex+1:]
+	} else {
+		return fieldName
+	}
+}
+
 // 驼峰转下划线工具
 func ToSnakeCase(str string) string {
 	str = xvalid_matchNonAlphaNumeric.ReplaceAllString(str, "_")     //非常规字符转化为 _
