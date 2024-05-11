@@ -66,6 +66,7 @@ type xrefOptions struct {
 	checkUnsigned bool   //无符号字符串是否严格匹配校验
 	copyOption    string //复制时候的控制属性
 	mapKeyAppend  string //设置Map赋值时候的拼接Key值
+	defaultCopy   bool   //设置没有注解时候是否默认复制
 }
 
 // 设置关联tag的名称，不设置默认为xref
@@ -101,6 +102,27 @@ func XrefOptMapKeyAppend(mapKeyAppend string) XrefOption {
 	return XrefOption{func(do *xrefOptions) {
 		do.mapKeyAppend = mapKeyAppend
 	}}
+}
+
+// 设置没有注解时候是否默认复制
+func XrefOptDefaultCopy(defaultCopy bool) XrefOption {
+	return XrefOption{func(do *xrefOptions) {
+		do.defaultCopy = defaultCopy
+	}}
+}
+
+// field名称简化
+func FiledNameToSimply(fieldName string) string {
+	lenFieldName := len(fieldName)
+	if lenFieldName <= 0 {
+		return fieldName
+	}
+	lastIndex := strings.LastIndex(fieldName, ".")
+	if lastIndex >= 0 && lastIndex < lenFieldName-1 {
+		return fieldName[lastIndex+1:]
+	} else {
+		return fieldName
+	}
 }
 
 // 字符串转换为int64
