@@ -98,6 +98,11 @@ func XRefStructCopy(origO interface{}, destO interface{}, options ...XrefOption)
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
+			if do.copyDefault {
+				resOrig[s] = corex.FieldNameToSimply(s)
+				resOpt[s] = do.copyOption
+				return true
+			}
 			return false
 		}
 		// 开始分割目标控制和属性控制
@@ -201,6 +206,11 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
+			if do.copyDefault {
+				resOrig[s] = corex.FieldNameToSimply(s)
+				resOpt[s] = do.copyOption
+				return true
+			}
 			return false
 		}
 		// 开始分割目标控制和属性控制
@@ -294,6 +304,11 @@ func XRefHandlerCopy(xrefOrigHandler XrefHander, destO interface{}, options ...X
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(destO, func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
+			if do.copyDefault {
+				resOrig[s] = corex.FieldNameToSimply(s)
+				resOpt[s] = do.copyOption
+				return true
+			}
 			return false
 		}
 		// 开始分割目标控制和属性控制
@@ -398,6 +413,11 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(refValue.Interface(), func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRef_tag_cp_xreft)
 		if !okXreft {
+			if do.copyDefault {
+				resOrig[s] = corex.FieldNameToSimply(s)
+				resOpt[s] = do.copyOption
+				return true
+			}
 			return false
 		}
 		// 开始分割目标控制和属性控制

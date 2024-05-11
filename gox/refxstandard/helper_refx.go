@@ -61,12 +61,14 @@ type XrefOption struct {
 }
 
 type xrefOptions struct {
-	optTag        string //关联的tag的名称
-	optNameSpace  string //关联源的nameSpace
-	checkUnsigned bool   //无符号字符串是否严格匹配校验
-	copyOption    string //复制时候的控制属性
-	mapKeyAppend  string //设置Map赋值时候的拼接Key值
-	defaultCopy   bool   //设置没有注解时候是否默认复制
+	optTag        string            //关联的tag的名称
+	optNameSpace  string            //关联源的nameSpace
+	checkUnsigned bool              //无符号字符串是否严格匹配校验
+	copyOption    string            //复制时候的控制属性
+	mapKeyAppend  string            //设置Map赋值时候的拼接Key值
+	copyDefault   bool              //设置没有注解时候是否默认复制
+	copyMap       map[string]string //设置没有注解时候复制的来源目标Map数据
+	copyList      []string          //设置没有注解时候复制的M来源目标List数据
 }
 
 // 设置关联tag的名称，不设置默认为xref
@@ -105,9 +107,23 @@ func XrefOptMapKeyAppend(mapKeyAppend string) XrefOption {
 }
 
 // 设置没有注解时候是否默认复制
-func XrefOptDefaultCopy(defaultCopy bool) XrefOption {
+func XrefOptCopyDefault(copyDefault bool) XrefOption {
 	return XrefOption{func(do *xrefOptions) {
-		do.defaultCopy = defaultCopy
+		do.copyDefault = copyDefault
+	}}
+}
+
+// 设置没有注解时候复制的来源目标Map数据
+func XrefOptCopyMap(copyMap map[string]string) XrefOption {
+	return XrefOption{func(do *xrefOptions) {
+		do.copyMap = copyMap
+	}}
+}
+
+// 设置没有注解时候复制的来源目标List数据
+func XrefOptCopyList(copyList []string) XrefOption {
+	return XrefOption{func(do *xrefOptions) {
+		do.copyList = copyList
 	}}
 }
 
