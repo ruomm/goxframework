@@ -127,13 +127,6 @@ func XrefOptMapKeyAppend(mapKeyAppend string) XrefOption {
 	}}
 }
 
-// 设置没有注解时候是否默认复制
-func XrefOptDefaultCopy(defaultCopy bool) XrefOption {
-	return XrefOption{func(do *xrefOptions) {
-		do.copyDefault = defaultCopy
-	}}
-}
-
 // 字符串转换为int64
 func xTransStringToInt64(viString string, cpOpt string) (int64, error) {
 	if xTagContainKey(cpOpt, xRef_key_bytesize) {

@@ -98,6 +98,10 @@ func XSliceCopy(srcSlice interface{}, destSlice interface{}, options ...XrefOpti
 	if nil == destSlice {
 		return errors.New(tag + "destSlice must not nil")
 	}
+	do := xrefOptions{}
+	for _, option := range options {
+		option.f(&do)
+	}
 	destSliceValue := reflect.ValueOf(destSlice)
 	if destSliceValue.Kind() != reflect.Ptr && destSliceValue.Elem().Kind() != reflect.Slice {
 		return errors.New(tag + "destSlice must be a slice pointer")
@@ -162,7 +166,15 @@ func XSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string, op
 	var errG error = nil
 	for i := 0; i < srcSliceValue.Len(); i++ {
 		destValue := destSliceElem.Index(i)
-		srcItemValue := srcSliceValue.Index(i).FieldByName(key)
+		valItemActual := srcSliceValue.Index(i)
+		if valItemActual.Kind() == reflect.Pointer || valItemActual.Kind() == reflect.Interface {
+			if valItemActual.IsNil() {
+				continue
+			}
+			valItemActual = valItemActual.Elem()
+		}
+		srcItemValue := valItemActual.FieldByName(key)
+
 		origValue := srcItemValue.Interface()
 		rtVal, transOk, transErr := xRef_transOrigToDestValue(key, do.copyOption, origValue, destValue, checkUnsigned)
 		if transErr != nil {
@@ -228,7 +240,14 @@ func oldXSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string)
 	var errG error = nil
 	for i := 0; i < srcSliceValue.Len(); i++ {
 		destValue := destSliceElem.Index(i)
-		srcItemValue := srcSliceValue.Index(i).FieldByName(key)
+		valItemActual := srcSliceValue.Index(i)
+		if valItemActual.Kind() == reflect.Pointer || valItemActual.Kind() == reflect.Interface {
+			if valItemActual.IsNil() {
+				continue
+			}
+			valItemActual = valItemActual.Elem()
+		}
+		srcItemValue := valItemActual.FieldByName(key)
 		origKind := srcItemValue.Type().Kind()
 		destTypeOf := destValue.Type()
 		destKind := destTypeOf.Kind()
@@ -320,7 +339,12 @@ func oldXSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string)
 
 // 泛型函数，转换一个类型的Slice到另一个类型的Map，使用xref库进行转换。
 func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, valueTag string, options ...XrefOption) error {
-	tag := ":XSliceCopyToMap"
+	return XSliceCopyToMapCommon(srcSlice, destMap, keyTag, valueTag, false, options...)
+}
+
+// 泛型函数，转换一个类型的Slice到另一个类型的Map，使用xref库进行转换。quoteSameType:slice和map相同类型时候是否直接应用而不是使用refx复制。
+func XSliceCopyToMapCommon(srcSlice interface{}, destMap interface{}, keyTag string, valueTag string, sameTypeQuote bool, options ...XrefOption) error {
+	tag := ":XSliceCopyToMapCommon"
 	if nil == destMap {
 		return errors.New(tag + "destMap must not nil")
 	}
@@ -347,7 +371,14 @@ func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, v
 	valueType := reflect.TypeOf(destMapElem.Interface()).Elem()
 	valueKind := valueType.Kind()
 	valueTypeName := valueType.String()
-
+	valueIsPrt := false
+	var valueActualType reflect.Type = nil
+	if valueKind == reflect.Pointer || valueKind == reflect.Interface {
+		valueIsPrt = true
+		valueActualType = valueType.Elem()
+	} else {
+		valueActualType = valueType
+	}
 	srcSliceValue := reflect.ValueOf(srcSlice)
 	if srcSliceValue.Kind() != reflect.Slice {
 		return errors.New(tag + "srcSlice must be a slice")
@@ -356,7 +387,14 @@ func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, v
 
 	var errG error = nil
 	for i := 0; i < srcSliceValue.Len(); i++ {
-		keyItem := srcSliceValue.Index(i).FieldByName(keyTag)
+		valItemActual := srcSliceValue.Index(i)
+		if valItemActual.Kind() == reflect.Pointer || valItemActual.Kind() == reflect.Interface {
+			if valItemActual.IsNil() {
+				continue
+			}
+			valItemActual = valItemActual.Elem()
+		}
+		keyItem := valItemActual.FieldByName(keyTag)
 		keyItemValue := keyItem.Interface()
 		keyRtValue, keyTransOk, keyTransErr := xRefMap_transOrigToDestValue(valueTag, do.copyOption, keyItemValue, keyKind, keyTypeName, checkUnsigned)
 		if keyTransErr != nil {
@@ -371,17 +409,45 @@ func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, v
 		if len(do.mapKeyAppend) > 0 && keyKind == reflect.String {
 			keyRtValue = do.mapKeyAppend + keyRtValue.(string)
 		}
-		valItem := srcSliceValue.Index(i).FieldByName(valueTag)
-		valItemValue := valItem.Interface()
-		valRtValue, valueTransOk, valueTransErr := xRefMap_transOrigToDestValue(valueTag, do.copyOption, valItemValue, valueKind, valueTypeName, checkUnsigned)
-		if valueTransErr != nil {
-			errG = valueTransErr
+		if len(valueTag) > 0 {
+			valItem := valItemActual.FieldByName(valueTag)
+			if sameTypeQuote && valItem.Type() == valueType {
+				// 赋值
+				destMapElem.SetMapIndex(reflect.ValueOf(xCopyToMapTypeTrans(keyKind, keyRtValue)), valItem)
+			} else {
+				valItemValue := valItem.Interface()
+				valRtValue, valueTransOk, valueTransErr := xRefMap_transOrigToDestValue(valueTag, do.copyOption, valItemValue, valueKind, valueTypeName, checkUnsigned)
+				if valueTransErr != nil {
+					errG = valueTransErr
+				}
+				if !valueTransOk {
+					errG = errors.New(tag + "excute failed")
+				}
+				// 赋值
+				destMapElem.SetMapIndex(reflect.ValueOf(xCopyToMapTypeTrans(keyKind, keyRtValue)), reflect.ValueOf(xCopyToMapTypeTrans(valueKind, valRtValue)))
+			}
+		} else {
+			valItem := srcSliceValue.Index(i)
+			if sameTypeQuote && valueType == valItem.Type() {
+				// 赋值
+				destMapElem.SetMapIndex(reflect.ValueOf(xCopyToMapTypeTrans(keyKind, keyRtValue)), valItem)
+			} else {
+				rtMapActualValue := reflect.New(valueActualType)
+				fmt.Println(rtMapActualValue.String())
+				err, _ := XRefValueCopy(valItem.Interface(), rtMapActualValue.Elem(), options...)
+				if err != nil {
+					errG = err
+				}
+				// 赋值
+				if valueIsPrt {
+					destMapElem.SetMapIndex(reflect.ValueOf(xCopyToMapTypeTrans(keyKind, keyRtValue)), rtMapActualValue)
+				} else {
+					destMapElem.SetMapIndex(reflect.ValueOf(xCopyToMapTypeTrans(keyKind, keyRtValue)), rtMapActualValue.Elem())
+				}
+
+			}
 		}
-		if !valueTransOk {
-			errG = errors.New(tag + "excute failed")
-		}
-		// 赋值
-		destMapElem.SetMapIndex(reflect.ValueOf(xCopyToMapTypeTrans(keyKind, keyRtValue)), reflect.ValueOf(xCopyToMapTypeTrans(valueKind, valRtValue)))
+
 	}
 	return errG
 }
