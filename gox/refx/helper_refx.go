@@ -92,6 +92,13 @@ func XrefOptCheckUnsigned(checkUnsigned bool) XrefOption {
 	}}
 }
 
+// 设置复制时候的控制属性
+func XrefOptCopyOption(copyOption string) XrefOption {
+	return XrefOption{func(do *xrefOptions) {
+		do.copyOption = copyOption
+	}}
+}
+
 // 设置没有注解时候是否默认复制
 func XrefOptCopyDefault(copyDefault bool) XrefOption {
 	return XrefOption{func(do *xrefOptions) {

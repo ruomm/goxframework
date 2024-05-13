@@ -339,13 +339,14 @@ func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, v
 	}
 	destMapElem := destMapValue.Elem()
 	// 获取map的键(key)类型
-
-	keyType := reflect.TypeOf(destMapElem.Interface()).Key().Kind()
-	keyTypeName := reflect.TypeOf(destMapElem.Interface()).Key().Name()
+	keyType := reflect.TypeOf(destMapElem.Interface()).Key()
+	keyKind := keyType.Kind()
+	keyTypeName := keyType.Name()
 
 	// 获取map的值(value)类型
-	valueType := reflect.TypeOf(destMapElem.Interface()).Elem().Kind()
-	valueTypeName := reflect.TypeOf(destMapElem.Interface()).Elem().String()
+	valueType := reflect.TypeOf(destMapElem.Interface()).Elem()
+	valueKind := valueType.Kind()
+	valueTypeName := valueType.String()
 
 	srcSliceValue := reflect.ValueOf(srcSlice)
 	if srcSliceValue.Kind() != reflect.Slice {
@@ -357,7 +358,7 @@ func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, v
 	for i := 0; i < srcSliceValue.Len(); i++ {
 		keyItem := srcSliceValue.Index(i).FieldByName(keyTag)
 		keyItemValue := keyItem.Interface()
-		keyRtValue, keyTransOk, keyTransErr := xRefMap_transOrigToDestValue(valueTag, do.copyOption, keyItemValue, keyType, keyTypeName, checkUnsigned)
+		keyRtValue, keyTransOk, keyTransErr := xRefMap_transOrigToDestValue(valueTag, do.copyOption, keyItemValue, keyKind, keyTypeName, checkUnsigned)
 		if keyTransErr != nil {
 			errG = keyTransErr
 		}
@@ -367,12 +368,12 @@ func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, v
 		if keyRtValue == nil {
 			continue
 		}
-		if len(do.mapKeyAppend) > 0 && keyType == reflect.String {
+		if len(do.mapKeyAppend) > 0 && keyKind == reflect.String {
 			keyRtValue = do.mapKeyAppend + keyRtValue.(string)
 		}
 		valItem := srcSliceValue.Index(i).FieldByName(valueTag)
 		valItemValue := valItem.Interface()
-		valRtValue, valueTransOk, valueTransErr := xRefMap_transOrigToDestValue(valueTag, do.copyOption, valItemValue, valueType, valueTypeName, checkUnsigned)
+		valRtValue, valueTransOk, valueTransErr := xRefMap_transOrigToDestValue(valueTag, do.copyOption, valItemValue, valueKind, valueTypeName, checkUnsigned)
 		if valueTransErr != nil {
 			errG = valueTransErr
 		}
@@ -380,7 +381,7 @@ func XSliceCopyToMap(srcSlice interface{}, destMap interface{}, keyTag string, v
 			errG = errors.New(tag + "excute failed")
 		}
 		// 赋值
-		destMapElem.SetMapIndex(reflect.ValueOf(xCopyToMapTypeTrans(keyType, keyRtValue)), reflect.ValueOf(xCopyToMapTypeTrans(valueType, valRtValue)))
+		destMapElem.SetMapIndex(reflect.ValueOf(xCopyToMapTypeTrans(keyKind, keyRtValue)), reflect.ValueOf(xCopyToMapTypeTrans(valueKind, valRtValue)))
 	}
 	return errG
 }
