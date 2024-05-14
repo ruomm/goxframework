@@ -81,3 +81,9 @@ func TestTimeOffsetFunctions(t *testing.T) {
 	timeResultString = TimeOffsetMonthByString("2024-03-12", -4)
 	fmt.Println(timeResultString)
 }
+func TestIsRegexMatch(t *testing.T) {
+	match := IsRegexMatch("^[a-zA-Z0-9-_\\.]{1,255}$", "a_-.123")
+	fmt.Println(match)
+	match = IsRegexMatch("^[a-z]$", "a_-.123")
+	fmt.Println(match)
+}
