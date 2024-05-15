@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-type SType uintptr
+type SType int
 type SRType int8
 type SBOrig struct {
 	//Orig *int
@@ -33,14 +33,12 @@ type SBOrigExt struct {
 }
 
 type SBDest struct {
-	UserType SRType
-	Time     *time.Time
-	RoleType SRType
+	RoleType SRType `xref:"UserType;tidy"`
 }
 
 type SBDestExt struct {
 	SBDest
-	Role2 SType  `xref:"SBOrigExt:UserType;tidy,tomt:TransMethodExaple"`
+	Role2 SType  `xref:"UserType;tidy"`
 	Name  string `xref:"dBOrigfasd:Age;tidy"`
 }
 
@@ -65,13 +63,21 @@ func GenerateOrigSlice() []SBOrigExt {
 	return sbSlice
 }
 
+func GenerateOrigSliceP() []*SBOrigExt {
+	var sbSlice []*SBOrigExt
+	for i := 0; i < 10; i++ {
+		sbOrig := SBOrigExt{}
+		sbOrig.UserType = SType(rand.Intn(600000000))
+		sbOrig.Age = SRType(rand2.UintN(10000))
+		sbSlice = append(sbSlice, &sbOrig)
+	}
+	return sbSlice
+}
+
 func Test0001(t *testing.T) {
 	sbOrig := GenerateOrigStuct()
 	sbDest := SBDestExt{}
-	XRefStructCopy(sbOrig, &sbDest, XrefOptCopyMap(map[string]string{
-		"RoleType": "UserType",
-	}))
-	XRefStructCopy(sbOrig, &sbDest, XrefOptCopyDefault(true))
+	XRefStructCopy(sbOrig, &sbDest)
 	fmt.Println(sbDest)
 }
 
@@ -90,9 +96,9 @@ func Test0003(t *testing.T) {
 	fmt.Println(sbDestSlice)
 }
 func Test0005(t *testing.T) {
-	sbOrigSlice := GenerateOrigSlice()
-	var sbDestMap map[string]int
-	XSliceCopyToMap(sbOrigSlice, &sbDestMap, "UserType", "Age", XrefOptMapKeyAppend("Key-"))
+	sbOrigSlice := GenerateOrigSliceP()
+	var sbDestMap map[string]*SBDestExt
+	XSliceCopyToMap(sbOrigSlice, &sbDestMap, "UserType", "", XrefOptMapKeyAppend("Key-"))
 	fmt.Println(sbDestMap)
 }
 
