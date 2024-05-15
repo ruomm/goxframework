@@ -1,6 +1,5 @@
 release/logs/
 release/go_build_*
-release/thridgateway-*
 go_build_*
 
 ### STS ###
