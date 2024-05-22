@@ -132,6 +132,111 @@ func ToGormMapIgnoreMode(gormModel interface{}, ignoreKeys ...string) (map[strin
 	return mapresult, nil
 }
 
+/*
+* 转换gorm模型为MAP对象，不包含gorm模型内置的id和时间相关字段，如是selectKeys有值则只会转换选定的key值字段
+ */
+func ToGormMapSnakeCase(gormModel interface{}, selectKeys ...string) (map[string]interface{}, error) {
+	if nil == gormModel {
+		return nil, errors.New("ToGormMap error,gormModel is nil")
+	}
+	//mapReflectValue, err := xreflect.Fields(destO)
+	mapReflectValue, err := xreflect.SelectFields(gormModel, func(s string, field reflect.StructField, value reflect.Value) bool {
+		tagGorm, okGorm := field.Tag.Lookup("gorm")
+		if !okGorm {
+			return false
+		}
+		// 开始分割目标控制和属性控制
+		subTag, _ := corex.ParseTagToNameOptionFenHao(tagGorm)
+		if len(subTag) > 0 && strings.HasPrefix(subTag, "-") {
+			return false
+		}
+		// 判断是否需要选定特定字段
+		if nil != selectKeys && len(selectKeys) > 0 {
+			if xGormIsContainKey(field.Name, selectKeys...) {
+				return true
+			} else {
+				return false
+			}
+		} else {
+			return true
+		}
+
+	})
+	if err != nil {
+		return nil, errors.New("To GormMap error,xreflect parse gormModel error")
+	}
+	if len(mapReflectValue) == 0 {
+		return nil, errors.New("To GormMap error,xreflect parse gormModel empty")
+	}
+	mapresult := make(map[string]interface{})
+	for key, value := range mapReflectValue {
+		if key == "Version" || key == "version" {
+			vi, _ := refx.ParseToInt64(value.Interface(), "")
+			if vi == nil {
+				continue
+			}
+			viInt64 := vi.(int64)
+			if viInt64 <= 0 {
+				continue
+			}
+			mapresult[corex.ToSnakeCase(key)] = viInt64 + 1
+		} else {
+			mapresult[corex.ToSnakeCase(key)] = value.Interface()
+		}
+	}
+	return mapresult, nil
+}
+
+/*
+* 转换gorm模型为MAP对象，不包含gorm模型内置的id和时间相关字段，如是ignorekeys有值则忽略转换选定的key值字段
+ */
+func ToGormMapIgnoreModeSnakeCase(gormModel interface{}, ignoreKeys ...string) (map[string]interface{}, error) {
+	if nil == gormModel {
+		return nil, errors.New("ToGormMap error,gormModel is nil")
+	}
+	//mapReflectValue, err := xreflect.Fields(destO)
+	mapReflectValue, err := xreflect.SelectFields(gormModel, func(s string, field reflect.StructField, value reflect.Value) bool {
+		tagGorm, okGorm := field.Tag.Lookup("gorm")
+		if !okGorm {
+			return false
+		}
+		// 开始分割目标控制和属性控制
+		subTag, _ := corex.ParseTagToNameOptionFenHao(tagGorm)
+		if len(subTag) > 0 && strings.HasPrefix(subTag, "-") {
+			return false
+		}
+		// 排除部分字段
+		if xGormIsContainKey(field.Name, ignoreKeys...) {
+			return false
+		}
+		return true
+
+	})
+	if err != nil {
+		return nil, errors.New("To GormMap error,xreflect parse gormModel error")
+	}
+	if len(mapReflectValue) == 0 {
+		return nil, errors.New("To GormMap error,xreflect parse gormModel empty")
+	}
+	mapresult := make(map[string]interface{})
+	for key, value := range mapReflectValue {
+		if key == "Version" || key == "version" {
+			vi, _ := refx.ParseToInt64(value.Interface(), "")
+			if vi == nil {
+				continue
+			}
+			viInt64 := vi.(int64)
+			if viInt64 <= 0 {
+				continue
+			}
+			mapresult[corex.ToSnakeCase(key)] = viInt64 + 1
+		} else {
+			mapresult[corex.ToSnakeCase(key)] = value.Interface()
+		}
+	}
+	return mapresult, nil
+}
+
 func xGormIsContainKey(fieldName string, fieldKeys ...string) bool {
 	if fieldKeys == nil || len(fieldKeys) <= 0 {
 		return false
