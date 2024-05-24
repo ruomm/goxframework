@@ -40,6 +40,23 @@ func (u *DecimalHelper) ToInt(d1 decimal.Decimal) int64 {
 	return intVal
 }
 
+// 使用Decimal格式化float64值
+func (u *DecimalHelper) FormatFloat(v float64) float64 {
+	//return d1.InexactFloat64()
+	d1 := u.ToDecimal(v)
+	floatVal, _ := d1.Float64()
+	return floatVal
+}
+
+// 使用Decimal格式化int64值
+func (u *DecimalHelper) FormatInt(v int64) int64 {
+	//return d1.InexactFloat64()
+	d1 := u.ToDecimalByInt(v)
+	floatVal, _ := d1.Float64()
+	intVal := int64(math.Round(floatVal))
+	return intVal
+}
+
 // 比较大小
 func (u *DecimalHelper) Compare(d1 decimal.Decimal, d2 decimal.Decimal) int {
 	return d1.Cmp(d2)
