@@ -28,6 +28,7 @@ const (
 )
 
 /*
+* GORM更新模型转换为更新MAP，如是selectKeys有值则选择特定字段更新
 * 转换gorm模型为MAP对象，不包含gorm模型内置的id和时间相关字段，如是selectKeys有值则只会转换选定的key值字段
  */
 func ToGormMap(gormModel interface{}, selectKeys ...string) (map[string]interface{}, error) {
@@ -83,6 +84,7 @@ func ToGormMap(gormModel interface{}, selectKeys ...string) (map[string]interfac
 }
 
 /*
+* GORM更新模型转换为更新MAP，如是ignorekeys有值则忽略转换选定的key值字段
 * 转换gorm模型为MAP对象，不包含gorm模型内置的id和时间相关字段，如是ignorekeys有值则忽略转换选定的key值字段
  */
 func ToGormMapIgnoreMode(gormModel interface{}, ignoreKeys ...string) (map[string]interface{}, error) {
@@ -133,6 +135,7 @@ func ToGormMapIgnoreMode(gormModel interface{}, ignoreKeys ...string) (map[strin
 }
 
 /*
+* GORM更新模型转换为更新MAP，并且进行蛇型法命名，如是selectKeys有值则只会转换选定的key值字段
 * 转换gorm模型为MAP对象，不包含gorm模型内置的id和时间相关字段，如是selectKeys有值则只会转换选定的key值字段
  */
 func ToGormMapSnakeCase(gormModel interface{}, selectKeys ...string) (map[string]interface{}, error) {
@@ -188,6 +191,7 @@ func ToGormMapSnakeCase(gormModel interface{}, selectKeys ...string) (map[string
 }
 
 /*
+* GORM更新模型转换为更新MAP，并且进行蛇型法命名，如是ignorekeys有值则忽略转换选定的key值字段
 * 转换gorm模型为MAP对象，不包含gorm模型内置的id和时间相关字段，如是ignorekeys有值则忽略转换选定的key值字段
  */
 func ToGormMapIgnoreModeSnakeCase(gormModel interface{}, ignoreKeys ...string) (map[string]interface{}, error) {
@@ -263,10 +267,16 @@ func xGormIsContainKey(fieldName string, fieldKeys ...string) bool {
 	return containFlag
 }
 
+/*
+* GORM查询map转换为查询条件和查询参数，不拼接deleted_at is NULL条件
+ */
 func ParseConditionMap(conditionMap map[string]interface{}) (string, []interface{}) {
 	return ParseConditionMapWithTable(conditionMap, "", false)
 }
 
+/*
+* GORM查询map转换为查询条件和查询参数，tableName有值则拼接没有.的字段拼接指定的tableName，deleteAtNotNull为true时候拼接deleted_at is NULL条件
+ */
 func ParseConditionMapWithTable(conditionMap map[string]interface{}, tableName string, deleteAtNotNull bool) (string, []interface{}) {
 	conditionKey := ""
 	var conditionArgs []interface{}
@@ -465,21 +475,25 @@ func GetResultListMD5(modelList interface{}, versionKey string) string {
 	}
 }
 
+// 时间转换为代表的日期查询条件,yyyy-MM-dd格式
 func GormParseQueryDay(time *time.Time) string {
 	stateDateString := corex.TimeFormatByString(corex.TIME_PATTERN_STANDARD_DAY, time)
 	return stateDateString
 }
 
+// 时间转换为代表的月份第一天查询条件,yyyy-MM-dd格式
 func GormParseQueryDayFirstInMonth(time *time.Time) string {
 	stateDateString := corex.TimeFormatByString(corex.TIME_PATTERN_STANDARD_MONTH, time)
 	return stateDateString + "-01"
 }
 
+// yyyy-MM-dd查询条件拼接“ 00:00:00”
 func GormParseQueryZeroTimeInDay(stateDateString string) *time.Time {
 	chargingTime, _ := corex.TimeParseByString(corex.TIME_PATTERN_STANDARD, stateDateString+" 00:00:00")
 	return chargingTime
 }
 
+// yyyy-MM-dd查询条件拼接“ 00:00:00”，yyyy-MM查询条件拼接“-01 00:00:00”
 func GormParseQueryStart(queryStart string) string {
 	lenQuery := len(queryStart)
 	if lenQuery <= 0 {
@@ -492,6 +506,8 @@ func GormParseQueryStart(queryStart string) string {
 		return ""
 	}
 }
+
+// yyyy-MM-dd查询条件获取下一天拼接“ 00:00:00”，yyyy-MM查询条件获取下一个月拼接“-01 00:00:00”
 func GormParseQueryEnd(queryEnd string) string {
 	lenQuery := len(queryEnd)
 	if lenQuery <= 0 {
