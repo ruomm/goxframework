@@ -65,7 +65,7 @@ func TestP2P(t *testing.T) {
 	}
 	XRefStructCopy(orig, &dest)
 	//XRefMapCopy(origMap, &dest)
-	//origHandler := XrefHander(func(origKey string, key string, cpOpt string) (interface{}, error) {
+	//origHandler := XrefHandler(func(origKey string, key string, cpOpt string) (interface{}, error) {
 	//	origValue, ok := origMap[origKey]
 	//	if ok {
 	//		return origValue, nil

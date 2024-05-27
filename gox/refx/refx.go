@@ -66,7 +66,7 @@ const (
 
 // key目标字段的key值，origKey源字段的key值
 // 返回需要往目标里面注入的值和时候有错误发生
-type XrefHander func(origKey string, key string, cpOpt string) (interface{}, error)
+type XrefHandler func(origKey string, key string, cpOpt string) (interface{}, error)
 
 /*
 *
@@ -301,7 +301,7 @@ destO：目标切片，不可以传入结构体
 */
 // TransferObj 将origO对象的属性值转成destO对象的属性值，属性对应关系和控制指令通过`xref`标签指定
 // 无标签的如果再按属性名匹配
-func XRefHandlerCopy(xrefOrigHandler XrefHander, destO interface{}, options ...XrefOption) (error, []string) {
+func XRefHandlerCopy(xrefOrigHandler XrefHandler, destO interface{}, options ...XrefOption) (error, []string) {
 	if nil == xrefOrigHandler {
 		return errors.New("XRefStructCopy error,xrefOrigHandler is nil"), nil
 	}
