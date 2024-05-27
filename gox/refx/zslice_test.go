@@ -31,15 +31,24 @@ type SBOrigExt struct {
 	//Orig *bool
 	//Orig *time.Time
 }
+type SCOrigExt struct {
+	SBOrig
+	//Orig *int
+	Age2 SRType
+	//Orig *float64
+	//Orig *bool
+	//Orig *time.Time
+}
 
 type SBDest struct {
-	RoleType SRType `xref:"UserType;tidy"`
+	RoleType SRType `xref:"SCOrigExt:UserType;tidy"`
 }
 
 type SBDestExt struct {
 	SBDest
-	Role2 SType  `xref:"UserType;tidy"`
-	Name  string `xref:"dBOrigfasd:Age;tidy"`
+	Role2 SType  `xref:"SBOrigExt:UserType"`
+	Age2  SType  `xref:"SCOrigExt:Age2"`
+	Name  string `xref:"SCOrigExt:Age2"`
 }
 
 func (d SBDestExt) TransMethodExaple(orig SType) int {
@@ -54,13 +63,23 @@ func GenerateOrigStuct() SBOrigExt {
 }
 func GenerateOrigSlice() []SBOrigExt {
 	var sbSlice []SBOrigExt
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 5; i++ {
 		sbOrig := SBOrigExt{}
 		sbOrig.UserType = SType(rand.Intn(600000000))
 		sbOrig.Age = SRType(rand2.UintN(10000))
 		sbSlice = append(sbSlice, sbOrig)
 	}
 	return sbSlice
+}
+func GenerateOrigCSlice() []SCOrigExt {
+	var scSlice []SCOrigExt
+	for i := 0; i < 10; i++ {
+		scOrig := SCOrigExt{}
+		//scOrig.UserType = SType(rand.Intn(600000000))
+		scOrig.Age2 = SRType(rand2.UintN(10000))
+		scSlice = append(scSlice, scOrig)
+	}
+	return scSlice
 }
 
 func GenerateOrigSliceP() []*SBOrigExt {
@@ -83,9 +102,12 @@ func Test0001(t *testing.T) {
 
 func Test0002(t *testing.T) {
 	sbOrigSlice := GenerateOrigSlice()
+	scOrigSlice := GenerateOrigCSlice()
 	var sbDestSlice []SBDestExt
-	//XSliceCopy(sbOrigSlice, &sbDestSlice, XrefOptNameSpace("dBOrigfasd"))
 	XSliceCopy(sbOrigSlice, &sbDestSlice)
+	XSliceQcopy(sbOrigSlice, &sbDestSlice)
+	err := XSliceQcopy(scOrigSlice, &sbDestSlice)
+	print(err)
 	fmt.Println(sbDestSlice)
 }
 
