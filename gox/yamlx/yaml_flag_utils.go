@@ -57,7 +57,7 @@ func ParseYamlFileByFlag(obj interface{}, options ...YamlxOption) (string, error
 	}
 	errXcp, _ := refx.XRefStructCopy(cmdCofig, obj)
 	if errXcp != nil {
-		panic(fmt.Sprintf("config load error, cause by XReflectCopy:", err))
+		panic(fmt.Sprintf("config load error, cause by XReflectCopy:%v", err))
 	} else {
 		return *cmdCofig.ConfYaml, nil
 	}
@@ -75,7 +75,7 @@ func ParseYamlFileByFlagLite(obj interface{}, options ...YamlxOption) (string, e
 	}
 	errXcp, _ := refx.XRefStructCopy(cmdCofig, obj)
 	if errXcp != nil {
-		panic(fmt.Sprintf("config load error, cause by XReflectCopy:", err))
+		panic(fmt.Sprintf("config load error, cause by XReflectCopy:%v", err))
 	} else {
 		return *cmdCofig.ConfYaml, nil
 	}
@@ -100,7 +100,7 @@ func ParseYamlFileByFlagWithPath(filePath string, obj interface{}, options ...Ya
 	}
 	errXcp, _ := refx.XRefStructCopy(cmdCofig, obj)
 	if errXcp != nil {
-		panic(fmt.Sprintf("config load error, cause by XReflectCopy:", err))
+		panic(fmt.Sprintf("config load error, cause by XReflectCopy:%v", err))
 	} else {
 		return confFilePath, nil
 	}

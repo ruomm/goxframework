@@ -72,8 +72,8 @@ func xToHttpxResponse(resp *http.Response) (*HttpxResponse, error) {
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Errorf("Http Read Response Body err:" + err.Error())
-		return &httpxResponse, err
+		//fmt.Errorf("Http Read Response Body err:%v", err)
+		return &httpxResponse, fmt.Errorf("Http Read Response Body err:%v", err)
 	}
 	httpxResponse.Body = body
 	if !Success2xx(&httpxResponse) {
