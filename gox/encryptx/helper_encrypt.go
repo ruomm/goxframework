@@ -24,6 +24,7 @@ const (
 	MODE_KEY_HEX_LOWER    MODE_KEY     = 2
 	MODE_KEY_HEX_UPPER    MODE_KEY     = 3
 	MODE_KEY_STRING       MODE_KEY     = 4
+	MODE_KEY_PEM          MODE_KEY     = 5
 	MODE_ENCODE_BASE64    MODE_ENCODE  = 1
 	MODE_ENCODE_HEX_LOWER MODE_ENCODE  = 2
 	MODE_ENCODE_HEX_UPPER MODE_ENCODE  = 3
@@ -101,7 +102,7 @@ type EncryptHelper interface {
 }
 
 func ParseKeyMode(keyMode MODE_KEY) MODE_KEY {
-	if keyMode == MODE_KEY_BASE64 || keyMode == MODE_KEY_HEX_LOWER || keyMode == MODE_KEY_HEX_UPPER || keyMode == MODE_KEY_STRING {
+	if keyMode == MODE_KEY_BASE64 || keyMode == MODE_KEY_HEX_LOWER || keyMode == MODE_KEY_HEX_UPPER || keyMode == MODE_KEY_STRING || keyMode == MODE_KEY_PEM {
 		return keyMode
 	} else {
 		return MODE_KEY_STRING

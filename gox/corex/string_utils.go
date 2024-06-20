@@ -7,6 +7,7 @@
 package corex
 
 import (
+	"bufio"
 	"regexp"
 	"strings"
 )
@@ -117,4 +118,86 @@ func MatchStringEmptyPatternPass(pattern string, s string) bool {
 	} else {
 		return false
 	}
+}
+
+/**
+ * 字符串转换为NO BOM格式
+ *
+ * @param str 原始字符串
+ * @return NO BOM字符串
+ */
+func StringToNoBom(str string) string {
+	lenStr := len(str)
+	if lenStr <= 0 {
+		return str
+	}
+	isBom := false
+	chars := []rune(str)
+	charCode := chars[0]
+	if charCode == rune(65279) {
+		isBom = true
+	}
+	if isBom {
+		return str[1:]
+	} else {
+		return str
+	}
+}
+
+// 转换string为slice
+func StringReadByLine(str string, emptyRetain bool) []string {
+	lenStr := len(str)
+	if lenStr <= 0 {
+		return nil
+	}
+	var resultSlice []string
+	// 创建一个Scanner对象
+	scanner := bufio.NewScanner(strings.NewReader(str))
+	// 设置扫描器的分隔函数为ScanLines
+	scanner.Split(bufio.ScanLines)
+	//firstFlag := true
+	// 遍历读取每一行
+	for scanner.Scan() {
+		line := scanner.Text() // 获取当前行的文本
+		//if firstFlag {
+		//	firstFlag = false
+		//	if firsrBomRemove {
+		//		line = StringToNoBom(line)
+		//	}
+		//}
+		if emptyRetain {
+			resultSlice = append(resultSlice, line)
+		} else if len(line) > 0 {
+			resultSlice = append(resultSlice, line)
+		}
+	}
+	return resultSlice
+}
+
+// 转换string为slice
+func StringReadByLineNoBom(str string, emptyRetain bool) []string {
+	lenStr := len(str)
+	if lenStr <= 0 {
+		return nil
+	}
+	var resultSlice []string
+	// 创建一个Scanner对象
+	scanner := bufio.NewScanner(strings.NewReader(str))
+	// 设置扫描器的分隔函数为ScanLines
+	scanner.Split(bufio.ScanLines)
+	firstFlag := true
+	// 遍历读取每一行
+	for scanner.Scan() {
+		line := scanner.Text() // 获取当前行的文本
+		if firstFlag {
+			firstFlag = false
+			line = StringToNoBom(line)
+		}
+		if emptyRetain {
+			resultSlice = append(resultSlice, line)
+		} else if len(line) > 0 {
+			resultSlice = append(resultSlice, line)
+		}
+	}
+	return resultSlice
 }
