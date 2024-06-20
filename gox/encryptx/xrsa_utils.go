@@ -7,9 +7,12 @@
 package encryptx
 
 import (
+	"bytes"
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"errors"
 )
 
 type XRsa struct {
@@ -106,4 +109,223 @@ func (x *XRsa) FormatPublicKey(modeOfKey MODE_KEY) (string, error) {
 func (x *XRsa) FormatPrivateKey(modeOfKey MODE_KEY) (string, error) {
 	keyData := x509.MarshalPKCS1PrivateKey(x.PrivateKey)
 	return RsaKeyByteToString(ParseKeyMode(modeOfKey), keyData, false)
+}
+
+// 公钥长度
+func (x *XRsa) SizeOfPublicKey() int {
+	if nil == x.PublicKey {
+		return 0
+	} else {
+		return x.PublicKey.Size()
+	}
+}
+
+// 秘钥长度
+func (x *XRsa) SizeOfPrivateKey() int {
+	if nil == x.PrivateKey {
+		return 0
+	} else {
+		return x.PrivateKey.Size()
+	}
+}
+
+// 使用公钥进行PKCS1v15加密，待加密信息长度不能超过秘钥模长-11
+func (x *XRsa) EncryptPKCS1v15(origMsg []byte) ([]byte, error) {
+	if nil == x.PublicKey {
+		return nil, errors.New("XRsa.PublicKey is nil")
+	}
+	if nil == origMsg {
+		return nil, errors.New("origMsg is nil")
+	}
+	return rsa.EncryptPKCS1v15(rand.Reader, x.PublicKey, origMsg)
+}
+
+// 使用私钥进行PKCS1v15解密，解密后信息长度不超过秘钥模长-11
+func (x *XRsa) DecryptPKCS1v15(encMsg []byte) ([]byte, error) {
+	if nil == x.PrivateKey {
+		return nil, errors.New("XRsa.PrivateKey is nil")
+	}
+	if nil == encMsg {
+		return nil, errors.New("encMsg is nil")
+	}
+	return rsa.DecryptPKCS1v15(rand.Reader, x.PrivateKey, encMsg)
+}
+
+// 使用公钥进行PKCS1v15加密，待加密信息长度超过秘钥模长-11则使用分段加密
+func (x *XRsa) EncryptPKCS1v15Big(origMsg []byte) ([]byte, error) {
+	if nil == x.PublicKey {
+		return nil, errors.New("XRsa.PublicKey is nil")
+	}
+	if nil == origMsg {
+		return nil, errors.New("origMsg is nil")
+	}
+	keySize := x.SizeOfPublicKey()
+	blockSize := keySize - 11
+	if blockSize <= 0 {
+		return nil, errors.New("XRsa.PublicKey blockSize is too small")
+	}
+	lenData := len(origMsg)
+	if lenData <= blockSize {
+		return rsa.EncryptPKCS1v15(rand.Reader, x.PublicKey, origMsg)
+	}
+	buffer := bytes.Buffer{}
+	size := lenData / blockSize
+	for i := 0; i < size; i++ {
+		tmpData := make([]byte, blockSize)
+		copy(tmpData, origMsg[i*blockSize:(i+1)*blockSize])
+		tmpEnc, tmpErr := rsa.EncryptPKCS1v15(rand.Reader, x.PublicKey, tmpData)
+		if nil != tmpErr {
+			return nil, tmpErr
+		}
+		buffer.Write(tmpEnc)
+	}
+	if lenData%blockSize != 0 {
+		tmpData := make([]byte, lenData-size*blockSize)
+		copy(tmpData, origMsg[size*blockSize:lenData])
+		tmpEnc, tmpErr := rsa.EncryptPKCS1v15(rand.Reader, x.PublicKey, tmpData)
+		if nil != tmpErr {
+			return nil, tmpErr
+		}
+		buffer.Write(tmpEnc)
+	}
+	return buffer.Bytes(), nil
+}
+
+// 使用私钥进行PKCS1v15解密，待解密后信息长度超过秘钥模长则使用分段解密
+func (x *XRsa) DecryptPKCS1v15Big(encMsg []byte) ([]byte, error) {
+	if nil == x.PrivateKey {
+		return nil, errors.New("XRsa.PrivateKey is nil")
+	}
+	if nil == encMsg {
+		return nil, errors.New("encMsg is nil")
+	}
+	keySize := x.SizeOfPrivateKey()
+	blockSize := keySize
+	if blockSize <= 0 {
+		return nil, errors.New("XRsa.PrivateKey blockSize is too small")
+	}
+	lenData := len(encMsg)
+	if lenData <= blockSize {
+		return rsa.DecryptPKCS1v15(rand.Reader, x.PrivateKey, encMsg)
+	}
+	if lenData%blockSize != 0 {
+		return nil, errors.New("lenData is not a multiple of the block size")
+	}
+	buffer := bytes.Buffer{}
+	size := lenData / blockSize
+	for i := 0; i < size; i++ {
+		tmpData := make([]byte, blockSize)
+		copy(tmpData, encMsg[i*blockSize:(i+1)*blockSize])
+		tmpDec, tmpErr := rsa.DecryptPKCS1v15(rand.Reader, x.PrivateKey, tmpData)
+		if nil != tmpErr {
+			return nil, tmpErr
+		}
+		buffer.Write(tmpDec)
+	}
+	return buffer.Bytes(), nil
+}
+
+// 使用公钥进行PKCS1v15加密，待加密信息长度不能超过秘钥模长-11
+func (x *XRsa) EncryptPKCS1v15String(encodeMode MODE_ENCODE, origStr string) (string, error) {
+	encMsg, err := x.EncryptPKCS1v15([]byte(origStr))
+	if nil != err {
+		return "", err
+	}
+	return EncodingToString(ParseEncodeMode(encodeMode), encMsg)
+}
+
+// 使用私钥进行PKCS1v15解密，解密后信息长度不超过秘钥模长-11
+func (x *XRsa) DecryptPKCS1v15String(encodeMode MODE_ENCODE, encStr string) (string, error) {
+	encMsg, err := DecodingToByte(ParseEncodeMode(encodeMode), encStr)
+	if nil != err {
+		return "", err
+	}
+	decMsg, err := x.DecryptPKCS1v15(encMsg)
+	if nil != err {
+		return "", err
+	}
+	return string(decMsg), nil
+}
+
+// 使用公钥进行PKCS1v15加密，待加密信息长度超过秘钥模长-11则使用分段加密
+func (x *XRsa) EncryptPKCS1v15StringBig(encodeMode MODE_ENCODE, origStr string) (string, error) {
+	encMsg, err := x.EncryptPKCS1v15Big([]byte(origStr))
+	if nil != err {
+		return "", err
+	}
+	return EncodingToString(ParseEncodeMode(encodeMode), encMsg)
+}
+
+// 使用私钥进行PKCS1v15解密，待解密后信息长度超过秘钥模长则使用分段解密
+func (x *XRsa) DecryptPKCS1v15StringBig(encodeMode MODE_ENCODE, encStr string) (string, error) {
+	encMsg, err := DecodingToByte(ParseEncodeMode(encodeMode), encStr)
+	if nil != err {
+		return "", err
+	}
+	decMsg, err := x.DecryptPKCS1v15Big(encMsg)
+	if nil != err {
+		return "", err
+	}
+	return string(decMsg), nil
+}
+
+// 使用私钥进行签名-字节数组模式
+func (x *XRsa) SignPSS(hash crypto.Hash, origData []byte, opts *rsa.PSSOptions) ([]byte, error) {
+	if nil == x.PrivateKey {
+		return nil, errors.New("XRsa.PrivateKey is nil")
+	}
+	if nil == origData {
+		return nil, errors.New("SignPSS err,origData is nil")
+	}
+	h := hash.New()
+	h.Write(origData)
+	digest := h.Sum(nil)
+	return rsa.SignPSS(rand.Reader, x.PrivateKey, hash, digest, opts)
+}
+
+// 使用公钥验证签名-字节数组模式
+func (x *XRsa) VerifyPSS(hash crypto.Hash, origData []byte, sig []byte, opts *rsa.PSSOptions) error {
+	if nil == x.PrivateKey {
+		return errors.New("XRsa.PrivateKey is nil")
+	}
+	if nil == origData {
+		return errors.New("VerifyPSS err,origData is nil")
+	}
+	if nil == sig {
+		return errors.New("VerifyPSS err,sig is nil")
+	}
+	h := hash.New()
+	h.Write(origData)
+	digest := h.Sum(nil)
+	return rsa.VerifyPSS(x.PublicKey, hash, digest, sig, opts)
+}
+
+// 使用私钥进行签名-字符串模式
+func (x *XRsa) SignPSSByString(encodeMode MODE_ENCODE, hash crypto.Hash, origStr string, opts *rsa.PSSOptions) (string, error) {
+	if nil == x.PrivateKey {
+		return "", errors.New("XRsa.PrivateKey is nil")
+	}
+	h := hash.New()
+	h.Write([]byte(origStr))
+	digest := h.Sum(nil)
+	sig, err := rsa.SignPSS(rand.Reader, x.PrivateKey, hash, digest, opts)
+	if err != nil {
+		return "", err
+	}
+	return EncodingToString(ParseEncodeMode(encodeMode), sig)
+}
+
+// 使用公钥验证签名-字符串模式
+func (x *XRsa) VerifyPSSByString(encodeMode MODE_ENCODE, hash crypto.Hash, origStr string, sigStr string, opts *rsa.PSSOptions) error {
+	if nil == x.PrivateKey {
+		return errors.New("XRsa.PrivateKey is nil")
+	}
+	h := hash.New()
+	h.Write([]byte(origStr))
+	digest := h.Sum(nil)
+	sig, err := DecodingToByte(encodeMode, sigStr)
+	if err != nil {
+		return err
+	}
+	return rsa.VerifyPSS(x.PublicKey, hash, digest, sig, opts)
 }

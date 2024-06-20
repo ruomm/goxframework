@@ -7,7 +7,9 @@
 package encryptx
 
 import (
+	"crypto"
 	"fmt"
+	"github.com/ruomm/goxframework/gox/corex"
 	"testing"
 )
 
@@ -20,7 +22,7 @@ const (
 	PUB_KEY = "MIIBCgKCAQEAypjPZm3XjAO1VHX6kR1veosjpUXTvNZoqfVeYehooxTg+0qonYdAsSsz/B4EXbSPVs6H+UbhWIuA9M45a9sMcUAjX92GN7uBos9pE9oQ38FuTeYQHhly8uVzKW/ghX4rJSPxlHV7Lva38NbVOL8ibLdfRSpkO4IfoB/XPP1efRdbA2G4taNbITu5uQBfj5hS/p6/tvKcPphvey9/iHLDDfbd7R+trZkSyJ1Oj+Tf6msEOjh24u2w2oRQSx1ENSIDTdFF/5ykyJvhNa3aveKdPFUIaTlpI6YD0m2GXN9MNOZfDMYmk0DIDxhuxMHsghHsPdoIHHGj42jkdinYrGi20QIDAQAB"
 )
 
-func TestTimeValidDayString(t *testing.T) {
+func TestRsaHelper(t *testing.T) {
 
 	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
 	var xRsa RsaHelper
@@ -31,9 +33,45 @@ func TestTimeValidDayString(t *testing.T) {
 	//xRsa.GenrateKeyPair(2048)
 	xRsa.LoadPrivateKey(MODE_KEY_BASE64, PRI_KEY)
 	xRsa.LoadPulicKey(MODE_KEY_BASE64, PUB_KEY)
-	fmt.Println(xRsa.FormatPrivateKey(MODE_KEY_HEX_UPPER))
-	fmt.Println(xRsa.FormatPublicKey(MODE_KEY_HEX_UPPER))
-	// 输出：false
-	//fmt.Println(SliceDuplicates(slice2))
-	//fmt.Println(SliceContains(slice1, 6))
+	//fmt.Println(xRsa.FormatPrivateKey(MODE_KEY_HEX_UPPER))
+	//fmt.Println(xRsa.FormatPublicKey(MODE_KEY_HEX_UPPER))
+	//fmt.Println(xRsa.SizeOfPrivateKey())
+	//fmt.Println(xRsa.SizeOfPublicKey())
+	origStr := GenRandomString(1024) + "      中华人民共和国      "
+	origStr = ""
+	//encStr, _ := xRsa.EncryptPKCS1v15StringBig(MODE_ENCODE_BASE64, origStr)
+	//fmt.Println(encStr)
+	//decStr, _ := xRsa.DecryptPKCS1v15StringBig(MODE_ENCODE_BASE64, encStr)
+	//fmt.Println(decStr)
+	//if origStr == decStr {
+	//	fmt.Println("加密解密验证通过")
+	//} else {
+	//	fmt.Println("加密解密验证不通过通过")
+	//}
+
+	//sigStr, _ := xRsa.SignPSSByString(MODE_ENCODE_BASE64, crypto.MD5SHA1, origStr, nil)
+	//fmt.Println(sigStr)
+	//verifyErr := xRsa.VerifyPSSByString(MODE_ENCODE_BASE64, crypto.MD5SHA1, origStr, sigStr, nil)
+	//if verifyErr == nil && len(sigStr) > 0 {
+	//	fmt.Println("签名验证通过")
+	//} else {
+	//	fmt.Printf("签名验证不通过:%v", verifyErr)
+	//}
+
+	sigData, _ := xRsa.SignPSS(crypto.SHA384, []byte(origStr), nil)
+	fmt.Println(sigData)
+	verifyDataErr := xRsa.VerifyPSS(crypto.SHA384, []byte(origStr), sigData, nil)
+	if verifyDataErr == nil && len(sigData) > 0 {
+		fmt.Println("签名验证通过")
+	} else {
+		fmt.Printf("签名验证不通过:%v", verifyDataErr)
+	}
+}
+
+func GenRandomString(size int) string {
+	tokenHelper := corex.TokenHelper{
+		TokenLen: 256,
+		Dicts:    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890",
+	}
+	return tokenHelper.GenToken(size)
 }
