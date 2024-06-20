@@ -20,8 +20,18 @@ import (
 type RsaHelper interface {
 	// 生成秘钥对
 	GenrateKeyPair(bits int) error
+	// 获取RSA秘钥对
+	KeyPair() (*rsa.PrivateKey, *rsa.PublicKey)
+	// 设置秘钥长度
+	SetSizeOfKey(sizeOfKey int)
+	// 获取秘钥长度
+	GetSizeOfKey() int
+	// 公钥长度
+	SizeOfPublicKey() int
+	// 秘钥长度
+	SizeOfPrivateKey() int
 	// 字节转字符串编码方案
-	ModeOfEncode() MODE_ENCODE
+	//ModeOfEncode() MODE_ENCODE
 	// Padding的模式
 	ModeOfPadding() MODE_PADDING
 	// 设置公钥
@@ -36,10 +46,6 @@ type RsaHelper interface {
 	FormatPublicKey(modeOfKey MODE_KEY) (string, error)
 	// 格式化私钥
 	FormatPrivateKey(modeOfKey MODE_KEY) (string, error)
-	// 公钥长度
-	SizeOfPublicKey() int
-	// 秘钥长度
-	SizeOfPrivateKey() int
 	// 使用公钥进行PKCS1v15加密，待加密信息长度不能超过秘钥模长-11
 	EncryptPKCS1v15(origMsg []byte) ([]byte, error)
 	// 使用私钥进行PKCS1v15解密，解密后信息长度不超过秘钥模长-11

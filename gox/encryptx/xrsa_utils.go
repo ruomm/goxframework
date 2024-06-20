@@ -21,8 +21,10 @@ import (
 
 type XRsa struct {
 	//ModeKey         MODE_KEY
-	ModeEncode      MODE_ENCODE
+	//ModeEncode      MODE_ENCODE
 	ModePadding     MODE_PADDING
+	SizeOfKey       int
+	SizeAuto        bool
 	PublicKey       *rsa.PublicKey
 	PrivateKey      *rsa.PrivateKey
 	PaddingHelper   func(data []byte, blockSize int) []byte
@@ -45,10 +47,70 @@ func (x *XRsa) GenrateKeyPair(bits int) error {
 	return nil
 }
 
-// 字节转字符串编码方案
-func (x *XRsa) ModeOfEncode() MODE_ENCODE {
-	return ParseEncodeMode(x.ModeEncode)
+// 获取RSA秘钥对
+func (x *XRsa) KeyPair() (*rsa.PrivateKey, *rsa.PublicKey) {
+	return x.PrivateKey, x.PublicKey
 }
+
+// 设置秘钥长度
+func (x *XRsa) SetSizeOfKey(sizeOfKey int) {
+	if sizeOfKey%8 == 0 {
+		x.SizeOfKey = sizeOfKey
+	}
+}
+
+// 获取秘钥长度
+func (x *XRsa) GetSizeOfKey() int {
+	if x.SizeOfKey > 0 && x.SizeOfKey%8 == 0 {
+		return x.SizeOfKey
+	}
+	if nil != x.PrivateKey {
+		return x.PrivateKey.Size() * 8
+	} else if nil != x.PublicKey {
+		return x.PublicKey.Size() * 8
+	} else {
+		return 0
+	}
+}
+
+// 公钥长度
+func (x *XRsa) SizeOfPublicKey() int {
+	if nil != x.PublicKey {
+		tmpSize := x.PublicKey.Size()
+		if tmpSize > 0 {
+			return tmpSize * 8
+		}
+	}
+	if x.SizeAuto && nil != x.PrivateKey {
+		tmpSize := x.PrivateKey.Size()
+		if tmpSize > 0 {
+			return tmpSize * 8
+		}
+	}
+	return x.SizeOfKey
+}
+
+// 秘钥长度
+func (x *XRsa) SizeOfPrivateKey() int {
+	if nil != x.PrivateKey {
+		tmpSize := x.PrivateKey.Size()
+		if tmpSize > 0 {
+			return tmpSize * 8
+		}
+	}
+	if x.SizeAuto && nil != x.PublicKey {
+		tmpSize := x.PublicKey.Size()
+		if tmpSize > 0 {
+			return tmpSize * 8
+		}
+	}
+	return x.SizeOfKey
+}
+
+// 字节转字符串编码方案
+//func (x *XRsa) ModeOfEncode() MODE_ENCODE {
+//	return ParseEncodeMode(x.ModeEncode)
+//}
 
 // Padding的模式
 func (x *XRsa) ModeOfPadding() MODE_PADDING {
@@ -115,22 +177,38 @@ func (x *XRsa) FormatPrivateKey(modeOfKey MODE_KEY) (string, error) {
 	return RsaKeyByteToString(ParseKeyMode(modeOfKey), keyData, false)
 }
 
-// 公钥长度
-func (x *XRsa) SizeOfPublicKey() int {
-	if nil == x.PublicKey {
-		return 0
-	} else {
-		return x.PublicKey.Size()
+// 公钥模长度
+func (x *XRsa) modulusOfPublicKey() int {
+	if nil != x.PublicKey {
+		tmpSize := x.PublicKey.Size()
+		if tmpSize > 0 {
+			return tmpSize
+		}
 	}
+	if x.SizeAuto && nil != x.PrivateKey {
+		tmpSize := x.PrivateKey.Size()
+		if tmpSize > 0 {
+			return tmpSize
+		}
+	}
+	return x.SizeOfKey / 8
 }
 
-// 秘钥长度
-func (x *XRsa) SizeOfPrivateKey() int {
-	if nil == x.PrivateKey {
-		return 0
-	} else {
-		return x.PrivateKey.Size()
+// 秘钥模长度
+func (x *XRsa) modulusOfPrivateKey() int {
+	if nil != x.PrivateKey {
+		tmpSize := x.PrivateKey.Size()
+		if tmpSize > 0 {
+			return tmpSize
+		}
 	}
+	if x.SizeAuto && nil != x.PublicKey {
+		tmpSize := x.PublicKey.Size()
+		if tmpSize > 0 {
+			return tmpSize
+		}
+	}
+	return x.SizeOfKey / 8
 }
 
 // 使用公钥进行PKCS1v15加密，待加密信息长度不能超过秘钥模长-11
@@ -163,7 +241,7 @@ func (x *XRsa) EncryptPKCS1v15Big(origMsg []byte) ([]byte, error) {
 	if nil == origMsg {
 		return nil, errors.New("origMsg is nil")
 	}
-	keySize := x.SizeOfPublicKey()
+	keySize := x.modulusOfPublicKey()
 	blockSize := keySize - 11
 	if blockSize <= 0 {
 		return nil, errors.New("XRsa.PublicKey blockSize is too small")
@@ -203,7 +281,7 @@ func (x *XRsa) DecryptPKCS1v15Big(encMsg []byte) ([]byte, error) {
 	if nil == encMsg {
 		return nil, errors.New("encMsg is nil")
 	}
-	keySize := x.SizeOfPrivateKey()
+	keySize := x.modulusOfPrivateKey()
 	blockSize := keySize
 	if blockSize <= 0 {
 		return nil, errors.New("XRsa.PrivateKey blockSize is too small")
@@ -345,7 +423,7 @@ func (x *XRsa) EncryptPKCS1v15File(origFile string, encFile string, emptyEncrypt
 	if len(encFile) <= 0 {
 		return errors.New("encFile path is empty")
 	}
-	keySize := x.SizeOfPublicKey()
+	keySize := x.modulusOfPublicKey()
 	blockSize := keySize - 11
 	if blockSize <= 0 {
 		return errors.New("XRsa.PublicKey blockSize is too small")
@@ -434,7 +512,7 @@ func (x *XRsa) DecryptPKCS1v15File(encFile string, decFile string) error {
 	if len(decFile) <= 0 {
 		return errors.New("decFile path is empty")
 	}
-	keySize := x.SizeOfPrivateKey()
+	keySize := x.modulusOfPrivateKey()
 	blockSize := keySize
 	if blockSize <= 0 {
 		return errors.New("XRsa.PrivateKey blockSize is too small")

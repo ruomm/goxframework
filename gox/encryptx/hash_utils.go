@@ -50,7 +50,7 @@ func SumFile(hash crypto.Hash, origFile string) ([]byte, error) {
 	}
 	defer fiR.Close()
 	h := hash.New()
-	blockSize := 1024
+	blockSize := FILE_BUFFER_SIZE
 	// 开始文件加密
 	reader := bufio.NewReader(fiR)
 	var bRead = make([]byte, blockSize)

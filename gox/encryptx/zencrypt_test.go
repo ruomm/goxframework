@@ -73,7 +73,6 @@ func TestRsaHelperFile(t *testing.T) {
 	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
 	var xRsa RsaHelper
 	xRsa = &XRsa{
-		ModeEncode:  MODE_ENCODE_BASE64,
 		ModePadding: MODE_PADDING_PKCS5,
 	}
 	//xRsa.GenrateKeyPair(2048)
