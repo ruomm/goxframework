@@ -7,12 +7,16 @@
 package encryptx
 
 import (
+	"bufio"
 	"bytes"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"errors"
+	"fmt"
+	"io"
+	"os"
 )
 
 type XRsa struct {
@@ -329,3 +333,199 @@ func (x *XRsa) VerifyPSSByString(encodeMode MODE_ENCODE, hash crypto.Hash, origS
 	}
 	return rsa.VerifyPSS(x.PublicKey, hash, digest, sig, opts)
 }
+
+// 使用公钥进行PKCS1v15文件加密
+func (x *XRsa) EncryptPKCS1v15File(origFile string, encFile string, emptyEncrypt bool) error {
+	if nil == x.PublicKey {
+		return errors.New("XRsa.PublicKey is nil")
+	}
+	if len(origFile) <= 0 {
+		return errors.New("origFile path is empty")
+	}
+	if len(encFile) <= 0 {
+		return errors.New("encFile path is empty")
+	}
+	keySize := x.SizeOfPublicKey()
+	blockSize := keySize - 11
+	if blockSize <= 0 {
+		return errors.New("XRsa.PublicKey blockSize is too small")
+	}
+	// 打开读写文件
+	fiR, errOpenR := os.Open(origFile)
+	if errOpenR != nil {
+		fmt.Println("open file error: ", errOpenR)
+		return errOpenR
+	}
+	defer fiR.Close()
+	fiW, errOpenW := os.OpenFile(encFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0664)
+	if errOpenW != nil {
+		fmt.Println("open file error: ", errOpenW)
+		return errOpenW
+	}
+	defer fiW.Close()
+	// 开始文件加密
+	reader := bufio.NewReader(fiR)
+	writer := bufio.NewWriter(fiW)
+	var bRead = make([]byte, blockSize)
+	emptyEcnFlag := false
+	if emptyEncrypt {
+		emptyEcnFlag = true
+	}
+	for {
+		nR, errR := reader.Read(bRead)
+		if errR != nil && errR != io.EOF {
+			return errR
+		}
+		if nR == 0 {
+			if emptyEcnFlag {
+				emptyEcnFlag = false
+				// 加密
+				encMsg, errSub := x.EncryptPKCS1v15(make([]byte, 0))
+				if errSub != nil {
+					return errSub
+				}
+				_, errW := writer.Write(encMsg)
+				if errW != nil {
+					return errW
+				}
+			} else {
+				emptyEcnFlag = false
+			}
+			break
+
+		} else if nR > 0 {
+			emptyEcnFlag = false
+			// 加密
+			encMsg, errSub := x.EncryptPKCS1v15(bRead[0:nR])
+			if errSub != nil {
+				return errSub
+			}
+			if len(encMsg) <= 0 {
+				continue
+			}
+			_, errW := writer.Write(encMsg)
+			if errW != nil {
+				return errW
+			}
+			if nR < blockSize {
+				break
+			}
+		} else {
+			emptyEcnFlag = false
+			break
+		}
+	}
+	// 清空缓冲区，进行缓冲区内容落到磁盘
+	errFlush := writer.Flush()
+	if errFlush != nil {
+		return errFlush
+	}
+	return nil
+}
+
+// 使用私钥进行PKCS1v15文件解密
+func (x *XRsa) DecryptPKCS1v15File(encFile string, decFile string) error {
+	if nil == x.PrivateKey {
+		return errors.New("XRsa.PrivateKey is nil")
+	}
+	if len(encFile) <= 0 {
+		return errors.New("encFile path is empty")
+	}
+	if len(decFile) <= 0 {
+		return errors.New("decFile path is empty")
+	}
+	keySize := x.SizeOfPrivateKey()
+	blockSize := keySize
+	if blockSize <= 0 {
+		return errors.New("XRsa.PrivateKey blockSize is too small")
+	}
+	// 打开读写文件
+	fiR, errOpenR := os.Open(encFile)
+	if errOpenR != nil {
+		fmt.Println("open file error: ", errOpenR)
+		return errOpenR
+	}
+	defer fiR.Close()
+	fiW, errOpenW := os.OpenFile(decFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0664)
+	if errOpenW != nil {
+		fmt.Println("open file error: ", errOpenW)
+		return errOpenW
+	}
+	defer fiW.Close()
+
+	// 开始文件解密
+	reader := bufio.NewReader(fiR)
+	writer := bufio.NewWriter(fiW)
+	var bRead = make([]byte, blockSize)
+	for {
+		nR, errR := reader.Read(bRead)
+		if errR != nil && errR != io.EOF {
+			return errR
+		}
+		if nR == blockSize {
+			// 解密
+			decMsg, errSub := x.DecryptPKCS1v15(bRead[0:nR])
+			if errSub != nil {
+				return errSub
+			}
+			if len(decMsg) <= 0 {
+				continue
+			}
+			_, errW := writer.Write(decMsg)
+			if errW != nil {
+				return errW
+			}
+		} else {
+			break
+		}
+	}
+	// 清空缓冲区，进行缓冲区内容落到磁盘
+	errFlush := writer.Flush()
+	if errFlush != nil {
+		return errFlush
+	}
+	return nil
+}
+
+//// 使用私钥进行签名-字节数组模式
+//func (x *XRsa) SignPSSFile(hash crypto.Hash, origFile string, opts *rsa.PSSOptions) ([]byte, error) {
+//	if nil == x.PrivateKey {
+//		return nil, errors.New("XRsa.PrivateKey is nil")
+//	}
+//	if len(origFile) <= 0 {
+//		return nil, errors.New("origFile path is empty")
+//	}
+//	// 打开读写文件
+//	fiR, errOpenR := os.Open(origFile)
+//	if errOpenR != nil {
+//		fmt.Println("open file error: ", errOpenR)
+//		return nil, errOpenR
+//	}
+//	defer fiR.Close()
+//	// 开始文件解密
+//	reader := bufio.NewReader(fiR)
+//	h := hash.New()
+//	h.Write()
+//	h.Write(origData)
+//	digest := h.Sum(nil)
+//	return rsa.SignPSS(rand.Reader, x.PrivateKey, hash, digest, opts)
+//}
+//
+//// 使用公钥验证签名-字节数组模式
+//func (x *XRsa) VerifyPSSFile(hash crypto.Hash, origFile string, sig []byte, opts *rsa.PSSOptions) error {
+//	if nil == x.PrivateKey {
+//		return errors.New("XRsa.PrivateKey is nil")
+//	}
+//	if len(origFile) <= 0 {
+//		return errors.New("origFile path is empty")
+//	}
+//	if nil == sig {
+//		return errors.New("VerifyPSS err,sig is nil")
+//	}
+//	h := hash.New()
+//	h.Write(origData)
+//	digest := h.Sum(nil)
+//	return rsa.VerifyPSS(x.PublicKey, hash, digest, sig, opts)
+//}
+//
+//func (x *XRsa) VerifyPSS(hash crypto.Hash, origFile string, sig []byte) error {}

@@ -22,7 +22,7 @@ const (
 	PUB_KEY = "MIIBCgKCAQEAypjPZm3XjAO1VHX6kR1veosjpUXTvNZoqfVeYehooxTg+0qonYdAsSsz/B4EXbSPVs6H+UbhWIuA9M45a9sMcUAjX92GN7uBos9pE9oQ38FuTeYQHhly8uVzKW/ghX4rJSPxlHV7Lva38NbVOL8ibLdfRSpkO4IfoB/XPP1efRdbA2G4taNbITu5uQBfj5hS/p6/tvKcPphvey9/iHLDDfbd7R+trZkSyJ1Oj+Tf6msEOjh24u2w2oRQSx1ENSIDTdFF/5ykyJvhNa3aveKdPFUIaTlpI6YD0m2GXN9MNOZfDMYmk0DIDxhuxMHsghHsPdoIHHGj42jkdinYrGi20QIDAQAB"
 )
 
-func TestRsaHelper(t *testing.T) {
+func TestRsaHelperCommon(t *testing.T) {
 
 	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
 	var xRsa RsaHelper
@@ -65,6 +65,34 @@ func TestRsaHelper(t *testing.T) {
 		fmt.Println("签名验证通过")
 	} else {
 		fmt.Printf("签名验证不通过:%v", verifyDataErr)
+	}
+}
+
+func TestRsaHelperFile(t *testing.T) {
+
+	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
+	var xRsa RsaHelper
+	xRsa = &XRsa{
+		ModeEncode:  MODE_ENCODE_BASE64,
+		ModePadding: MODE_PADDING_PKCS5,
+	}
+	//xRsa.GenrateKeyPair(2048)
+	xRsa.LoadPrivateKey(MODE_KEY_BASE64, PRI_KEY)
+	xRsa.LoadPulicKey(MODE_KEY_BASE64, PUB_KEY)
+	origFile := "/Users/qx/Downloads/文本bom测试.txt"
+	encFile := "/Users/qx/Downloads/文本bom测试_ENC.txt"
+	decFile := "/Users/qx/Downloads/文本bom测试_DEC.txt"
+	err := xRsa.EncryptPKCS1v15File(origFile, encFile, false)
+	if err == nil {
+		fmt.Println("文件加密通过")
+	} else {
+		fmt.Printf("文件加密不通过:%v", err)
+	}
+	err = xRsa.DecryptPKCS1v15File(encFile, decFile)
+	if err == nil {
+		fmt.Println("文件解密通过")
+	} else {
+		fmt.Printf("文件解密不通过:%v", err)
 	}
 }
 

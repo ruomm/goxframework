@@ -64,6 +64,10 @@ type RsaHelper interface {
 	SignPSSByString(encodeMode MODE_ENCODE, hash crypto.Hash, origStr string, opts *rsa.PSSOptions) (string, error)
 	// 使用公钥验证签名-字符串模式
 	VerifyPSSByString(encodeMode MODE_ENCODE, hash crypto.Hash, origStr string, sigStr string, opts *rsa.PSSOptions) error
+	// 使用公钥进行PKCS1v15文件加密
+	EncryptPKCS1v15File(origFile string, encFile string, emptyEncrypt bool) error
+	// 使用私钥进行PKCS1v15文件解密
+	DecryptPKCS1v15File(encFile string, decFile string) error
 }
 
 // 格式化密钥
