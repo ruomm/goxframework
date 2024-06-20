@@ -68,6 +68,14 @@ type RsaHelper interface {
 	EncryptPKCS1v15File(origFile string, encFile string, emptyEncrypt bool) error
 	// 使用私钥进行PKCS1v15文件解密
 	DecryptPKCS1v15File(encFile string, decFile string) error
+	// 使用私钥进行签名-文件字节模式
+	SignPSSFile(hash crypto.Hash, origFile string, opts *rsa.PSSOptions) ([]byte, error)
+	// 使用公钥验证签名-文件字节模式
+	VerifyPSSFile(hash crypto.Hash, origFile string, sig []byte, opts *rsa.PSSOptions) error
+	// 使用私钥进行签名-文件字符串模式
+	SignPSSFileByString(encodeMode MODE_ENCODE, hash crypto.Hash, origFile string, opts *rsa.PSSOptions) (string, error)
+	// 使用公钥验证签名-文件字符串模式
+	VerifyPSSFileByString(encodeMode MODE_ENCODE, hash crypto.Hash, origFile string, sigStr string, opts *rsa.PSSOptions) error
 }
 
 // 格式化密钥

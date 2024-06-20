@@ -487,45 +487,61 @@ func (x *XRsa) DecryptPKCS1v15File(encFile string, decFile string) error {
 	return nil
 }
 
-//// 使用私钥进行签名-字节数组模式
-//func (x *XRsa) SignPSSFile(hash crypto.Hash, origFile string, opts *rsa.PSSOptions) ([]byte, error) {
-//	if nil == x.PrivateKey {
-//		return nil, errors.New("XRsa.PrivateKey is nil")
-//	}
-//	if len(origFile) <= 0 {
-//		return nil, errors.New("origFile path is empty")
-//	}
-//	// 打开读写文件
-//	fiR, errOpenR := os.Open(origFile)
-//	if errOpenR != nil {
-//		fmt.Println("open file error: ", errOpenR)
-//		return nil, errOpenR
-//	}
-//	defer fiR.Close()
-//	// 开始文件解密
-//	reader := bufio.NewReader(fiR)
-//	h := hash.New()
-//	h.Write()
-//	h.Write(origData)
-//	digest := h.Sum(nil)
-//	return rsa.SignPSS(rand.Reader, x.PrivateKey, hash, digest, opts)
-//}
-//
-//// 使用公钥验证签名-字节数组模式
-//func (x *XRsa) VerifyPSSFile(hash crypto.Hash, origFile string, sig []byte, opts *rsa.PSSOptions) error {
-//	if nil == x.PrivateKey {
-//		return errors.New("XRsa.PrivateKey is nil")
-//	}
-//	if len(origFile) <= 0 {
-//		return errors.New("origFile path is empty")
-//	}
-//	if nil == sig {
-//		return errors.New("VerifyPSS err,sig is nil")
-//	}
-//	h := hash.New()
-//	h.Write(origData)
-//	digest := h.Sum(nil)
-//	return rsa.VerifyPSS(x.PublicKey, hash, digest, sig, opts)
-//}
+// 使用私钥进行签名-文件字节模式
+func (x *XRsa) SignPSSFile(hash crypto.Hash, origFile string, opts *rsa.PSSOptions) ([]byte, error) {
+	if nil == x.PrivateKey {
+		return nil, errors.New("XRsa.PrivateKey is nil")
+	}
+	digest, errSum := SumFile(hash, origFile)
+	if errSum != nil {
+		return nil, errSum
+	}
+	return rsa.SignPSS(rand.Reader, x.PrivateKey, hash, digest, opts)
+}
+
+// 使用公钥验证签名-文件字节模式
+func (x *XRsa) VerifyPSSFile(hash crypto.Hash, origFile string, sig []byte, opts *rsa.PSSOptions) error {
+	if nil == x.PrivateKey {
+		return errors.New("XRsa.PrivateKey is nil")
+	}
+	digest, errSum := SumFile(hash, origFile)
+	if errSum != nil {
+		return errSum
+	}
+	return rsa.VerifyPSS(x.PublicKey, hash, digest, sig, opts)
+}
+
+// 使用私钥进行签名-文件字符串模式
+func (x *XRsa) SignPSSFileByString(encodeMode MODE_ENCODE, hash crypto.Hash, origFile string, opts *rsa.PSSOptions) (string, error) {
+	if nil == x.PrivateKey {
+		return "", errors.New("XRsa.PrivateKey is nil")
+	}
+	digest, errSum := SumFile(hash, origFile)
+	if errSum != nil {
+		return "", errSum
+	}
+	sig, err := rsa.SignPSS(rand.Reader, x.PrivateKey, hash, digest, opts)
+	if err != nil {
+		return "", err
+	}
+	return EncodingToString(ParseEncodeMode(encodeMode), sig)
+}
+
+// 使用公钥验证签名-文件字符串模式
+func (x *XRsa) VerifyPSSFileByString(encodeMode MODE_ENCODE, hash crypto.Hash, origFile string, sigStr string, opts *rsa.PSSOptions) error {
+	if nil == x.PrivateKey {
+		return errors.New("XRsa.PrivateKey is nil")
+	}
+	digest, errSum := SumFile(hash, origFile)
+	if errSum != nil {
+		return errSum
+	}
+	sig, err := DecodingToByte(encodeMode, sigStr)
+	if err != nil {
+		return err
+	}
+	return rsa.VerifyPSS(x.PublicKey, hash, digest, sig, opts)
+}
+
 //
 //func (x *XRsa) VerifyPSS(hash crypto.Hash, origFile string, sig []byte) error {}

@@ -79,7 +79,7 @@ func TestRsaHelperFile(t *testing.T) {
 	//xRsa.GenrateKeyPair(2048)
 	xRsa.LoadPrivateKey(MODE_KEY_BASE64, PRI_KEY)
 	xRsa.LoadPulicKey(MODE_KEY_BASE64, PUB_KEY)
-	origFile := "/Users/qx/Downloads/文本bom测试1.txt"
+	origFile := "/Users/qx/Downloads/文本bom测试.txt"
 	encFile := "/Users/qx/Downloads/文本bom测试_ENC.txt"
 	decFile := "/Users/qx/Downloads/文本bom测试_DEC.txt"
 	err := xRsa.EncryptPKCS1v15File(origFile, encFile, false)
@@ -94,10 +94,19 @@ func TestRsaHelperFile(t *testing.T) {
 	} else {
 		fmt.Printf("文件解密不通过:%v", err)
 	}
-	sha, _ := SumFileByString(MODE_ENCODE_HEX_LOWER, crypto.SHA256, origFile)
+	sha, _ := SumFileByString(MODE_ENCODE_HEX_LOWER, crypto.MD5, origFile)
 	fmt.Println("sha:", sha)
-	shaStr, _ := SumByString(MODE_ENCODE_HEX_LOWER, crypto.SHA256, origFile)
+	shaStr, _ := SumByString(MODE_ENCODE_HEX_LOWER, crypto.MD5, origFile)
 	fmt.Println("shaStr:", shaStr)
+
+	sigData, _ := xRsa.SignPSSFileByString(MODE_ENCODE_HEX_LOWER, crypto.MD5, origFile, nil)
+	fmt.Println(sigData)
+	verifyDataErr := xRsa.VerifyPSSFileByString(MODE_ENCODE_HEX_LOWER, crypto.MD5, origFile, sigData, nil)
+	if verifyDataErr == nil && len(sigData) > 0 {
+		fmt.Println("文件签名验证通过")
+	} else {
+		fmt.Printf("文件签名验证不通过:%v", verifyDataErr)
+	}
 }
 
 func GenRandomString(size int) string {
