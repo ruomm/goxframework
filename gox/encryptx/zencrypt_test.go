@@ -107,6 +107,34 @@ func TestRsaHelperFile(t *testing.T) {
 	}
 }
 
+func TestAesCommon(t *testing.T) {
+
+	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
+	var xAes EncryptHelper
+	//xencrypt.
+	xAes = &XAes{
+		ModeKey:        MODE_KEY_PEM,
+		ModeEncode:     MODE_ENCODE_BASE64,
+		ModePadding:    MODE_PADDING_PKCS7,
+		BlockSizeByKey: true,
+	}
+	keyStr, _ := xAes.GenKeyIvString(32)
+	print(keyStr)
+	xAes.SetKeyString(keyStr)
+	xAes.SetBlockSize(16)
+	origStr := "      中华人民共和国      " + GenRandomString(1024) + "      中华人民共和国      "
+	//origStr = ""
+	encStr, _ := xAes.EncStringECB(origStr)
+	fmt.Println(encStr)
+	decStr, _ := xAes.DecStringECB(encStr)
+	fmt.Println(decStr)
+	if origStr == decStr {
+		fmt.Println("加密解密验证通过")
+	} else {
+		fmt.Println("加密解密验证不通过通过")
+	}
+}
+
 func GenRandomString(size int) string {
 	tokenHelper := corex.TokenHelper{
 		TokenLen: 256,

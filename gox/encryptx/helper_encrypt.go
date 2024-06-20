@@ -163,6 +163,8 @@ func KeyIVStringToByte(keyMode MODE_KEY, keyStr string) ([]byte, error) {
 		return hex.DecodeString(strings.ToLower(keyStr))
 	} else if keyMode == MODE_KEY_STRING {
 		return []byte(keyStr), nil
+	} else if keyMode == MODE_KEY_PEM {
+		return ReadFormatKey(keyStr)
 	} else {
 		return []byte(keyStr), nil
 	}
@@ -179,6 +181,9 @@ func KeyIVByteToString(keyMode MODE_KEY, keyData []byte) (string, error) {
 		return strings.ToUpper(hex.EncodeToString(keyData)), nil
 	} else if keyMode == MODE_KEY_STRING {
 		return string(keyData), nil
+	} else if keyMode == MODE_KEY_PEM {
+		tag := "AES KEY OR IV"
+		return FormatKeyByData(keyData, tag)
 	} else {
 		return string(keyData), nil
 	}
@@ -199,6 +204,10 @@ func GenKeyString(keyMode MODE_KEY, keyLen int) (string, error) {
 		return strings.ToUpper(hex.EncodeToString(keyBytes)), nil
 	} else if keyMode == MODE_KEY_STRING {
 		return genTokenString(keyLen), nil
+	} else if keyMode == MODE_KEY_PEM {
+		keyBytes := GenKeyData(keyLen)
+		tag := "AES KEY OR IV"
+		return FormatKeyByData(keyBytes, tag)
 	} else {
 		return genTokenString(keyLen), nil
 	}
