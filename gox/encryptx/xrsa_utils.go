@@ -313,12 +313,12 @@ func (x *XRsa) EncryptPKCS1v15String(encodeMode MODE_ENCODE, origStr string) (st
 	if nil != err {
 		return "", err
 	}
-	return EncodingToString(ParseEncodeMode(encodeMode), encMsg)
+	return EncodingToString(encodeMode, encMsg)
 }
 
 // 使用私钥进行PKCS1v15解密，解密后信息长度不超过秘钥模长-11
 func (x *XRsa) DecryptPKCS1v15String(encodeMode MODE_ENCODE, encStr string) (string, error) {
-	encMsg, err := DecodingToByte(ParseEncodeMode(encodeMode), encStr)
+	encMsg, err := DecodingToByte(encodeMode, encStr)
 	if nil != err {
 		return "", err
 	}
@@ -335,12 +335,12 @@ func (x *XRsa) EncryptPKCS1v15StringBig(encodeMode MODE_ENCODE, origStr string) 
 	if nil != err {
 		return "", err
 	}
-	return EncodingToString(ParseEncodeMode(encodeMode), encMsg)
+	return EncodingToString(encodeMode, encMsg)
 }
 
 // 使用私钥进行PKCS1v15解密，待解密后信息长度超过秘钥模长则使用分段解密
 func (x *XRsa) DecryptPKCS1v15StringBig(encodeMode MODE_ENCODE, encStr string) (string, error) {
-	encMsg, err := DecodingToByte(ParseEncodeMode(encodeMode), encStr)
+	encMsg, err := DecodingToByte(encodeMode, encStr)
 	if nil != err {
 		return "", err
 	}
@@ -394,7 +394,7 @@ func (x *XRsa) SignPSSByString(encodeMode MODE_ENCODE, hash crypto.Hash, origStr
 	if err != nil {
 		return "", err
 	}
-	return EncodingToString(ParseEncodeMode(encodeMode), sig)
+	return EncodingToString(encodeMode, sig)
 }
 
 // 使用公钥验证签名-字符串模式
@@ -602,7 +602,7 @@ func (x *XRsa) SignPSSFileByString(encodeMode MODE_ENCODE, hash crypto.Hash, ori
 	if err != nil {
 		return "", err
 	}
-	return EncodingToString(ParseEncodeMode(encodeMode), sig)
+	return EncodingToString(encodeMode, sig)
 }
 
 // 使用公钥验证签名-文件字符串模式
