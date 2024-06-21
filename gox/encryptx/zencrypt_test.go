@@ -110,23 +110,25 @@ func TestRsaHelperFile(t *testing.T) {
 func TestAesCommon(t *testing.T) {
 
 	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
-	var xAes EncryptHelper
-	//xencrypt.
-	xAes = &XAes{
+	var xHelper EncryptHelper
+	xHelper = &XAes{
 		ModeKey:     MODE_KEY_PEM,
 		ModeEncode:  MODE_ENCODE_BASE64,
 		ModePadding: MODE_PADDING_PKCS7,
 	}
-	keyStr, _ := xAes.GenKeyIvString(32)
+	keyStr, _ := xHelper.GenKeyIvString(24)
+	ivStr, _ := xHelper.GenIVString()
 	fmt.Println(keyStr)
-	xAes.SetKeyString(keyStr)
-	//xAes.SetBlockSize(8)
+	fmt.Println(ivStr)
+	xHelper.SetKeyString(keyStr)
+	xHelper.SetIVString(ivStr)
+	//xHelper.SetBlockSize(16)
 	origStr := "      中华人民共和国      " + GenRandomString(1024) + "      中华人民共和国      "
 	//origStr = "as"
 	//origStr = ""
-	encStr, _ := xAes.EncStringECB(origStr)
+	encStr, _ := xHelper.EncStringCBC(origStr)
 	fmt.Println(encStr)
-	decStr, _ := xAes.DecStringECB(encStr)
+	decStr, _ := xHelper.DecStringCBC(encStr)
 	fmt.Println(decStr)
 	if origStr == decStr {
 		fmt.Println("加密解密验证通过")
@@ -145,9 +147,11 @@ func TestDesCommon(t *testing.T) {
 		ModeEncode:  MODE_ENCODE_BASE64,
 		ModePadding: MODE_PADDING_PKCS7,
 	}
-	keyStr, _ := xHelper.GenKeyIvString(8)
-	ivStr, _ := xHelper.GenKeyIvString(8)
-	print(keyStr)
+	//xHelper.SetAutoFillKey(true)
+	keyStr, _ := xHelper.GenKeyIvString(24)
+	ivStr, _ := xHelper.GenIVString()
+	fmt.Println(keyStr)
+	fmt.Println(ivStr)
 	xHelper.SetKeyString(keyStr)
 	xHelper.SetIVString(ivStr)
 	//xHelper.SetBlockSize(16)

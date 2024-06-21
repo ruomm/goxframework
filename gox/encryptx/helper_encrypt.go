@@ -65,13 +65,16 @@ type EncryptHelper interface {
 	GenKeyIvData(len int) ([]byte, error)
 	// 生成key或iv字符串
 	GenKeyIvString(len int) (string, error)
-
+	// 生成iv字符串
+	GenIVString() (string, error)
 	//// 生成iv字节数组
 	//GenIVData() ([]byte, error)
 	//// 生成iv字符串
 	//GenIVString() (string, error)
 	// 还原key或iv字符串为key或iv字节数组
 	RestoreKeyIV(keyStr string) ([]byte, error)
+	// 设置秘钥自动补充长度，AES自动补充为16、24、32，des自动补充为8、24
+	SetAutoFillKey(autoFillKey bool)
 	// ECB加密字节数组
 	EncDataECB(data []byte) ([]byte, error)
 	// CBC加密字节数组
@@ -169,7 +172,7 @@ func KeyIVStringToByte(keyMode MODE_KEY, keyStr string) ([]byte, error) {
 		return []byte(keyStr), nil
 	}
 }
-func KeyIVByteToString(keyMode MODE_KEY, keyData []byte) (string, error) {
+func KeyIVByteToString(keyMode MODE_KEY, keyData []byte, tag string) (string, error) {
 	if len(keyData) <= 0 {
 		return "", errors.New("lenght of keyData([]byte) must greater than 0")
 	}
@@ -182,14 +185,14 @@ func KeyIVByteToString(keyMode MODE_KEY, keyData []byte) (string, error) {
 	} else if keyMode == MODE_KEY_STRING {
 		return string(keyData), nil
 	} else if keyMode == MODE_KEY_PEM {
-		tag := "AES KEY OR IV"
+		//tag := "AES KEY OR IV"
 		return FormatKeyByData(keyData, tag)
 	} else {
 		return string(keyData), nil
 	}
 }
 
-func GenKeyString(keyMode MODE_KEY, keyLen int) (string, error) {
+func GenKeyString(keyMode MODE_KEY, keyLen int, tag string) (string, error) {
 	if keyLen <= 0 {
 		return "", errors.New("KeyLen must greater than 0")
 	}
@@ -206,7 +209,7 @@ func GenKeyString(keyMode MODE_KEY, keyLen int) (string, error) {
 		return genTokenString(keyLen), nil
 	} else if keyMode == MODE_KEY_PEM {
 		keyBytes := GenKeyData(keyLen)
-		tag := "AES KEY OR IV"
+		//tag := "AES KEY OR IV"
 		return FormatKeyByData(keyBytes, tag)
 	} else {
 		return genTokenString(keyLen), nil

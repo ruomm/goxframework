@@ -8,6 +8,7 @@ package encryptx
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/cipher"
 	"crypto/des"
 	"errors"
@@ -22,6 +23,7 @@ type XDes struct {
 	ModePadding MODE_PADDING
 	Key         []byte
 	Iv          []byte
+	AutoFillKey bool // 秘钥自动补充长度，AES自动补充为16、24、32，des自动补充为8、24
 	//KeyLen          int
 	//IvLen           int
 	BlockSize int
@@ -79,12 +81,12 @@ func (x *XDes) GetIVData() []byte {
 
 // 获取key字符串
 func (x *XDes) GetKeyString() (string, error) {
-	return KeyIVByteToString(x.ModeOfKey(), x.Key)
+	return KeyIVByteToString(x.ModeOfKey(), x.Key, fmt.Sprintf("DES KEY(len:%d)", len(x.Key)))
 }
 
 // 获取iv字符串
 func (x *XDes) GetIVString() (string, error) {
-	return KeyIVByteToString(x.ModeOfKey(), x.Iv)
+	return KeyIVByteToString(x.ModeOfKey(), x.Iv, fmt.Sprintf("DES IV(len:%d)", len(x.Iv)))
 }
 
 // 设置iv字符串
@@ -109,15 +111,15 @@ func (x *XDes) GetBlockSize() (int, error) {
 	if x.BlockSize > 0 && x.BlockSize%8 == 0 {
 		return x.BlockSize, nil
 	} else {
-		block, err := des.NewCipher(x.Key)
+		block, err := x.genrateNewChiper()
 		if err != nil {
-			return 16, err
+			return 8, err
 		}
 		sizeByChiper := block.BlockSize()
 		if sizeByChiper > 0 && sizeByChiper%8 == 0 {
 			return sizeByChiper, nil
 		} else {
-			return 16, errors.New("DES Cipher block size err")
+			return 8, errors.New("DES Cipher block size err")
 		}
 	}
 }
@@ -129,7 +131,14 @@ func (x *XDes) GenKeyIvData(len int) ([]byte, error) {
 
 // 生成key或iv字符串
 func (x *XDes) GenKeyIvString(len int) (string, error) {
-	return GenKeyString(x.ModeOfKey(), len)
+	tag := fmt.Sprintf("DES KEY(len:%d)", len)
+	return GenKeyString(x.ModeOfKey(), len, tag)
+}
+
+// 生成iv字符串
+func (x *XDes) GenIVString() (string, error) {
+	tag := fmt.Sprintf("DES IV(len:%d)", 8)
+	return GenKeyString(x.ModeOfKey(), 8, tag)
 }
 
 // 还原key或iv字符串为key或iv字节数组
@@ -137,10 +146,15 @@ func (x *XDes) RestoreKeyIV(keyStr string) ([]byte, error) {
 	return KeyIVStringToByte(x.ModeOfKey(), keyStr)
 }
 
+// 设置秘钥自动补充长度，AES自动补充为16、24、32，des自动补充为8、24
+func (x *XDes) SetAutoFillKey(autoFillKey bool) {
+	x.AutoFillKey = autoFillKey
+}
+
 // ECB加密字节数组
 func (x *XDes) EncDataECB(data []byte) ([]byte, error) {
 	// 创建新的DES cipher对象
-	block, err := des.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +175,7 @@ func (x *XDes) EncDataECB(data []byte) ([]byte, error) {
 // CBC加密字节数组
 func (x *XDes) EncDataCBC(data []byte) ([]byte, error) {
 	// 创建新的DES cipher对象
-	block, err := des.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +193,7 @@ func (x *XDes) EncDataCBC(data []byte) ([]byte, error) {
 // ECB解密字节数组
 func (x *XDes) DecDataECB(dataEnc []byte) ([]byte, error) {
 	// 创建新的DES cipher对象
-	block, err := des.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +214,7 @@ func (x *XDes) DecDataECB(dataEnc []byte) ([]byte, error) {
 // CBC解密字节数组
 func (x *XDes) DecDataCBC(dataEnc []byte) ([]byte, error) {
 	// 创建新的DES cipher对象
-	block, err := des.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +288,7 @@ func (x *XDes) EncFileECB(pathSrc string, pathEnc string) error {
 	}
 	defer fiW.Close()
 	// 创建新的DES cipher对象
-	block, err := des.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return err
 	}
@@ -360,7 +374,7 @@ func (x *XDes) EncFileCBC(pathSrc string, pathEnc string) error {
 	}
 	defer fiW.Close()
 	// 创建新的DES cipher对象
-	block, err := des.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return err
 	}
@@ -437,7 +451,7 @@ func (x *XDes) DecFileECB(pathEnc string, pathDest string) error {
 	}
 	defer fiW.Close()
 	// 创建新的DES cipher对象
-	block, err := des.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return err
 	}
@@ -521,7 +535,7 @@ func (x *XDes) DecFileCBC(pathEnc string, pathDest string) error {
 	}
 	defer fiW.Close()
 	// 创建新的DES cipher对象
-	block, err := des.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return err
 	}
@@ -615,12 +629,48 @@ func (x *XDes) UnPadding(data []byte, blockSize int) []byte {
 	}
 }
 
+func (x *XDes) genrateNewChiper() (cipher.Block, error) {
+	lenKey := len(x.Key)
+	if lenKey <= 0 {
+		return nil, errors.New("DES key for cipher is error")
+	}
+	if x.AutoFillKey {
+		if lenKey < 8 {
+			byteBuffer := bytes.Buffer{}
+			for i := 0; i < 8; i++ {
+				byteBuffer.WriteByte(x.Key[i%lenKey])
+			}
+			desKey := byteBuffer.Bytes()
+			return des.NewCipher(desKey)
+		} else if lenKey == 8 {
+			return des.NewCipher(x.Key)
+		} else if lenKey < 24 {
+			byteBuffer := bytes.Buffer{}
+			for i := 0; i < 24; i++ {
+				byteBuffer.WriteByte(x.Key[i%lenKey])
+			}
+			desKey := byteBuffer.Bytes()
+			return des.NewTripleDESCipher(desKey)
+		} else if lenKey == 24 {
+			return des.NewTripleDESCipher(x.Key)
+		} else {
+			return des.NewTripleDESCipher(x.Key[0:24])
+		}
+	} else {
+		if lenKey < 16 {
+			return des.NewCipher(x.Key)
+		} else {
+			return des.NewTripleDESCipher(x.Key)
+		}
+	}
+
+}
 func (x *XDes) calBlockSize(sizeByChiper int) int {
 	if x.BlockSize > 0 && x.BlockSize%8 == 0 {
 		return x.BlockSize
 	} else if sizeByChiper > 0 && sizeByChiper%8 == 0 {
 		return sizeByChiper
 	} else {
-		return 16
+		return 8
 	}
 }

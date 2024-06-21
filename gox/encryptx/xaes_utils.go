@@ -8,6 +8,7 @@ package encryptx
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"errors"
@@ -22,6 +23,7 @@ type XAes struct {
 	ModePadding MODE_PADDING
 	Key         []byte
 	Iv          []byte
+	AutoFillKey bool // 秘钥自动补充长度，AES自动补充为16、24、32，des自动补充为8、24
 	//KeyLen          int
 	//IvLen           int
 	BlockSize int
@@ -79,12 +81,12 @@ func (x *XAes) GetIVData() []byte {
 
 // 获取key字符串
 func (x *XAes) GetKeyString() (string, error) {
-	return KeyIVByteToString(x.ModeOfKey(), x.Key)
+	return KeyIVByteToString(x.ModeOfKey(), x.Key, fmt.Sprintf("AES KEY(len:%d)", len(x.Key)))
 }
 
 // 获取iv字符串
 func (x *XAes) GetIVString() (string, error) {
-	return KeyIVByteToString(x.ModeOfKey(), x.Iv)
+	return KeyIVByteToString(x.ModeOfKey(), x.Iv, fmt.Sprintf("AES IV(len:%d)", len(x.Iv)))
 }
 
 // 设置iv字符串
@@ -109,7 +111,7 @@ func (x *XAes) GetBlockSize() (int, error) {
 	if x.BlockSize > 0 && x.BlockSize%8 == 0 {
 		return x.BlockSize, nil
 	} else {
-		block, err := aes.NewCipher(x.Key)
+		block, err := x.genrateNewChiper()
 		if err != nil {
 			return 16, err
 		}
@@ -129,7 +131,14 @@ func (x *XAes) GenKeyIvData(len int) ([]byte, error) {
 
 // 生成key或iv字符串
 func (x *XAes) GenKeyIvString(len int) (string, error) {
-	return GenKeyString(x.ModeOfKey(), len)
+	tag := fmt.Sprintf("AES KEY(len:%d)", len)
+	return GenKeyString(x.ModeOfKey(), len, tag)
+}
+
+// 生成iv字符串
+func (x *XAes) GenIVString() (string, error) {
+	tag := fmt.Sprintf("AES IV(len:%d)", 16)
+	return GenKeyString(x.ModeOfKey(), 16, tag)
 }
 
 // 还原key或iv字符串为key或iv字节数组
@@ -137,10 +146,15 @@ func (x *XAes) RestoreKeyIV(keyStr string) ([]byte, error) {
 	return KeyIVStringToByte(x.ModeOfKey(), keyStr)
 }
 
+// 设置秘钥自动补充长度，AES自动补充为16、24、32，des自动补充为8、24
+func (x *XAes) SetAutoFillKey(autoFillKey bool) {
+	x.AutoFillKey = autoFillKey
+}
+
 // ECB加密字节数组
 func (x *XAes) EncDataECB(data []byte) ([]byte, error) {
 	// 创建新的AES cipher对象
-	block, err := aes.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +175,7 @@ func (x *XAes) EncDataECB(data []byte) ([]byte, error) {
 // CBC加密字节数组
 func (x *XAes) EncDataCBC(data []byte) ([]byte, error) {
 	// 创建新的AES cipher对象
-	block, err := aes.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +193,7 @@ func (x *XAes) EncDataCBC(data []byte) ([]byte, error) {
 // ECB解密字节数组
 func (x *XAes) DecDataECB(dataEnc []byte) ([]byte, error) {
 	// 创建新的AES cipher对象
-	block, err := aes.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +214,7 @@ func (x *XAes) DecDataECB(dataEnc []byte) ([]byte, error) {
 // CBC解密字节数组
 func (x *XAes) DecDataCBC(dataEnc []byte) ([]byte, error) {
 	// 创建新的AES cipher对象
-	block, err := aes.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +288,7 @@ func (x *XAes) EncFileECB(pathSrc string, pathEnc string) error {
 	}
 	defer fiW.Close()
 	// 创建新的AES cipher对象
-	block, err := aes.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return err
 	}
@@ -360,7 +374,7 @@ func (x *XAes) EncFileCBC(pathSrc string, pathEnc string) error {
 	}
 	defer fiW.Close()
 	// 创建新的AES cipher对象
-	block, err := aes.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return err
 	}
@@ -437,7 +451,7 @@ func (x *XAes) DecFileECB(pathEnc string, pathDest string) error {
 	}
 	defer fiW.Close()
 	// 创建新的AES cipher对象
-	block, err := aes.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return err
 	}
@@ -521,7 +535,7 @@ func (x *XAes) DecFileCBC(pathEnc string, pathDest string) error {
 	}
 	defer fiW.Close()
 	// 创建新的AES cipher对象
-	block, err := aes.NewCipher(x.Key)
+	block, err := x.genrateNewChiper()
 	if err != nil {
 		return err
 	}
@@ -613,6 +627,48 @@ func (x *XAes) UnPadding(data []byte, blockSize int) []byte {
 	} else {
 		return Pkcs7UnPadding(data)
 	}
+}
+
+func (x *XAes) genrateNewChiper() (cipher.Block, error) {
+	lenKey := len(x.Key)
+	if lenKey <= 0 {
+		return nil, errors.New("AES key for cipher is error")
+	}
+	if x.AutoFillKey {
+		if lenKey < 16 {
+			byteBuffer := bytes.Buffer{}
+			for i := 0; i < 16; i++ {
+				byteBuffer.WriteByte(x.Key[i%lenKey])
+			}
+			aesKey := byteBuffer.Bytes()
+			return aes.NewCipher(aesKey)
+		} else if lenKey == 16 {
+			return aes.NewCipher(x.Key)
+		} else if lenKey < 24 {
+			byteBuffer := bytes.Buffer{}
+			for i := 0; i < 24; i++ {
+				byteBuffer.WriteByte(x.Key[i%lenKey])
+			}
+			aesKey := byteBuffer.Bytes()
+			return aes.NewCipher(aesKey)
+		} else if lenKey == 24 {
+			return aes.NewCipher(x.Key)
+		} else if lenKey < 32 {
+			byteBuffer := bytes.Buffer{}
+			for i := 0; i < 32; i++ {
+				byteBuffer.WriteByte(x.Key[i%lenKey])
+			}
+			aesKey := byteBuffer.Bytes()
+			return aes.NewCipher(aesKey)
+		} else if lenKey == 32 {
+			return aes.NewCipher(x.Key)
+		} else {
+			return aes.NewCipher(x.Key[0:32])
+		}
+	} else {
+		return aes.NewCipher(x.Key)
+	}
+
 }
 
 func (x *XAes) calBlockSize(sizeByChiper int) int {
