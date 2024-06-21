@@ -9,7 +9,6 @@ package encryptx
 import (
 	"crypto"
 	"fmt"
-	"github.com/ruomm/goxframework/gox/corex"
 	"testing"
 )
 
@@ -36,7 +35,7 @@ func TestRsaHelperCommon(t *testing.T) {
 	//fmt.Println(xRsa.FormatPublicKey(MODE_KEY_HEX_UPPER))
 	//fmt.Println(xRsa.SizeOfPrivateKey())
 	//fmt.Println(xRsa.SizeOfPublicKey())
-	origStr := GenRandomString(1024) + "      中华人民共和国      "
+	origStr := generateToken(1024) + "      中华人民共和国      "
 	origStr = ""
 	//encStr, _ := xRsa.EncryptPKCS1v15StringBig(MODE_ENCODE_BASE64, origStr)
 	//fmt.Println(encStr)
@@ -123,7 +122,7 @@ func TestAesCommon(t *testing.T) {
 	xHelper.SetKeyString(keyStr)
 	xHelper.SetIVString(ivStr)
 	//xHelper.SetBlockSize(16)
-	origStr := "      中华人民共和国      " + GenRandomString(1024) + "      中华人民共和国      "
+	origStr := "      中华人民共和国      " + generateToken(1024) + "      中华人民共和国      "
 	//origStr = "as"
 	//origStr = ""
 	encStr, _ := xHelper.EncStringCBC(origStr)
@@ -155,7 +154,7 @@ func TestDesCommon(t *testing.T) {
 	xHelper.SetKeyString(keyStr)
 	xHelper.SetIVString(ivStr)
 	//xHelper.SetBlockSize(16)
-	origStr := "      中华人民共和国      " + GenRandomString(1024) + "      中华人民共和国      "
+	origStr := "      中华人民共和国      " + generateToken(1024) + "      中华人民共和国      "
 	//origStr = ""
 	encStr, _ := xHelper.EncStringCBC(origStr)
 	fmt.Println(encStr)
@@ -166,12 +165,4 @@ func TestDesCommon(t *testing.T) {
 	} else {
 		fmt.Println("加密解密验证不通过通过")
 	}
-}
-
-func GenRandomString(size int) string {
-	tokenHelper := corex.TokenHelper{
-		TokenLen: 256,
-		Dicts:    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890",
-	}
-	return tokenHelper.GenToken(size)
 }

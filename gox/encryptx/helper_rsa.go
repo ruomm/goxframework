@@ -13,7 +13,6 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
-	"github.com/ruomm/goxframework/gox/corex"
 	"strings"
 )
 
@@ -117,7 +116,7 @@ func FormatKeyByString(keyStr string, tag string) (string, error) {
 
 // 读取格式化密钥
 func ReadFormatKey(str string) ([]byte, error) {
-	strSlice := corex.StringReadByLineNoBom(str, false)
+	strSlice := stringReadByLineNoBom(str, false)
 	if strSlice == nil || len(strSlice) == 0 {
 		return nil, errors.New("read format key error,key string is empty")
 	}
