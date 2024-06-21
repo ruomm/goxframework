@@ -59,8 +59,8 @@ type EncryptHelper interface {
 	GetIVString() (string, error)
 	// 设置Blocksize
 	SetBlockSize(blockSize int)
-	// 设置BlockSize依据Key长度自动适配
-	SetBlockSizeByKey(blockSizeByKey bool)
+	// 获取Blocksize
+	GetBlockSize() (int, error)
 	// 生成key或iv字节数组
 	GenKeyIvData(len int) ([]byte, error)
 	// 生成key或iv字符串
@@ -240,35 +240,35 @@ func genTokenString(keyLen int) string {
 }
 
 // 动态计算blockSize
-func calBlockSize(sizeHelper int, sizeChiper int, sizeKey int, blockSizeByKey bool) int {
-	if sizeHelper > 0 {
-		return sizeHelper
-	}
-	if sizeChiper <= 0 && sizeKey <= 0 {
-		return 16
-	} else if sizeKey <= 0 {
-		return sizeChiper
-	} else if sizeChiper <= 0 {
-		count := sizeKey / 16
-		if count <= 0 {
-			return 16
-		} else if sizeKey%16 == 0 {
-			return count * 16
-		} else {
-			return (count + 1) * 16
-		}
-	} else {
-		if blockSizeByKey {
-			count := sizeKey / 16
-			if count <= 0 {
-				return 16
-			} else if sizeKey%16 == 0 {
-				return count * 16
-			} else {
-				return (count + 1) * 16
-			}
-		} else {
-			return sizeChiper
-		}
-	}
-}
+//func calBlockSize(sizeHelper int, sizeChiper int, sizeKey int, blockSizeByKey bool) int {
+//	if sizeHelper > 0 {
+//		return sizeHelper
+//	}
+//	if sizeChiper <= 0 && sizeKey <= 0 {
+//		return 16
+//	} else if sizeKey <= 0 {
+//		return sizeChiper
+//	} else if sizeChiper <= 0 {
+//		count := sizeKey / 16
+//		if count <= 0 {
+//			return 16
+//		} else if sizeKey%16 == 0 {
+//			return count * 16
+//		} else {
+//			return (count + 1) * 16
+//		}
+//	} else {
+//		if blockSizeByKey {
+//			count := sizeKey / 16
+//			if count <= 0 {
+//				return 16
+//			} else if sizeKey%16 == 0 {
+//				return count * 16
+//			} else {
+//				return (count + 1) * 16
+//			}
+//		} else {
+//			return sizeChiper
+//		}
+//	}
+//}

@@ -113,16 +113,16 @@ func TestAesCommon(t *testing.T) {
 	var xAes EncryptHelper
 	//xencrypt.
 	xAes = &XAes{
-		ModeKey:        MODE_KEY_PEM,
-		ModeEncode:     MODE_ENCODE_BASE64,
-		ModePadding:    MODE_PADDING_PKCS7,
-		BlockSizeByKey: true,
+		ModeKey:     MODE_KEY_PEM,
+		ModeEncode:  MODE_ENCODE_BASE64,
+		ModePadding: MODE_PADDING_PKCS7,
 	}
 	keyStr, _ := xAes.GenKeyIvString(32)
-	print(keyStr)
+	fmt.Println(keyStr)
 	xAes.SetKeyString(keyStr)
-	xAes.SetBlockSize(16)
+	//xAes.SetBlockSize(8)
 	origStr := "      中华人民共和国      " + GenRandomString(1024) + "      中华人民共和国      "
+	//origStr = "as"
 	//origStr = ""
 	encStr, _ := xAes.EncStringECB(origStr)
 	fmt.Println(encStr)
@@ -141,10 +141,9 @@ func TestDesCommon(t *testing.T) {
 	var xHelper EncryptHelper
 	//xencrypt.
 	xHelper = &XDes{
-		ModeKey:        MODE_KEY_PEM,
-		ModeEncode:     MODE_ENCODE_BASE64,
-		ModePadding:    MODE_PADDING_PKCS7,
-		BlockSizeByKey: true,
+		ModeKey:     MODE_KEY_PEM,
+		ModeEncode:  MODE_ENCODE_BASE64,
+		ModePadding: MODE_PADDING_PKCS7,
 	}
 	keyStr, _ := xHelper.GenKeyIvString(8)
 	ivStr, _ := xHelper.GenKeyIvString(8)

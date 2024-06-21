@@ -10,6 +10,7 @@ import (
 	"bufio"
 	"crypto/aes"
 	"crypto/cipher"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -23,8 +24,8 @@ type XAes struct {
 	Iv          []byte
 	//KeyLen          int
 	//IvLen           int
-	BlockSize       int
-	BlockSizeByKey  bool
+	BlockSize int
+	//BlockSizeByKey  bool
 	PaddingHelper   func(data []byte, blockSize int) []byte
 	UnPaddingHelper func(data []byte, blockSize int) []byte
 }
@@ -98,14 +99,27 @@ func (x *XAes) SetIVString(ivStr string) error {
 
 // 设置Blocksize
 func (x *XAes) SetBlockSize(blockSize int) {
-	if blockSize%8 == 0 && blockSize > 0 {
+	if blockSize > 0 && blockSize%8 == 0 {
 		x.BlockSize = blockSize
 	}
 }
 
-// 设置BlockSize依据Key长度自动适配
-func (x *XAes) SetBlockSizeByKey(blockSizeByKey bool) {
-	x.BlockSizeByKey = blockSizeByKey
+// 获取Blocksize
+func (x *XAes) GetBlockSize() (int, error) {
+	if x.BlockSize > 0 && x.BlockSize%8 == 0 {
+		return x.BlockSize, nil
+	} else {
+		block, err := aes.NewCipher(x.Key)
+		if err != nil {
+			return 16, err
+		}
+		sizeByChiper := block.BlockSize()
+		if sizeByChiper > 0 && sizeByChiper%8 == 0 {
+			return sizeByChiper, nil
+		} else {
+			return 16, errors.New("AES Cipher block size err")
+		}
+	}
 }
 
 // 生成key或iv字节数组
@@ -131,7 +145,7 @@ func (x *XAes) EncDataECB(data []byte) ([]byte, error) {
 		return nil, err
 	}
 	// 补齐明文长度为blockSize字节（AES block size）的倍数
-	blockSize := calBlockSize(x.BlockSize, block.BlockSize(), len(x.Key), x.BlockSizeByKey)
+	blockSize := x.calBlockSize(block.BlockSize())
 	ecbBlockSize := block.BlockSize()
 	plaintext := x.Padding(data, blockSize)
 	// 加密
@@ -152,7 +166,7 @@ func (x *XAes) EncDataCBC(data []byte) ([]byte, error) {
 		return nil, err
 	}
 	// 补齐明文长度为blockSize字节（AES block size）的倍数
-	blockSize := calBlockSize(x.BlockSize, block.BlockSize(), len(x.Key), x.BlockSizeByKey)
+	blockSize := x.calBlockSize(block.BlockSize())
 	plaintext := x.Padding(data, blockSize)
 	// 加密
 	blockMode := cipher.NewCBCEncrypter(block, x.Iv)
@@ -169,7 +183,7 @@ func (x *XAes) DecDataECB(dataEnc []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	blockSize := calBlockSize(x.BlockSize, block.BlockSize(), len(x.Key), x.BlockSizeByKey)
+	blockSize := x.calBlockSize(block.BlockSize())
 	ecbBlockSize := block.BlockSize()
 	// 解密
 	decrypted := make([]byte, len(dataEnc))
@@ -190,7 +204,7 @@ func (x *XAes) DecDataCBC(dataEnc []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	blockSize := calBlockSize(x.BlockSize, block.BlockSize(), len(x.Key), x.BlockSizeByKey)
+	blockSize := x.calBlockSize(block.BlockSize())
 	// 解密
 	decrypted := make([]byte, len(dataEnc))
 	blockMode := cipher.NewCBCDecrypter(block, x.Iv)
@@ -265,7 +279,7 @@ func (x *XAes) EncFileECB(pathSrc string, pathEnc string) error {
 		return err
 	}
 	// 补齐明文长度为blockSize字节（AES block size）的倍数
-	blockSize := calBlockSize(x.BlockSize, block.BlockSize(), len(x.Key), x.BlockSizeByKey)
+	blockSize := x.calBlockSize(block.BlockSize())
 	ecbBlockSize := block.BlockSize()
 	bufferSize := (FILE_BUFFER_SIZE / blockSize) * blockSize
 	if bufferSize < 2*blockSize {
@@ -351,7 +365,7 @@ func (x *XAes) EncFileCBC(pathSrc string, pathEnc string) error {
 		return err
 	}
 	// 补齐明文长度为blockSize字节（AES block size）的倍数
-	blockSize := calBlockSize(x.BlockSize, block.BlockSize(), len(x.Key), x.BlockSizeByKey)
+	blockSize := x.calBlockSize(block.BlockSize())
 	blockMode := cipher.NewCBCEncrypter(block, x.Iv)
 	bufferSize := (FILE_BUFFER_SIZE / blockSize) * blockSize
 	if bufferSize < 2*blockSize {
@@ -428,7 +442,7 @@ func (x *XAes) DecFileECB(pathEnc string, pathDest string) error {
 		return err
 	}
 	// 补齐明文长度为blockSize字节（AES block size）的倍数
-	blockSize := calBlockSize(x.BlockSize, block.BlockSize(), len(x.Key), x.BlockSizeByKey)
+	blockSize := x.calBlockSize(block.BlockSize())
 	ecbBlockSize := block.BlockSize()
 	bufferSize := (FILE_BUFFER_SIZE / blockSize) * blockSize
 	if bufferSize < 2*blockSize {
@@ -512,7 +526,7 @@ func (x *XAes) DecFileCBC(pathEnc string, pathDest string) error {
 		return err
 	}
 	// 补齐明文长度为blockSize字节（AES block size）的倍数
-	blockSize := calBlockSize(x.BlockSize, block.BlockSize(), len(x.Key), x.BlockSizeByKey)
+	blockSize := x.calBlockSize(block.BlockSize())
 	blockMode := cipher.NewCBCDecrypter(block, x.Iv)
 	bufferSize := (FILE_BUFFER_SIZE / blockSize) * blockSize
 	if bufferSize < 2*blockSize {
@@ -598,5 +612,15 @@ func (x *XAes) UnPadding(data []byte, blockSize int) []byte {
 		return Pkcs5UnPadding(data)
 	} else {
 		return Pkcs7UnPadding(data)
+	}
+}
+
+func (x *XAes) calBlockSize(sizeByChiper int) int {
+	if x.BlockSize > 0 && x.BlockSize%8 == 0 {
+		return x.BlockSize
+	} else if sizeByChiper > 0 && sizeByChiper%8 == 0 {
+		return sizeByChiper
+	} else {
+		return 16
 	}
 }
