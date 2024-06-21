@@ -72,6 +72,14 @@ func generateTokenNoStartWithZero(token_len int) string {
 	return xGenerateToken(token_len, true)
 }
 
+//func xRandBool() bool {
+//	if rand.Intn(2) == 1 {
+//		return true
+//	} else {
+//		return false
+//	}
+//}
+
 func xGenerateToken(token_len int, noZeroStart bool) string {
 	realLen := 0
 	if token_len > 0 {

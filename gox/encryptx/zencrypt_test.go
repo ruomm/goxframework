@@ -24,22 +24,22 @@ const (
 func TestRsaHelperCommon(t *testing.T) {
 
 	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
-	var xRsa RsaHelper
-	xRsa = &XRsa{
+	var xHelper RsaHelper
+	xHelper = &XRsa{
 		ModePadding: MODE_PADDING_PKCS5,
 	}
-	//xRsa.GenrateKeyPair(2048)
-	xRsa.LoadPrivateKey(MODE_KEY_BASE64, PRI_KEY)
-	xRsa.LoadPulicKey(MODE_KEY_BASE64, PUB_KEY)
-	//fmt.Println(xRsa.FormatPrivateKey(MODE_KEY_HEX_UPPER))
-	//fmt.Println(xRsa.FormatPublicKey(MODE_KEY_HEX_UPPER))
-	//fmt.Println(xRsa.SizeOfPrivateKey())
-	//fmt.Println(xRsa.SizeOfPublicKey())
+	//xHelper.GenrateKeyPair(2048)
+	xHelper.LoadPrivateKey(MODE_KEY_BASE64, PRI_KEY)
+	xHelper.LoadPulicKey(MODE_KEY_BASE64, PUB_KEY)
+	//fmt.Println(xHelper.FormatPrivateKey(MODE_KEY_HEX_UPPER))
+	//fmt.Println(xHelper.FormatPublicKey(MODE_KEY_HEX_UPPER))
+	//fmt.Println(xHelper.SizeOfPrivateKey())
+	//fmt.Println(xHelper.SizeOfPublicKey())
 	origStr := generateToken(1024) + "      中华人民共和国      "
 	origStr = ""
-	//encStr, _ := xRsa.EncryptPKCS1v15StringBig(MODE_ENCODE_BASE64, origStr)
+	//encStr, _ := xHelper.EncryptPKCS1v15StringBig(MODE_ENCODE_BASE64, origStr)
 	//fmt.Println(encStr)
-	//decStr, _ := xRsa.DecryptPKCS1v15StringBig(MODE_ENCODE_BASE64, encStr)
+	//decStr, _ := xHelper.DecryptPKCS1v15StringBig(MODE_ENCODE_BASE64, encStr)
 	//fmt.Println(decStr)
 	//if origStr == decStr {
 	//	fmt.Println("加密解密验证通过")
@@ -47,18 +47,18 @@ func TestRsaHelperCommon(t *testing.T) {
 	//	fmt.Println("加密解密验证不通过通过")
 	//}
 
-	//sigStr, _ := xRsa.SignPSSByString(MODE_ENCODE_BASE64, crypto.MD5SHA1, origStr, nil)
+	//sigStr, _ := xHelper.SignPSSByString(MODE_ENCODE_BASE64, crypto.MD5SHA1, origStr, nil)
 	//fmt.Println(sigStr)
-	//verifyErr := xRsa.VerifyPSSByString(MODE_ENCODE_BASE64, crypto.MD5SHA1, origStr, sigStr, nil)
+	//verifyErr := xHelper.VerifyPSSByString(MODE_ENCODE_BASE64, crypto.MD5SHA1, origStr, sigStr, nil)
 	//if verifyErr == nil && len(sigStr) > 0 {
 	//	fmt.Println("签名验证通过")
 	//} else {
 	//	fmt.Printf("签名验证不通过:%v", verifyErr)
 	//}
 
-	sigData, _ := xRsa.SignPSS(crypto.SHA384, []byte(origStr), nil)
+	sigData, _ := xHelper.SignPSS(crypto.SHA384, []byte(origStr), nil)
 	fmt.Println(sigData)
-	verifyDataErr := xRsa.VerifyPSS(crypto.SHA384, []byte(origStr), sigData, nil)
+	verifyDataErr := xHelper.VerifyPSS(crypto.SHA384, []byte(origStr), sigData, nil)
 	if verifyDataErr == nil && len(sigData) > 0 {
 		fmt.Println("签名验证通过")
 	} else {
@@ -69,23 +69,23 @@ func TestRsaHelperCommon(t *testing.T) {
 func TestRsaHelperFile(t *testing.T) {
 
 	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
-	var xRsa RsaHelper
-	xRsa = &XRsa{
+	var xHelper RsaHelper
+	xHelper = &XRsa{
 		ModePadding: MODE_PADDING_PKCS5,
 	}
-	//xRsa.GenrateKeyPair(2048)
-	xRsa.LoadPrivateKey(MODE_KEY_BASE64, PRI_KEY)
-	xRsa.LoadPulicKey(MODE_KEY_BASE64, PUB_KEY)
+	//xHelper.GenrateKeyPair(2048)
+	xHelper.LoadPrivateKey(MODE_KEY_BASE64, PRI_KEY)
+	xHelper.LoadPulicKey(MODE_KEY_BASE64, PUB_KEY)
 	origFile := "/Users/qx/Downloads/文本bom测试.txt"
 	encFile := "/Users/qx/Downloads/文本bom测试_ENC.txt"
 	decFile := "/Users/qx/Downloads/文本bom测试_DEC.txt"
-	err := xRsa.EncryptPKCS1v15File(origFile, encFile, false)
+	err := xHelper.EncryptPKCS1v15File(origFile, encFile, false)
 	if err == nil {
 		fmt.Println("文件加密通过")
 	} else {
 		fmt.Printf("文件加密不通过:%v", err)
 	}
-	err = xRsa.DecryptPKCS1v15File(encFile, decFile)
+	err = xHelper.DecryptPKCS1v15File(encFile, decFile)
 	if err == nil {
 		fmt.Println("文件解密通过")
 	} else {
@@ -96,9 +96,9 @@ func TestRsaHelperFile(t *testing.T) {
 	shaStr, _ := SumByString(MODE_ENCODE_HEX_LOWER, crypto.MD5, origFile)
 	fmt.Println("shaStr:", shaStr)
 
-	sigData, _ := xRsa.SignPSSFileByString(MODE_ENCODE_HEX_LOWER, crypto.MD5, origFile, nil)
+	sigData, _ := xHelper.SignPSSFileByString(MODE_ENCODE_HEX_LOWER, crypto.MD5, origFile, nil)
 	fmt.Println(sigData)
-	verifyDataErr := xRsa.VerifyPSSFileByString(MODE_ENCODE_HEX_LOWER, crypto.MD5, origFile, sigData, nil)
+	verifyDataErr := xHelper.VerifyPSSFileByString(MODE_ENCODE_HEX_LOWER, crypto.MD5, origFile, sigData, nil)
 	if verifyDataErr == nil && len(sigData) > 0 {
 		fmt.Println("文件签名验证通过")
 	} else {
