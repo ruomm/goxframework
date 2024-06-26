@@ -226,7 +226,7 @@ func (looger LoggerX) ConfigContextHandler(handler XContextHandler) {
 func (looger LoggerX) Log(lvl zapcore.Level, msg string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	looger.ZapLogger.Log(lvl, msg, fields...)
 }
@@ -234,7 +234,7 @@ func (looger LoggerX) Log(lvl zapcore.Level, msg string, fields ...zap.Field) {
 func (looger LoggerX) Debug(message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	looger.ZapLogger.Debug(message, fields...)
 }
@@ -242,7 +242,7 @@ func (looger LoggerX) Debug(message string, fields ...zap.Field) {
 func (looger LoggerX) Info(message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	looger.ZapLogger.Info(message, fields...)
 }
@@ -250,7 +250,7 @@ func (looger LoggerX) Info(message string, fields ...zap.Field) {
 func (looger LoggerX) Warn(message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	looger.ZapLogger.Warn(message, fields...)
 }
@@ -258,7 +258,7 @@ func (looger LoggerX) Warn(message string, fields ...zap.Field) {
 func (looger LoggerX) Error(message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	looger.ZapLogger.Error(message, fields...)
 }
@@ -266,7 +266,7 @@ func (looger LoggerX) Error(message string, fields ...zap.Field) {
 func (looger LoggerX) DPanic(message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	looger.ZapLogger.DPanic(message, fields...)
 }
@@ -274,7 +274,7 @@ func (looger LoggerX) DPanic(message string, fields ...zap.Field) {
 func (looger LoggerX) Panic(message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	looger.ZapLogger.Panic(message, fields...)
 }
@@ -282,7 +282,7 @@ func (looger LoggerX) Panic(message string, fields ...zap.Field) {
 func (looger LoggerX) Fatal(message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	looger.ZapLogger.Fatal(message, fields...)
 }
@@ -290,7 +290,7 @@ func (looger LoggerX) Fatal(message string, fields ...zap.Field) {
 func (looger LoggerX) LogWithCtx(ctx context.Context, lvl zapcore.Level, msg string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	if nil != Logger.xContextHandler {
 		callerFields := looger.xContextHandler(ctx)
@@ -304,7 +304,7 @@ func (looger LoggerX) LogWithCtx(ctx context.Context, lvl zapcore.Level, msg str
 func (looger LoggerX) DebugWithCtx(ctx context.Context, message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	if nil != Logger.xContextHandler {
 		callerFields := looger.xContextHandler(ctx)
@@ -318,7 +318,7 @@ func (looger LoggerX) DebugWithCtx(ctx context.Context, message string, fields .
 func (looger LoggerX) InfoWithCtx(ctx context.Context, message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	if nil != Logger.xContextHandler {
 		callerFields := looger.xContextHandler(ctx)
@@ -332,7 +332,7 @@ func (looger LoggerX) InfoWithCtx(ctx context.Context, message string, fields ..
 func (looger LoggerX) WarnWithCtx(ctx context.Context, message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	if nil != Logger.xContextHandler {
 		callerFields := looger.xContextHandler(ctx)
@@ -346,7 +346,7 @@ func (looger LoggerX) WarnWithCtx(ctx context.Context, message string, fields ..
 func (looger LoggerX) ErrorWithCtx(ctx context.Context, message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	if nil != Logger.xContextHandler {
 		callerFields := looger.xContextHandler(ctx)
@@ -360,7 +360,7 @@ func (looger LoggerX) ErrorWithCtx(ctx context.Context, message string, fields .
 func (looger LoggerX) DPanicWithCtx(ctx context.Context, message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	if nil != Logger.xContextHandler {
 		callerFields := looger.xContextHandler(ctx)
@@ -374,7 +374,7 @@ func (looger LoggerX) DPanicWithCtx(ctx context.Context, message string, fields 
 func (looger LoggerX) PanicWithCtx(ctx context.Context, message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	if nil != Logger.xContextHandler {
 		callerFields := looger.xContextHandler(ctx)
@@ -388,7 +388,7 @@ func (looger LoggerX) PanicWithCtx(ctx context.Context, message string, fields .
 func (looger LoggerX) FatalWithCtx(ctx context.Context, message string, fields ...zap.Field) {
 	if looger.Development {
 		callerFields := looger.getCallerInfoForLog()
-		fields = append(fields, callerFields...)
+		fields = append(callerFields, fields...)
 	}
 	if nil != Logger.xContextHandler {
 		callerFields := looger.xContextHandler(ctx)
