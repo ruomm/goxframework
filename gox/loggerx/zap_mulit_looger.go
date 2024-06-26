@@ -7,6 +7,7 @@
 package loggerx
 
 import (
+	"context"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"strings"
@@ -22,8 +23,8 @@ type MutilLoggerX struct {
 
 var MutilLogger *MutilLoggerX
 
-func InitMutilLogger(logConfig interface{}, workDirPath string, instanceName string, handler XCallerSkipHandler) error {
-	loggerx, err := generateLoggerX(logConfig, workDirPath, instanceName, 3, handler)
+func InitMutilLogger(logConfig interface{}, workDirPath string, instanceName string, skipHandler XCallerSkipHandler, contextHandler XContextHandler) error {
+	loggerx, err := generateLoggerX(logConfig, workDirPath, instanceName, 3, skipHandler, contextHandler)
 	if err != nil {
 		return err
 	}
@@ -114,4 +115,44 @@ func (mutilLogger MutilLoggerX) Panic(message string, fields ...zap.Field) {
 func (mutilLogger MutilLoggerX) Fatal(message string, fields ...zap.Field) {
 	looger, msg := mutilLogger.getLoogerX(message)
 	looger.Fatal(msg, fields...)
+}
+
+func (mutilLogger MutilLoggerX) LogWithCtx(ctx context.Context, lvl zapcore.Level, message string, fields ...zap.Field) {
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.LogWithCtx(ctx, lvl, msg, fields...)
+}
+
+func (mutilLogger MutilLoggerX) DebugWithCtx(ctx context.Context, message string, fields ...zap.Field) {
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.DebugWithCtx(ctx, msg, fields...)
+}
+
+func (mutilLogger MutilLoggerX) InfoWithCtx(ctx context.Context, message string, fields ...zap.Field) {
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.InfoWithCtx(ctx, msg, fields...)
+}
+
+func (mutilLogger MutilLoggerX) WarnWithCtx(ctx context.Context, message string, fields ...zap.Field) {
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.WarnWithCtx(ctx, msg, fields...)
+}
+
+func (mutilLogger MutilLoggerX) ErrorWithCtx(ctx context.Context, message string, fields ...zap.Field) {
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.ErrorWithCtx(ctx, msg, fields...)
+}
+
+func (mutilLogger MutilLoggerX) DPanicWithCtx(ctx context.Context, message string, fields ...zap.Field) {
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.DPanicWithCtx(ctx, msg, fields...)
+}
+
+func (mutilLogger MutilLoggerX) PanicWithCtx(ctx context.Context, message string, fields ...zap.Field) {
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.PanicWithCtx(ctx, msg, fields...)
+}
+
+func (mutilLogger MutilLoggerX) FatalWithCtx(ctx context.Context, message string, fields ...zap.Field) {
+	looger, msg := mutilLogger.getLoogerX(message)
+	looger.FatalWithCtx(ctx, msg, fields...)
 }
