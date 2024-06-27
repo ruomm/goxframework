@@ -28,7 +28,7 @@ var Logger *LoggerX
 
 type XCallerSkipHandler func(file string, line int) int
 
-type XContextHandler func(context.Context) []zap.Field
+type XContextHandler func(context.Context) ([]zap.Field, string)
 
 func InitLogger(logConfig interface{}, workDirPath string, skipHandler XCallerSkipHandler, contextHandler XContextHandler) error {
 	loggerx, err := generateLoggerX(logConfig, workDirPath, "", 1, skipHandler, contextHandler)
@@ -292,13 +292,16 @@ func (looger LoggerX) LogWithCtx(ctx context.Context, lvl zapcore.Level, msg str
 		callerFields := looger.getCallerInfoForLog()
 		fields = append(callerFields, fields...)
 	}
+	msgPrefix := ""
 	if nil != Logger.xContextHandler {
-		callerFields := looger.xContextHandler(ctx)
+		callerFields, msgPrefixTmp := looger.xContextHandler(ctx)
 		if len(callerFields) > 0 {
 			fields = append(fields, callerFields...)
 		}
+		msgPrefix = msgPrefixTmp
+
 	}
-	looger.ZapLogger.Log(lvl, msg, fields...)
+	looger.ZapLogger.Log(lvl, msgPrefix+msg, fields...)
 }
 
 func (looger LoggerX) DebugWithCtx(ctx context.Context, message string, fields ...zap.Field) {
@@ -306,13 +309,16 @@ func (looger LoggerX) DebugWithCtx(ctx context.Context, message string, fields .
 		callerFields := looger.getCallerInfoForLog()
 		fields = append(callerFields, fields...)
 	}
+	msgPrefix := ""
 	if nil != Logger.xContextHandler {
-		callerFields := looger.xContextHandler(ctx)
+		callerFields, msgPrefixTmp := looger.xContextHandler(ctx)
 		if len(callerFields) > 0 {
 			fields = append(fields, callerFields...)
 		}
+		msgPrefix = msgPrefixTmp
+
 	}
-	looger.ZapLogger.Debug(message, fields...)
+	looger.ZapLogger.Debug(msgPrefix+message, fields...)
 }
 
 func (looger LoggerX) InfoWithCtx(ctx context.Context, message string, fields ...zap.Field) {
@@ -320,13 +326,16 @@ func (looger LoggerX) InfoWithCtx(ctx context.Context, message string, fields ..
 		callerFields := looger.getCallerInfoForLog()
 		fields = append(callerFields, fields...)
 	}
+	msgPrefix := ""
 	if nil != Logger.xContextHandler {
-		callerFields := looger.xContextHandler(ctx)
+		callerFields, msgPrefixTmp := looger.xContextHandler(ctx)
 		if len(callerFields) > 0 {
 			fields = append(fields, callerFields...)
 		}
+		msgPrefix = msgPrefixTmp
+
 	}
-	looger.ZapLogger.Info(message, fields...)
+	looger.ZapLogger.Info(msgPrefix+message, fields...)
 }
 
 func (looger LoggerX) WarnWithCtx(ctx context.Context, message string, fields ...zap.Field) {
@@ -334,13 +343,16 @@ func (looger LoggerX) WarnWithCtx(ctx context.Context, message string, fields ..
 		callerFields := looger.getCallerInfoForLog()
 		fields = append(callerFields, fields...)
 	}
+	msgPrefix := ""
 	if nil != Logger.xContextHandler {
-		callerFields := looger.xContextHandler(ctx)
+		callerFields, msgPrefixTmp := looger.xContextHandler(ctx)
 		if len(callerFields) > 0 {
 			fields = append(fields, callerFields...)
 		}
+		msgPrefix = msgPrefixTmp
+
 	}
-	looger.ZapLogger.Warn(message, fields...)
+	looger.ZapLogger.Warn(msgPrefix+message, fields...)
 }
 
 func (looger LoggerX) ErrorWithCtx(ctx context.Context, message string, fields ...zap.Field) {
@@ -348,13 +360,16 @@ func (looger LoggerX) ErrorWithCtx(ctx context.Context, message string, fields .
 		callerFields := looger.getCallerInfoForLog()
 		fields = append(callerFields, fields...)
 	}
+	msgPrefix := ""
 	if nil != Logger.xContextHandler {
-		callerFields := looger.xContextHandler(ctx)
+		callerFields, msgPrefixTmp := looger.xContextHandler(ctx)
 		if len(callerFields) > 0 {
 			fields = append(fields, callerFields...)
 		}
+		msgPrefix = msgPrefixTmp
+
 	}
-	looger.ZapLogger.Error(message, fields...)
+	looger.ZapLogger.Error(msgPrefix+message, fields...)
 }
 
 func (looger LoggerX) DPanicWithCtx(ctx context.Context, message string, fields ...zap.Field) {
@@ -362,13 +377,16 @@ func (looger LoggerX) DPanicWithCtx(ctx context.Context, message string, fields 
 		callerFields := looger.getCallerInfoForLog()
 		fields = append(callerFields, fields...)
 	}
+	msgPrefix := ""
 	if nil != Logger.xContextHandler {
-		callerFields := looger.xContextHandler(ctx)
+		callerFields, msgPrefixTmp := looger.xContextHandler(ctx)
 		if len(callerFields) > 0 {
 			fields = append(fields, callerFields...)
 		}
+		msgPrefix = msgPrefixTmp
+
 	}
-	looger.ZapLogger.DPanic(message, fields...)
+	looger.ZapLogger.DPanic(msgPrefix+message, fields...)
 }
 
 func (looger LoggerX) PanicWithCtx(ctx context.Context, message string, fields ...zap.Field) {
@@ -376,13 +394,16 @@ func (looger LoggerX) PanicWithCtx(ctx context.Context, message string, fields .
 		callerFields := looger.getCallerInfoForLog()
 		fields = append(callerFields, fields...)
 	}
+	msgPrefix := ""
 	if nil != Logger.xContextHandler {
-		callerFields := looger.xContextHandler(ctx)
+		callerFields, msgPrefixTmp := looger.xContextHandler(ctx)
 		if len(callerFields) > 0 {
 			fields = append(fields, callerFields...)
 		}
+		msgPrefix = msgPrefixTmp
+
 	}
-	looger.ZapLogger.Panic(message, fields...)
+	looger.ZapLogger.Panic(msgPrefix+message, fields...)
 }
 
 func (looger LoggerX) FatalWithCtx(ctx context.Context, message string, fields ...zap.Field) {
@@ -390,13 +411,16 @@ func (looger LoggerX) FatalWithCtx(ctx context.Context, message string, fields .
 		callerFields := looger.getCallerInfoForLog()
 		fields = append(callerFields, fields...)
 	}
+	msgPrefix := ""
 	if nil != Logger.xContextHandler {
-		callerFields := looger.xContextHandler(ctx)
+		callerFields, msgPrefixTmp := looger.xContextHandler(ctx)
 		if len(callerFields) > 0 {
 			fields = append(fields, callerFields...)
 		}
+		msgPrefix = msgPrefixTmp
+
 	}
-	looger.ZapLogger.Fatal(message, fields...)
+	looger.ZapLogger.Fatal(msgPrefix+message, fields...)
 }
 
 func (looger LoggerX) getCallerInfoForLog() (callerFields []zap.Field) {
