@@ -8,6 +8,7 @@ package refx
 
 import (
 	"fmt"
+	"github.com/ruomm/goxframework/gox/corex"
 	"math/rand"
 	randv2 "math/rand/v2"
 	"testing"
@@ -107,8 +108,14 @@ func Test0002(t *testing.T) {
 	XSliceCopy(sbOrigSlice, &sbDestSlice)
 	XSliceQcopy(sbOrigSlice, &sbDestSlice)
 	err := XSliceQcopy(scOrigSlice, &sbDestSlice)
-	print(err)
+	fmt.Println(err)
 	fmt.Println(sbDestSlice)
+	sbJson, _ := corex.JsonMarshal(sbDestSlice)
+	fmt.Println(sbJson)
+	var sbDestSliceUnm []SBDestExt
+	err = corex.JsonUnmarshal(sbJson, &sbDestSliceUnm)
+	fmt.Println(err)
+	fmt.Println(sbDestSliceUnm)
 }
 
 func Test0003(t *testing.T) {

@@ -62,7 +62,7 @@ func TestS2S(t *testing.T) {
 	println(dest.VTime.UnixMilli())
 	XRefStructCopy(orig, &dest)
 
-	jsonStr, _ := corex.JsonFormatByString(dest)
+	jsonStr, _ := corex.JsonMarshal(dest)
 	fmt.Println(jsonStr)
 	if jsonStr != readJson(3) {
 		t.Error("测试失败")

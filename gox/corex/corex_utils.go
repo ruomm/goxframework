@@ -62,7 +62,7 @@ func ToSnakeCase(str string) string {
 	snake = xvalid_matchAllCap.ReplaceAllString(snake, "${1}_${2}")  //拆分单词
 	return strings.ToLower(snake)                                    //全部转小写
 }
-func JsonParseByString(str string, v any) error {
+func JsonUnmarshal(str string, v any) error {
 	if str == "" {
 		return errors.New("json Unmarshal not support empty string")
 	}
@@ -70,8 +70,30 @@ func JsonParseByString(str string, v any) error {
 	return err
 }
 
-func JsonFormatByString(v any) (string, error) {
+func JsonMarshal(v any) (string, error) {
 	jsonData, err := json.Marshal(v)
+	if err != nil {
+		return "", err
+	}
+	if len(jsonData) == 0 {
+		return "", errors.New("json Marshal not support this object")
+	}
+	return string(jsonData), err
+}
+
+func JsonMarshalIndent(v any, prefix, indent string) (string, error) {
+	jsonData, err := json.MarshalIndent(v, prefix, indent)
+	if err != nil {
+		return "", err
+	}
+	if len(jsonData) == 0 {
+		return "", errors.New("json Marshal not support this object")
+	}
+	return string(jsonData), err
+}
+
+func JsonMarshalPretty(v any) (string, error) {
+	jsonData, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		return "", err
 	}
