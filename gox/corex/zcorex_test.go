@@ -87,3 +87,13 @@ func TestIsRegexMatch(t *testing.T) {
 	match = IsRegexMatch("^[a-z]$", "a_-.123")
 	fmt.Println(match)
 }
+
+func TestIsString(t *testing.T) {
+
+	fmt.Println(ToCamelCase("d_d@DSa"))
+	fmt.Println(ToSnakeCase("ADSSdas"))
+	fmt.Println(FirstLetterToLower("ADSSdas"))
+	fmt.Println(FirstLetterToUpper("adssDAS"))
+	//match = IsRegexMatch("^[a-z]$", "a_-.123")
+	//fmt.Println(match)
+}

@@ -55,13 +55,58 @@ func FieldNameToSimply(fieldName string) string {
 	}
 }
 
-// 驼峰转下划线工具
+// 驼峰转蛇形工具
 func ToSnakeCase(str string) string {
 	str = xvalid_matchNonAlphaNumeric.ReplaceAllString(str, "_")     //非常规字符转化为 _
 	snake := xvalid_matchFirstCap.ReplaceAllString(str, "${1}_${2}") //拆分出连续大写
 	snake = xvalid_matchAllCap.ReplaceAllString(snake, "${1}_${2}")  //拆分单词
 	return strings.ToLower(snake)                                    //全部转小写
 }
+
+// 蛇形转驼峰工具
+func ToCamelCase(str string) string {
+	sb := strings.Builder{}
+	upFlag := false
+	for i := 0; i < len(str); i++ {
+		if str[i] == '_' {
+			upFlag = true
+			continue
+		} else {
+			if upFlag {
+				upFlag = false
+				sb.WriteString(strings.ToUpper(str[i : i+1]))
+			} else {
+				sb.WriteString(str[i : i+1])
+			}
+		}
+	}
+	return sb.String()
+}
+
+// 首字母大小
+func FirstLetterToUpper(str string) string {
+	length := len(str)
+	if length == 0 {
+		return str
+	} else if length == 1 {
+		return strings.ToUpper(str)
+	} else {
+		return strings.ToUpper(str[0:1]) + str[1:length]
+	}
+}
+
+// 首字母小写
+func FirstLetterToLower(str string) string {
+	length := len(str)
+	if length == 0 {
+		return str
+	} else if length == 1 {
+		return strings.ToLower(str)
+	} else {
+		return strings.ToLower(str[0:1]) + str[1:length]
+	}
+}
+
 func JsonUnmarshal(str string, v any) error {
 	if str == "" {
 		return errors.New("json Unmarshal not support empty string")
