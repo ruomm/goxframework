@@ -18,6 +18,7 @@ import (
 import "errors"
 
 const (
+	xRef_AD_Zero_Second           = int64(-62135596800)
 	db_args_separator_space       = " ?"
 	db_args_in_space              = " (?)"
 	db_args_like_space            = " concat('%',?,'%')"
@@ -53,6 +54,65 @@ func ToGormMap(gormModel interface{}, selectKeys ...string) (map[string]interfac
 			} else {
 				return false
 			}
+		} else {
+			return true
+		}
+
+	})
+	if err != nil {
+		return nil, errors.New("To GormMap error,xreflect parse gormModel error")
+	}
+	if len(mapReflectValue) == 0 {
+		return nil, errors.New("To GormMap error,xreflect parse gormModel empty")
+	}
+	mapresult := make(map[string]interface{})
+	for key, value := range mapReflectValue {
+		if key == "Version" || key == "version" {
+			vi, _ := refx.ParseToInt64(value.Interface(), "")
+			if vi == nil {
+				continue
+			}
+			viInt64 := vi.(int64)
+			if viInt64 <= 0 {
+				continue
+			}
+			mapresult[key] = viInt64 + 1
+		} else {
+			mapresult[key] = value.Interface()
+		}
+	}
+	return mapresult, nil
+}
+
+/*
+* GORM更新模型转换为更新MAP，forceUpdateKeys中的字段强制更新，其他字段非空非0时候更新
+* 转换gorm模型为MAP对象，不包含gorm模型内置的id和时间相关字段，forceUpdateKeys中的字段强制更新，其他字段非空非0时候更新
+ */
+func ToGormMapTidy(gormModel interface{}, forceUpdateKeys ...string) (map[string]interface{}, error) {
+	if nil == gormModel {
+		return nil, errors.New("ToGormMap error,gormModel is nil")
+	}
+	//mapReflectValue, err := xreflect.Fields(destO)
+	mapReflectValue, err := xreflect.SelectFields(gormModel, func(s string, field reflect.StructField, value reflect.Value) bool {
+		tagGorm, okGorm := field.Tag.Lookup("gorm")
+		if !okGorm {
+			return false
+		}
+		// 开始分割目标控制和属性控制
+		subTag, _ := corex.ParseTagToNameOptionFenHao(tagGorm)
+		if len(subTag) > 0 && strings.HasPrefix(subTag, "-") {
+			return false
+		}
+		// 判断是否需要选定特定字段
+		if nil != forceUpdateKeys && len(forceUpdateKeys) > 0 {
+			if xGormIsContainKey(field.Name, forceUpdateKeys...) {
+				return true
+			}
+		}
+		if !value.IsValid() {
+			return false
+		} else if value.IsZero() {
+			return false
 		} else {
 			return true
 		}
@@ -160,6 +220,65 @@ func ToGormMapSnakeCase(gormModel interface{}, selectKeys ...string) (map[string
 			} else {
 				return false
 			}
+		} else {
+			return true
+		}
+
+	})
+	if err != nil {
+		return nil, errors.New("To GormMap error,xreflect parse gormModel error")
+	}
+	if len(mapReflectValue) == 0 {
+		return nil, errors.New("To GormMap error,xreflect parse gormModel empty")
+	}
+	mapresult := make(map[string]interface{})
+	for key, value := range mapReflectValue {
+		if key == "Version" || key == "version" {
+			vi, _ := refx.ParseToInt64(value.Interface(), "")
+			if vi == nil {
+				continue
+			}
+			viInt64 := vi.(int64)
+			if viInt64 <= 0 {
+				continue
+			}
+			mapresult[corex.ToSnakeCase(key)] = viInt64 + 1
+		} else {
+			mapresult[corex.ToSnakeCase(key)] = value.Interface()
+		}
+	}
+	return mapresult, nil
+}
+
+/*
+* GORM更新模型转换为更新MAP，并且进行蛇型法命名，forceUpdateKeys中的字段强制更新，其他字段非空非0时候更新
+* 转换gorm模型为MAP对象，不包含gorm模型内置的id和时间相关字段，forceUpdateKeys中的字段强制更新，其他字段非空非0时候更新
+ */
+func ToGormMapTidySnakeCase(gormModel interface{}, forceUpdateKeys ...string) (map[string]interface{}, error) {
+	if nil == gormModel {
+		return nil, errors.New("ToGormMap error,gormModel is nil")
+	}
+	//mapReflectValue, err := xreflect.Fields(destO)
+	mapReflectValue, err := xreflect.SelectFields(gormModel, func(s string, field reflect.StructField, value reflect.Value) bool {
+		tagGorm, okGorm := field.Tag.Lookup("gorm")
+		if !okGorm {
+			return false
+		}
+		// 开始分割目标控制和属性控制
+		subTag, _ := corex.ParseTagToNameOptionFenHao(tagGorm)
+		if len(subTag) > 0 && strings.HasPrefix(subTag, "-") {
+			return false
+		}
+		// 判断是否需要选定特定字段
+		if nil != forceUpdateKeys && len(forceUpdateKeys) > 0 {
+			if xGormIsContainKey(field.Name, forceUpdateKeys...) {
+				return true
+			}
+		}
+		if !value.IsValid() {
+			return false
+		} else if value.IsZero() {
+			return false
 		} else {
 			return true
 		}
@@ -728,4 +847,106 @@ func parseOrderByItem(pOrderByMap *map[int]xGromOrderByTag, xOrderBy *XOrderBy) 
 	}
 	return orderByItem
 
+}
+
+// 判断值是否空置，如是空置gorm则不复制
+func xIsZeroUpdateKey(value reflect.Value, cpOpt string) bool {
+	// 获取真实的数值
+	actualValue := value
+	if actualValue.Kind() == reflect.Pointer || actualValue.Kind() == reflect.Interface {
+		if actualValue.IsNil() {
+			return true
+		}
+		actualValue = actualValue.Elem()
+	}
+	actualKind := actualValue.Kind()
+	// 判断类型并转换
+	if refx.IsIntegerKind(actualKind) {
+		int64Type := reflect.TypeOf(int64(0))
+		if int64Type != actualValue.Type() {
+			actualValue = actualValue.Convert(int64Type)
+		}
+		vi := actualValue.Interface()
+		if vi == nil {
+			return true
+		} else {
+			viDest := vi.(int64)
+			return viDest == 0
+		}
+	} else if refx.IsFloatKind(actualKind) {
+		float64Type := reflect.TypeOf(float64(0))
+		if float64Type != actualValue.Type() {
+			actualValue = actualValue.Convert(float64Type)
+		}
+		vi := actualValue.Interface()
+		if vi == nil {
+			return true
+		} else {
+			viDest := vi.(float64)
+			//decimalHelper := utilx.DecimalHelper{Prec: 10}
+			//if decimalHelper.EqualByZero(decimalHelper.ToDecimal(viDest)) {
+			//	return false, nil
+			//} else {
+			//	return true, nil
+			//}
+			if viDest == 0 {
+				return true
+			} else {
+				return false
+			}
+		}
+	} else if actualKind == reflect.Bool {
+		boolType := reflect.TypeOf(true)
+		if boolType != actualValue.Type() {
+			actualValue = actualValue.Convert(boolType)
+		}
+		vi := actualValue.Interface()
+		if vi == nil {
+			return true
+		} else {
+			viDest := vi.(bool)
+			if viDest {
+				return false
+			} else {
+				return true
+			}
+		}
+	} else if refx.IsStringKind(actualKind) {
+		stringType := reflect.TypeOf("")
+		if stringType != actualValue.Type() {
+			actualValue = actualValue.Convert(stringType)
+		}
+		vi := actualValue.Interface()
+		if vi == nil {
+			return true
+		} else {
+			viDest := vi.(string)
+			if len(viDest) <= 0 {
+				return true
+			} else {
+				return false
+			}
+		}
+
+	} else if refx.IsStructKind(actualKind) {
+		origFieldVT := actualValue.Type().String()
+		if refx.IsStructKind(actualKind) && refx.IsTimeTypeByName(origFieldVT) {
+			vi := actualValue.Interface()
+			if vi == nil {
+				return true
+			} else {
+				viTimeValue := actualValue.Interface().(time.Time)
+				if viTimeValue.Unix() == xRef_AD_Zero_Second {
+					return true
+				} else {
+					return false
+				}
+			}
+
+		} else {
+			return true
+		}
+	} else {
+		return true
+	}
 }
