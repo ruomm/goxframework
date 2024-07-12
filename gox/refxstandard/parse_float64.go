@@ -58,19 +58,19 @@ func ParseToFloat64(origVal interface{}, cpOpt string) interface{} {
 	actualKind := actualValue.Kind()
 	var vi interface{} = nil
 	// 判断类型并转换
-	if xIsIntegerKind(actualKind) {
+	if IsIntegerKind(actualKind) {
 		int64Type := reflect.TypeOf(int64(0))
 		if int64Type != actualValue.Type() {
 			actualValue = actualValue.Convert(int64Type)
 		}
 		vi = float64(actualValue.Interface().(int64))
-	} else if xIsFloatKind(actualKind) {
+	} else if IsFloatKind(actualKind) {
 		float64Type := reflect.TypeOf(float64(0))
 		if float64Type != actualValue.Type() {
 			actualValue = actualValue.Convert(float64Type)
 		}
 		vi = actualValue.Interface().(float64)
-	} else if xIsStringKind(actualKind) {
+	} else if IsStringKind(actualKind) {
 		stringType := reflect.TypeOf("")
 		if stringType != actualValue.Type() {
 			actualValue = actualValue.Convert(stringType)

@@ -522,18 +522,18 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 		}
 		if field.CanSet() {
 			kind := field.Type().Kind()
-			if xIsIntegerKind(kind) {
-				if xIsUnsignedIntegerKind(kind) {
+			if IsIntegerKind(kind) {
+				if IsUnsignedIntegerKind(kind) {
 					rtConvert := uint64(rtVal.(int64))
 					field.SetUint(rtConvert)
 				} else {
 					rtConvert := rtVal.(int64)
 					field.SetInt(rtConvert)
 				}
-			} else if xIsStringKind(kind) {
+			} else if IsStringKind(kind) {
 				rtConvert := rtVal.(string)
 				field.SetString(rtConvert)
-			} else if xIsFloatKind(kind) {
+			} else if IsFloatKind(kind) {
 				rtConvert := rtVal.(float64)
 				field.SetFloat(rtConvert)
 			} else if kind == reflect.Bool {
@@ -599,9 +599,9 @@ func xRef_transOrigToDestValue(key string, cpOpt string, origValue interface{}, 
 	//if xRef_log {
 	//	fmt.Println(fmt.Sprintf("来源类型:%d-%s,目标类型:%d-%s,Tidy:%t", origKind, origType, destKind, destTypeName, isTidy))
 	//}
-	if xIsIntegerKind(destActualTypeKind) {
+	if IsIntegerKind(destActualTypeKind) {
 		return xParseToInt(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy, checkUnsigned)
-	} else if xIsFloatKind(destActualTypeKind) {
+	} else if IsFloatKind(destActualTypeKind) {
 		parseVal, parseFlag := xParseToFloat(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
 		return parseVal, parseFlag, nil
 	} else if destActualTypeKind == reflect.Bool {
@@ -610,7 +610,7 @@ func xRef_transOrigToDestValue(key string, cpOpt string, origValue interface{}, 
 	} else if destActualTypeKind == reflect.String {
 		parseVal, parseFlag := xParseToString(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
 		return parseVal, parseFlag, nil
-	} else if xIsTimeType(destTypeOf.String()) {
+	} else if IsTimeTypeByName(destTypeOf.String()) {
 		parseVal, parseFlag := xParseToTime(key, origValue, destTypeName, cpOpt, isTidy)
 		return parseVal, parseFlag, nil
 	} else {
@@ -663,7 +663,7 @@ func xTagFindValueByKey(tagValue string, key string) string {
 	return corex.TagOptions(tagValue).OptionValue(key)
 }
 
-func xIsIntegerKind(kind reflect.Kind) bool {
+func IsIntegerKind(kind reflect.Kind) bool {
 	if kind == reflect.Int || kind == reflect.Int8 || kind == reflect.Int16 || kind == reflect.Int32 || kind == reflect.Int64 ||
 		kind == reflect.Uint || kind == reflect.Uint8 || kind == reflect.Uint16 || kind == reflect.Uint32 || kind == reflect.Uint64 || kind == reflect.Uintptr {
 		return true
@@ -671,14 +671,14 @@ func xIsIntegerKind(kind reflect.Kind) bool {
 		return false
 	}
 }
-func xIsUnsignedIntegerKind(kind reflect.Kind) bool {
+func IsUnsignedIntegerKind(kind reflect.Kind) bool {
 	if kind == reflect.Uint || kind == reflect.Uint8 || kind == reflect.Uint16 || kind == reflect.Uint32 || kind == reflect.Uint64 || kind == reflect.Uintptr {
 		return true
 	} else {
 		return false
 	}
 }
-func xIsFloatKind(kind reflect.Kind) bool {
+func IsFloatKind(kind reflect.Kind) bool {
 	if kind == reflect.Float64 || kind == reflect.Float32 {
 		return true
 	} else {
@@ -686,7 +686,7 @@ func xIsFloatKind(kind reflect.Kind) bool {
 	}
 }
 
-func xIsStringKind(kind reflect.Kind) bool {
+func IsStringKind(kind reflect.Kind) bool {
 	return kind == reflect.String
 }
 
@@ -721,13 +721,13 @@ func xIsFloatPointer(typeName string) bool {
 //	}
 //}
 
-func xIsStructType(kind reflect.Kind) bool {
+func IsStructKind(kind reflect.Kind) bool {
 	return kind == reflect.Struct
 }
 func xIsStringTypeByName(typeName string) bool {
 	return typeName == "string" || typeName == "*string"
 }
-func xIsTimeType(typeName string) bool {
+func IsTimeTypeByName(typeName string) bool {
 	return typeName == "time.Time" || typeName == "Time" || typeName == "*time.Time"
 }
 

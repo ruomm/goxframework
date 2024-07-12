@@ -399,7 +399,7 @@ func xParseOrigCopyKeyByXrefOptions(s string, pField *reflect.StructField, do *x
 		case reflect.Array, reflect.Map, reflect.Slice:
 			canCopy = false
 		case reflect.Struct:
-			canCopy = xIsTimeType(actualType.String())
+			canCopy = IsTimeTypeByName(actualType.String())
 		case reflect.Interface, reflect.Ptr:
 			canCopy = false
 		case reflect.Func:

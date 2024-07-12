@@ -55,7 +55,7 @@ func ParseToTime(origVal interface{}, cpOpt string) interface{} {
 	actualKind := actualValue.Kind()
 	var vi interface{} = nil
 	// 判断类型并转换
-	if xIsIntegerKind(actualKind) {
+	if IsIntegerKind(actualKind) {
 
 		int64Type := reflect.TypeOf(int64(0))
 		if int64Type != actualValue.Type() {
@@ -64,7 +64,7 @@ func ParseToTime(origVal interface{}, cpOpt string) interface{} {
 		viInt64 := actualValue.Interface().(int64)
 		optStr := xTagFindValueByKey(cpOpt, xRef_key_time_t)
 		vi = xTransInt64ToTime(viInt64, optStr)
-	} else if xIsFloatKind(actualKind) {
+	} else if IsFloatKind(actualKind) {
 		float64Type := reflect.TypeOf(float64(0))
 		if float64Type != actualValue.Type() {
 			actualValue = actualValue.Convert(float64Type)
@@ -75,7 +75,7 @@ func ParseToTime(origVal interface{}, cpOpt string) interface{} {
 		vi = xTransInt64ToTime(viInt64, optStr)
 	} else if actualKind == reflect.Bool {
 		vi = nil
-	} else if xIsStringKind(actualKind) {
+	} else if IsStringKind(actualKind) {
 		stringType := reflect.TypeOf("")
 		if stringType != actualValue.Type() {
 			actualValue = actualValue.Convert(stringType)
@@ -91,9 +91,9 @@ func ParseToTime(origVal interface{}, cpOpt string) interface{} {
 		} else {
 			vi = pViTime
 		}
-	} else if xIsStructType(actualKind) {
+	} else if IsStructKind(actualKind) {
 		origFieldVT := reflect.TypeOf(origVal).String()
-		if xIsStructType(actualKind) && xIsTimeType(origFieldVT) {
+		if IsStructKind(actualKind) && IsTimeTypeByName(origFieldVT) {
 			viTimeValue := actualValue.Interface().(time.Time)
 			if viTimeValue.Unix() == xRef_AD_Zero_Second {
 				vi = nil

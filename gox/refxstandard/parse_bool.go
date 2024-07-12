@@ -54,7 +54,7 @@ func ParseToBool(origVal interface{}, cpOpt string) interface{} {
 	actualKind := actualValue.Kind()
 	var vi interface{} = nil
 	// 判断类型并转换
-	if xIsIntegerKind(actualKind) {
+	if IsIntegerKind(actualKind) {
 		int64Type := reflect.TypeOf(int64(0))
 		if int64Type != actualValue.Type() {
 			actualValue = actualValue.Convert(int64Type)
@@ -73,7 +73,7 @@ func ParseToBool(origVal interface{}, cpOpt string) interface{} {
 			actualValue = actualValue.Convert(boolType)
 		}
 		vi = actualValue.Interface().(bool)
-	} else if xIsStringKind(actualKind) {
+	} else if IsStringKind(actualKind) {
 		stringType := reflect.TypeOf("")
 		if stringType != actualValue.Type() {
 			actualValue = actualValue.Convert(stringType)

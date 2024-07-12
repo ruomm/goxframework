@@ -67,18 +67,18 @@ func XStringToSlice(str string, sep string, emptyRetain bool, destSlice interfac
 		// 赋值
 		if destValue.CanSet() {
 			kind := destValue.Type().Kind()
-			if xIsIntegerKind(kind) {
-				if xIsUnsignedIntegerKind(kind) {
+			if IsIntegerKind(kind) {
+				if IsUnsignedIntegerKind(kind) {
 					rtConvert := uint64(rtVal.(int64))
 					destValue.SetUint(rtConvert)
 				} else {
 					rtConvert := rtVal.(int64)
 					destValue.SetInt(rtConvert)
 				}
-			} else if xIsStringKind(kind) {
+			} else if IsStringKind(kind) {
 				rtConvert := rtVal.(string)
 				destValue.SetString(rtConvert)
-			} else if xIsFloatKind(kind) {
+			} else if IsFloatKind(kind) {
 				rtConvert := rtVal.(float64)
 				destValue.SetFloat(rtConvert)
 			} else if kind == reflect.Bool {
@@ -189,18 +189,18 @@ func XSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string, op
 		// 赋值
 		if destValue.CanSet() {
 			kind := destValue.Type().Kind()
-			if xIsIntegerKind(kind) {
-				if xIsUnsignedIntegerKind(kind) {
+			if IsIntegerKind(kind) {
+				if IsUnsignedIntegerKind(kind) {
 					rtConvert := uint64(rtVal.(int64))
 					destValue.SetUint(rtConvert)
 				} else {
 					rtConvert := rtVal.(int64)
 					destValue.SetInt(rtConvert)
 				}
-			} else if xIsStringKind(kind) {
+			} else if IsStringKind(kind) {
 				rtConvert := rtVal.(string)
 				destValue.SetString(rtConvert)
-			} else if xIsFloatKind(kind) {
+			} else if IsFloatKind(kind) {
 				rtConvert := rtVal.(float64)
 				destValue.SetFloat(rtConvert)
 			} else if kind == reflect.Bool {
@@ -311,18 +311,18 @@ func XSliceQcopyByKey(srcSlice interface{}, destSlice interface{}, key string, o
 		// 赋值
 		if destValue.CanSet() {
 			kind := destValue.Type().Kind()
-			if xIsIntegerKind(kind) {
-				if xIsUnsignedIntegerKind(kind) {
+			if IsIntegerKind(kind) {
+				if IsUnsignedIntegerKind(kind) {
 					rtConvert := uint64(rtVal.(int64))
 					destValue.SetUint(rtConvert)
 				} else {
 					rtConvert := rtVal.(int64)
 					destValue.SetInt(rtConvert)
 				}
-			} else if xIsStringKind(kind) {
+			} else if IsStringKind(kind) {
 				rtConvert := rtVal.(string)
 				destValue.SetString(rtConvert)
-			} else if xIsFloatKind(kind) {
+			} else if IsFloatKind(kind) {
 				rtConvert := rtVal.(float64)
 				destValue.SetFloat(rtConvert)
 			} else if kind == reflect.Bool {
@@ -374,72 +374,72 @@ func oldXSliceCopyByKey(srcSlice interface{}, destSlice interface{}, key string)
 		destTypeOf := destValue.Type()
 		destKind := destTypeOf.Kind()
 		if origKind == reflect.Int {
-			if xIsUnsignedIntegerKind(destKind) {
+			if IsUnsignedIntegerKind(destKind) {
 				destValue.SetUint(uint64(srcItemValue.Interface().(int)))
 			} else {
 				destValue.SetInt(int64(srcItemValue.Interface().(int)))
 			}
 		} else if origKind == reflect.Int8 {
-			if xIsUnsignedIntegerKind(destKind) {
+			if IsUnsignedIntegerKind(destKind) {
 				destValue.SetUint(uint64(srcItemValue.Interface().(int8)))
 			} else {
 				destValue.SetInt(int64(srcItemValue.Interface().(int8)))
 			}
 		} else if origKind == reflect.Int16 {
-			if xIsUnsignedIntegerKind(destKind) {
+			if IsUnsignedIntegerKind(destKind) {
 				destValue.SetUint(uint64(srcItemValue.Interface().(int16)))
 			} else {
 				destValue.SetInt(int64(srcItemValue.Interface().(int16)))
 			}
 
 		} else if origKind == reflect.Int32 {
-			if xIsUnsignedIntegerKind(destKind) {
+			if IsUnsignedIntegerKind(destKind) {
 				destValue.SetUint(uint64(srcItemValue.Interface().(int32)))
 			} else {
 				destValue.SetInt(int64(srcItemValue.Interface().(int32)))
 			}
 		} else if origKind == reflect.Int64 {
-			if xIsUnsignedIntegerKind(destKind) {
+			if IsUnsignedIntegerKind(destKind) {
 				destValue.SetUint(uint64(srcItemValue.Interface().(int64)))
 			} else {
 				destValue.SetInt(int64(srcItemValue.Interface().(int64)))
 			}
 
 		} else if origKind == reflect.Uint {
-			if xIsUnsignedIntegerKind(destKind) {
+			if IsUnsignedIntegerKind(destKind) {
 				destValue.SetUint(uint64(srcItemValue.Interface().(uint)))
 			} else {
 				destValue.SetInt(int64(srcItemValue.Interface().(uint)))
 			}
 
 		} else if origKind == reflect.Uint8 {
-			if xIsUnsignedIntegerKind(destKind) {
+			if IsUnsignedIntegerKind(destKind) {
 				destValue.SetUint(uint64(srcItemValue.Interface().(uint8)))
 			} else {
 				destValue.SetInt(int64(srcItemValue.Interface().(uint8)))
 			}
 		} else if origKind == reflect.Uint16 {
-			if xIsUnsignedIntegerKind(destKind) {
+			if IsUnsignedIntegerKind(destKind) {
 				destValue.SetUint(uint64(srcItemValue.Interface().(uint16)))
 			} else {
 				destValue.SetInt(int64(srcItemValue.Interface().(uint16)))
 			}
 
 		} else if origKind == reflect.Uint32 {
-			if xIsUnsignedIntegerKind(destKind) {
+			if IsUnsignedIntegerKind(destKind) {
 				destValue.SetUint(uint64(srcItemValue.Interface().(uint32)))
 			} else {
 				destValue.SetInt(int64(srcItemValue.Interface().(uint32)))
 			}
 
 		} else if origKind == reflect.Uint64 {
-			if xIsUnsignedIntegerKind(destKind) {
+			if IsUnsignedIntegerKind(destKind) {
 				destValue.SetUint(uint64(srcItemValue.Interface().(uint64)))
 			} else {
 				destValue.SetInt(int64(srcItemValue.Interface().(uint64)))
 			}
 		} else if origKind == reflect.Uintptr {
-			if xIsUnsignedIntegerKind(destKind) {
+			if IsUnsignedIntegerKind(destKind) {
 				destValue.SetUint(uint64(srcItemValue.Interface().(uintptr)))
 			} else {
 				destValue.SetInt(int64(srcItemValue.Interface().(uintptr)))
@@ -581,9 +581,9 @@ func xRefMap_transOrigToDestValue(key string, cpOpt string, origValue interface{
 	//if xRef_log {
 	//	fmt.Println(fmt.Sprintf("来源类型:%d-%s,目标类型:%d-%s,Tidy:%t", origKind, origType, destKind, destTypeName, isTidy))
 	//}
-	if xIsIntegerKind(destActualTypeKind) {
+	if IsIntegerKind(destActualTypeKind) {
 		return xParseToInt(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy, checkUnsigned)
-	} else if xIsFloatKind(destActualTypeKind) {
+	} else if IsFloatKind(destActualTypeKind) {
 		parseVal, parseFlag := xParseToFloat(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
 		return parseVal, parseFlag, nil
 	} else if destActualTypeKind == reflect.Bool {
@@ -592,7 +592,7 @@ func xRefMap_transOrigToDestValue(key string, cpOpt string, origValue interface{
 	} else if destActualTypeKind == reflect.String {
 		parseVal, parseFlag := xParseToString(key, origValue, destTypeName, destActualTypeKind, cpOpt, isTidy)
 		return parseVal, parseFlag, nil
-	} else if xIsTimeType(destTypeName) {
+	} else if IsTimeTypeByName(destTypeName) {
 		parseVal, parseFlag := xParseToTime(key, origValue, destTypeName, cpOpt, isTidy)
 		return parseVal, parseFlag, nil
 	} else {
