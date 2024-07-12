@@ -81,6 +81,9 @@ func ToGormMap(gormModel interface{}, selectKeys ...string) (map[string]interfac
 			mapresult[key] = value.Interface()
 		}
 	}
+	if xMapOnlyContainVersion(mapresult) {
+		return mapresult, errors.New("To GormMap error,result map only contain version")
+	}
 	return mapresult, nil
 }
 
@@ -140,6 +143,9 @@ func ToGormMapTidy(gormModel interface{}, forceUpdateKeys ...string) (map[string
 			mapresult[key] = value.Interface()
 		}
 	}
+	if xMapOnlyContainVersion(mapresult) {
+		return mapresult, errors.New("To GormMap error,result map only contain version")
+	}
 	return mapresult, nil
 }
 
@@ -190,6 +196,9 @@ func ToGormMapIgnoreMode(gormModel interface{}, ignoreKeys ...string) (map[strin
 		} else {
 			mapresult[key] = value.Interface()
 		}
+	}
+	if xMapOnlyContainVersion(mapresult) {
+		return mapresult, errors.New("To GormMap error,result map only contain version")
 	}
 	return mapresult, nil
 }
@@ -246,6 +255,9 @@ func ToGormMapSnakeCase(gormModel interface{}, selectKeys ...string) (map[string
 		} else {
 			mapresult[corex.ToSnakeCase(key)] = value.Interface()
 		}
+	}
+	if xMapOnlyContainVersion(mapresult) {
+		return mapresult, errors.New("To GormMap error,result map only contain version")
 	}
 	return mapresult, nil
 }
@@ -306,6 +318,9 @@ func ToGormMapTidySnakeCase(gormModel interface{}, forceUpdateKeys ...string) (m
 			mapresult[corex.ToSnakeCase(key)] = value.Interface()
 		}
 	}
+	if xMapOnlyContainVersion(mapresult) {
+		return mapresult, errors.New("To GormMap error,result map only contain version")
+	}
 	return mapresult, nil
 }
 
@@ -356,6 +371,9 @@ func ToGormMapIgnoreModeSnakeCase(gormModel interface{}, ignoreKeys ...string) (
 		} else {
 			mapresult[corex.ToSnakeCase(key)] = value.Interface()
 		}
+	}
+	if xMapOnlyContainVersion(mapresult) {
+		return mapresult, errors.New("To GormMap error,result map only contain version")
 	}
 	return mapresult, nil
 }
@@ -814,7 +832,21 @@ func xGormParseOrderByTag(model interface{}, tableName string) map[int]xGromOrde
 	}
 	return orderByMap
 }
-
+func xMapOnlyContainVersion(mapresult map[string]interface{}) bool {
+	//if nil == mapresult || len(mapresult) != 1 {
+	//	return false
+	//}
+	if len(mapresult) != 1 {
+		return false
+	}
+	versionContain := false
+	for key, _ := range mapresult {
+		if key == "Version" || key == "version" {
+			versionContain = true
+		}
+	}
+	return versionContain
+}
 func parseOrderByItem(pOrderByMap *map[int]xGromOrderByTag, xOrderBy *XOrderBy) string {
 	orderByItem := ""
 	if nil == pOrderByMap || nil == xOrderBy || xOrderBy.SortField <= 0 {
