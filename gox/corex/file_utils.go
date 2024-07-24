@@ -148,7 +148,7 @@ func ConcatFilePath(filePath string, fileName string, separatorRevise bool) stri
 		if len(fileName) == 0 {
 			realFileName = ""
 		} else if IsStartWithFileSeparator(fileName) {
-			realFileName = fileName[0 : len(fileName)-1]
+			realFileName = fileName[1:]
 		} else {
 			realFileName = fileName
 		}
@@ -188,7 +188,8 @@ func ConcatDirPath(filePath string, subPath string, separatorRevise bool) string
 		if len(subPath) == 0 {
 			realSubPath = ""
 		} else if IsStartWithFileSeparator(subPath) {
-			realSubPath = subPath[0 : len(subPath)-1]
+			//realSubPath = subPath[0 : len(subPath)-1]
+			realSubPath = subPath[1:]
 		} else {
 			realSubPath = subPath
 		}
