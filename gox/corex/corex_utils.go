@@ -175,3 +175,46 @@ func IsNil(i interface{}) bool {
 	}
 	return false
 }
+
+// 解析Http强求range头的第一个请求范围
+func ParseHttpRangeFirst(rangeHeader string) (int64, int64) {
+	if len(rangeHeader) <= 0 {
+		return -1, -1
+	}
+	rangePrefix := "bytes="
+	rangeLower := strings.ToLower(rangeHeader)
+	if strings.HasPrefix(rangeLower, rangePrefix) && len(rangeLower) > len(rangePrefix) {
+		rangeStr := rangeLower[len(rangePrefix):]
+		rangeByDh := StringToSlice(rangeStr, ",", false)
+		if len(rangeByDh) <= 0 {
+			return -1, -1
+		}
+		rangeAreas := StringToSlice(rangeByDh[0], "-", true)
+		if len(rangeAreas) == 1 {
+			start, err := strconv.ParseInt(rangeAreas[0], 10, 64)
+			if err != nil {
+				return -1, -1
+			} else {
+				return start, -1
+			}
+		} else if len(rangeAreas) == 2 {
+			start, errStart := strconv.ParseInt(rangeAreas[0], 10, 64)
+			end, errEnd := strconv.ParseInt(rangeAreas[1], 10, 64)
+			if errStart != nil && errEnd != nil {
+				return -1, -1
+			} else if errStart != nil {
+				return -1, end
+			} else if errEnd != nil {
+				return start, -1
+			} else if end >= start {
+				return start, end
+			} else {
+				return -1, -1
+			}
+		} else {
+			return -1, -1
+		}
+	} else {
+		return -1, -1
+	}
+}

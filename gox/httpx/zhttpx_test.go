@@ -57,3 +57,12 @@ func TestS2S(t *testing.T) {
 	fmt.Print(err)
 
 }
+
+func TestRange(t *testing.T) {
+	//a := 123456.567
+	//a := true
+	start, end := ParseHttpRangeFirst("bytes=1-")
+	fmt.Println(start)
+	fmt.Println(end)
+
+}
