@@ -31,11 +31,12 @@ func TestGormParseOrderBy(t *testing.T) {
 	orderByMap := xGormParseOrderByTag(&DemoUserName{}, "nihadoDDdd")
 	fmt.Println(orderByMap)
 	orderByList := []XOrderBy{
-		{SortField: 4, SortDesc: true},
+		{SortField: 8, SortDesc: false},
+		{SortField: 1, SortDesc: true},
 		{SortField: 6, SortDesc: false},
 	}
 	//orderByString := GormParseOrderBy(&DemoUserName{}, "demoUserOrg", orderByList, &XOrderBy{SortField: 3, SortDesc: false})
-	orderByString := GormParseOrderBy(&DemoUserName{}, "demoUserOrg", orderByList, nil)
+	orderByString := GormParseOrderBy(&DemoUserName{}, "demoUserOrg", orderByList, &XOrderBy{SortField: 3, SortDesc: false}, XOrderColumn{8, "t.fav_count"})
 	//orderByString := GormParseOrderByCreatedAt(&DemoUserName{}, "", orderByList, true)
 
 	fmt.Println(orderByString)
