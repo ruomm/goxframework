@@ -698,7 +698,7 @@ type XOrderBy struct {
 
 type XOrderColumn struct {
 	SortField  int    `json:"sortField" xreq_query:"sortField;tidy" xref:"SortField" validate:"min=0" xvalid_error:"排序字段索引不合法"`
-	SortColumn string `json:"sortField" xreq_query:"sortField;tidy" xref:"SortField" validate:"min=0" xvalid_error:"自定义排序列名称"`
+	SortColumn string `json:"sortColumn" xreq_query:"sortColumn;tidy" xref:"SortColumn"`
 }
 
 // 解析gorm排序规则,如是tableName传入"-"则依据model解析tableName，注解含有table:=-则依据model解析tableName
