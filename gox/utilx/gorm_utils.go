@@ -696,23 +696,28 @@ type XOrderBy struct {
 	SortDesc  bool `json:"sortDesc" xreq_query:"sortDesc;tidy" xref:"SortDesc"`                                              // 是否降序排序 true：降序 false：升序
 }
 
-// 解析gorm排序规则,如是tableName传入"-"则依据model解析tableName，注解含有table:=-则依据model解析tableName
-func GormParseOrderByID(model interface{}, tableName string, xOrderByList []XOrderBy, sortDesc bool) string {
-	return GormParseOrderBy(model, tableName, xOrderByList, &XOrderBy{SortField: 1, SortDesc: sortDesc})
+type XOrderColumn struct {
+	SortField  int    `json:"sortField" xreq_query:"sortField;tidy" xref:"SortField" validate:"min=0" xvalid_error:"排序字段索引不合法"`
+	SortColumn string `json:"sortField" xreq_query:"sortField;tidy" xref:"SortField" validate:"min=0" xvalid_error:"自定义排序列名称"`
 }
 
 // 解析gorm排序规则,如是tableName传入"-"则依据model解析tableName，注解含有table:=-则依据model解析tableName
-func GormParseOrderByCreatedAt(model interface{}, tableName string, xOrderByList []XOrderBy, sortDesc bool) string {
-	return GormParseOrderBy(model, tableName, xOrderByList, &XOrderBy{SortField: 2, SortDesc: sortDesc})
+func GormParseOrderByID(model interface{}, tableName string, xOrderByList []XOrderBy, sortDesc bool, userOrderColumns ...XOrderColumn) string {
+	return GormParseOrderBy(model, tableName, xOrderByList, &XOrderBy{SortField: 1, SortDesc: sortDesc}, userOrderColumns...)
 }
 
 // 解析gorm排序规则,如是tableName传入"-"则依据model解析tableName，注解含有table:=-则依据model解析tableName
-func GormParseOrderByUpdatedAt(model interface{}, tableName string, xOrderByList []XOrderBy, sortDesc bool) string {
-	return GormParseOrderBy(model, tableName, xOrderByList, &XOrderBy{SortField: 3, SortDesc: sortDesc})
+func GormParseOrderByCreatedAt(model interface{}, tableName string, xOrderByList []XOrderBy, sortDesc bool, userOrderColumns ...XOrderColumn) string {
+	return GormParseOrderBy(model, tableName, xOrderByList, &XOrderBy{SortField: 2, SortDesc: sortDesc}, userOrderColumns...)
 }
 
 // 解析gorm排序规则,如是tableName传入"-"则依据model解析tableName，注解含有table:=-则依据model解析tableName
-func GormParseOrderBy(model interface{}, tableName string, xOrderByList []XOrderBy, xOrderByDefault *XOrderBy) string {
+func GormParseOrderByUpdatedAt(model interface{}, tableName string, xOrderByList []XOrderBy, sortDesc bool, userOrderColumns ...XOrderColumn) string {
+	return GormParseOrderBy(model, tableName, xOrderByList, &XOrderBy{SortField: 3, SortDesc: sortDesc}, userOrderColumns...)
+}
+
+// 解析gorm排序规则,如是tableName传入"-"则依据model解析tableName，注解含有table:=-则依据model解析tableName
+func GormParseOrderBy(model interface{}, tableName string, xOrderByList []XOrderBy, xOrderByDefault *XOrderBy, userOrderColumns ...XOrderColumn) string {
 	orderByList := xOrderByList
 	if nil != xOrderByDefault && xOrderByDefault.SortField > 0 {
 		if !corex.SliceContainsByKey(orderByList, "SortField", xOrderByDefault.SortField) {
@@ -724,12 +729,9 @@ func GormParseOrderBy(model interface{}, tableName string, xOrderByList []XOrder
 	}
 	// 解析排序tag
 	orderByMap := xGormParseOrderByTag(model, tableName)
-	if nil == orderByMap || len(orderByMap) <= 0 {
-		return ""
-	}
 	var build strings.Builder
 	for _, xOrderBy := range orderByList {
-		orderByItem := parseOrderByItem(&orderByMap, &xOrderBy)
+		orderByItem := parseOrderByItem(&xOrderBy, orderByMap, userOrderColumns...)
 		if len(orderByItem) <= 0 {
 			continue
 		}
@@ -847,12 +849,39 @@ func xMapOnlyContainVersion(mapresult map[string]interface{}) bool {
 	}
 	return versionContain
 }
-func parseOrderByItem(pOrderByMap *map[int]xGromOrderByTag, xOrderBy *XOrderBy) string {
-	orderByItem := ""
-	if nil == pOrderByMap || nil == xOrderBy || xOrderBy.SortField <= 0 {
+func parseOrderByItem(xOrderBy *XOrderBy, orderByMap map[int]xGromOrderByTag, userOrderColumns ...XOrderColumn) string {
+	orderByItem := parseOrderByItemByMap(xOrderBy, orderByMap)
+	if len(orderByItem) > 0 {
 		return orderByItem
 	}
-	orderByMap := *pOrderByMap
+	orderByItem = parseOrderByItemByColumn(xOrderBy, userOrderColumns...)
+	return orderByItem
+}
+func parseOrderByItemByColumn(xOrderBy *XOrderBy, userOrderColumns ...XOrderColumn) string {
+	orderByItem := ""
+	if nil == xOrderBy || nil == userOrderColumns || len(userOrderColumns) <= 0 {
+		return orderByItem
+	}
+	for _, userOrderColumn := range userOrderColumns {
+		if userOrderColumn.SortField == xOrderBy.SortField {
+			if len(userOrderColumn.SortColumn) <= 0 {
+				break
+			} else if xOrderBy.SortDesc {
+				orderByItem = userOrderColumn.SortColumn + " " + "desc"
+				break
+			} else {
+				orderByItem = userOrderColumn.SortColumn + " " + "asc"
+				break
+			}
+		}
+	}
+	return orderByItem
+}
+func parseOrderByItemByMap(xOrderBy *XOrderBy, orderByMap map[int]xGromOrderByTag) string {
+	orderByItem := ""
+	if nil == orderByMap || nil == xOrderBy || xOrderBy.SortField <= 0 {
+		return orderByItem
+	}
 	_, exitOk := orderByMap[xOrderBy.SortField]
 	if !exitOk {
 		return orderByItem
