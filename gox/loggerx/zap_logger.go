@@ -51,6 +51,9 @@ func generateLoggerX(logConfig interface{}, workDirPath string, instanceName str
 	if len(instanceName) > 0 {
 		logConfigInit.InstanceName = instanceName
 	}
+	if len(logConfigInit.InstanceName) <= 0 {
+		logConfigInit.InstanceName, _ = os.Hostname()
+	}
 	if errG != nil {
 		return nil, errG
 	}
@@ -100,6 +103,9 @@ func generateZapLogger(logConfig interface{}, workDirPath string, instanceName s
 	errG, transFailsKeys := refx.XRefStructCopy(logConfig, &logConfigInit)
 	if len(instanceName) > 0 {
 		logConfigInit.InstanceName = instanceName
+	}
+	if len(logConfigInit.InstanceName) <= 0 {
+		logConfigInit.InstanceName, _ = os.Hostname()
 	}
 	if errG != nil {
 		return nil, errG
@@ -202,12 +208,15 @@ func getLogLevel(logConfig *LogConfigs) zap.AtomicLevel {
 }
 
 func getInitFields(logConfig *LogConfigs) (fields []zap.Field) {
-	fields = append(fields, zap.String("service", logConfig.ServiceName))
-	if len(logConfig.InstanceName) == 0 {
-		logConfig.InstanceName, _ = os.Hostname()
+	//fields = append(fields, zap.String("service", logConfig.ServiceName))
+	//if len(logConfig.InstanceName) > 0 {
+	//	fields = append(fields, zap.String("instance", logConfig.InstanceName))
+	//}
+	if len(logConfig.Branch) > 0 {
+		fields = append(fields, zap.String("gitBranch", logConfig.Branch))
 	}
-	if len(logConfig.InstanceName) > 0 {
-		fields = append(fields, zap.String("instance", logConfig.InstanceName))
+	if len(logConfig.Version) > 0 {
+		fields = append(fields, zap.String("gitVersion", logConfig.Version))
 	}
 	return fields
 }
