@@ -6,6 +6,8 @@
  */
 package loggerx
 
+import "go.uber.org/zap"
+
 type LogConfigs struct {
 	Level           string `xref:"Level"`
 	StdOut          bool   `xref:"StdOut"`
@@ -17,6 +19,7 @@ type LogConfigs struct {
 	InstanceName    string `xref:"InstanceName"`
 	TextMode        bool   `xref:"TextMode;tidy"`
 	StatsTimeEnable bool   `xref:"StatsTimeEnable;tidy"` // 普通日志是否打开耗时统计功能
-	Branch          string `xref:"Branch;tidy"`          // Git的分支名称，如：dev/v1.5.0
-	Version         string `xref:"Version;tidy"`         // Git的commit的hash值，如：297b1b7c039e918d3b006d954bf27e415ae5599d
+	//Branch          string                 `xref:"Branch;tidy"`          // Git的分支名称，如：dev/v1.5.0
+	//Version         string                 `xref:"Version;tidy"`         // Git的commit的hash值，如：297b1b7c039e918d3b006d954bf27e415ae5599d
+	ZapFields []zap.Field `xref:"ZapFields;tidy"`
 }

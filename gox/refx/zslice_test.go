@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"github.com/ruomm/goxframework/gox/corex"
 	"math/rand"
-	randv2 "math/rand/v2"
 	"testing"
 	"time"
 )
@@ -59,7 +58,7 @@ func (d SBDestExt) TransMethodExaple(orig SType) int {
 func GenerateOrigStuct() SBOrigExt {
 	sbOrig := SBOrigExt{}
 	sbOrig.UserType = SType(rand.Intn(600000000))
-	sbOrig.Age = SRType(randv2.UintN(10000))
+	sbOrig.Age = SRType(rand.Intn(10000))
 	return sbOrig
 }
 func GenerateOrigSlice() []SBOrigExt {
@@ -67,7 +66,7 @@ func GenerateOrigSlice() []SBOrigExt {
 	for i := 0; i < 5; i++ {
 		sbOrig := SBOrigExt{}
 		sbOrig.UserType = SType(rand.Intn(600000000))
-		sbOrig.Age = SRType(randv2.UintN(10000))
+		sbOrig.Age = SRType(rand.Intn(10000))
 		sbSlice = append(sbSlice, sbOrig)
 	}
 	return sbSlice
@@ -77,7 +76,7 @@ func GenerateOrigCSlice() []SCOrigExt {
 	for i := 0; i < 10; i++ {
 		scOrig := SCOrigExt{}
 		//scOrig.UserType = SType(rand.Intn(600000000))
-		scOrig.Age2 = SRType(randv2.UintN(10000))
+		scOrig.Age2 = SRType(rand.Intn(10000))
 		scSlice = append(scSlice, scOrig)
 	}
 	return scSlice
@@ -88,7 +87,7 @@ func GenerateOrigSliceP() []*SBOrigExt {
 	for i := 0; i < 10; i++ {
 		sbOrig := SBOrigExt{}
 		sbOrig.UserType = SType(rand.Intn(600000000))
-		sbOrig.Age = SRType(randv2.UintN(10000))
+		sbOrig.Age = SRType(rand.Intn(10000))
 		sbSlice = append(sbSlice, &sbOrig)
 	}
 	return sbSlice

@@ -196,11 +196,14 @@ func getInitFields(logConfig *LogConfigs) (fields []zap.Field) {
 	//if len(logConfig.InstanceName) > 0 {
 	//	fields = append(fields, zap.String("instance", logConfig.InstanceName))
 	//}
-	if len(logConfig.Branch) > 0 {
-		fields = append(fields, zap.String("branch", logConfig.Branch))
-	}
-	if len(logConfig.Version) > 0 {
-		fields = append(fields, zap.String("version", logConfig.Version))
+	//if len(logConfig.Branch) > 0 {
+	//	fields = append(fields, zap.String("branch", logConfig.Branch))
+	//}
+	//if len(logConfig.Version) > 0 {
+	//	fields = append(fields, zap.String("version", logConfig.Version))
+	//}
+	for _, zapField := range logConfig.ZapFields {
+		fields = append(fields, zapField)
 	}
 	return fields
 }
