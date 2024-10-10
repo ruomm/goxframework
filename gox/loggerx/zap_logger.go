@@ -51,23 +51,15 @@ func generateLoggerX(logConfig interface{}, workDirPath string, instanceName str
 	if len(instanceName) > 0 {
 		logConfigInit.InstanceName = instanceName
 	}
-	if len(logConfigInit.InstanceName) <= 0 {
-		logConfigInit.InstanceName, _ = os.Hostname()
-	}
+	//if len(logConfigInit.InstanceName) <= 0 {
+	//	logConfigInit.InstanceName, _ = os.Hostname()
+	//}
 	if errG != nil {
 		return nil, errG
 	}
 	if len(transFailsKeys) > 0 {
 		return nil, errors.New("logger config init err, some field config err:" + strings.Join(transFailsKeys, ","))
 	}
-	//xCallerSkipHandler = callerSkipHandler
-	//serviceField = zap.String("service", logConfigInit.ServiceName)
-	//if len(logConfigInit.InstanceName) > 0 {
-	//	zapField := zap.String("instance", logConfigInit.InstanceName)
-	//	instanceField = &zapField
-	//} else {
-	//	instanceField = nil
-	//}
 	// 开始配置文件
 	initFields := getInitFields(&logConfigInit)
 	encoder := getLogEncoder(logConfigInit.TextMode)
@@ -104,23 +96,15 @@ func generateZapLogger(logConfig interface{}, workDirPath string, instanceName s
 	if len(instanceName) > 0 {
 		logConfigInit.InstanceName = instanceName
 	}
-	if len(logConfigInit.InstanceName) <= 0 {
-		logConfigInit.InstanceName, _ = os.Hostname()
-	}
+	//if len(logConfigInit.InstanceName) <= 0 {
+	//	logConfigInit.InstanceName, _ = os.Hostname()
+	//}
 	if errG != nil {
 		return nil, errG
 	}
 	if len(transFailsKeys) > 0 {
 		return nil, errors.New("logger config init err, some field config err:" + strings.Join(transFailsKeys, ","))
 	}
-	//xCallerSkipHandler = callerSkipHandler
-	//serviceField = zap.String("service", logConfigInit.ServiceName)
-	//if len(logConfigInit.InstanceName) > 0 {
-	//	zapField := zap.String("instance", logConfigInit.InstanceName)
-	//	instanceField = &zapField
-	//} else {
-	//	instanceField = nil
-	//}
 	// 开始配置文件
 	initFields := getInitFields(&logConfigInit)
 	encoder := getLogEncoder(logConfigInit.TextMode)
@@ -213,10 +197,10 @@ func getInitFields(logConfig *LogConfigs) (fields []zap.Field) {
 	//	fields = append(fields, zap.String("instance", logConfig.InstanceName))
 	//}
 	if len(logConfig.Branch) > 0 {
-		fields = append(fields, zap.String("gitBranch", logConfig.Branch))
+		fields = append(fields, zap.String("branch", logConfig.Branch))
 	}
 	if len(logConfig.Version) > 0 {
-		fields = append(fields, zap.String("gitVersion", logConfig.Version))
+		fields = append(fields, zap.String("version", logConfig.Version))
 	}
 	return fields
 }
