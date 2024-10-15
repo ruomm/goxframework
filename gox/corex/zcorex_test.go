@@ -52,8 +52,9 @@ func TestContainsDuplicatesByKey(t *testing.T) {
 	//time, _ := TimeParseByString(TIME_PATTERN_STANDARD, "2023-01-01 00:50:11")
 	slice1 := []SliceDuplicatesByKeyTest{SliceDuplicatesByKeyTest{Name: "张三", Age: 10},
 		SliceDuplicatesByKeyTest{Name: "李四", Age: 11}, SliceDuplicatesByKeyTest{Name: "王五", Age: 12},
-		SliceDuplicatesByKeyTest{Name: "赵六", Age: 13}, SliceDuplicatesByKeyTest{Name: "张三", Age: 14}}
-	fmt.Println(SliceDuplicatesByKey(slice1, "Age"))
+		SliceDuplicatesByKeyTest{Name: "赵六", Age: 13}, SliceDuplicatesByKeyTest{Name: "张三", Age: 10}}
+	fmt.Println(SliceDuplicatesByKey(slice1, ""))
+	fmt.Println(SliceDuplicatesByKey(slice1, "Name", "Age"))
 	fmt.Println(SliceContainsByKey(slice1, "Name", "张三2", "王五"))
 	fmt.Println(SliceOnlyContainsByKey(slice1, "Name", "张三", "王五", "李四", "王五", "赵六"))
 	// 输出：false

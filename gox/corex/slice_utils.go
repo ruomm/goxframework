@@ -31,7 +31,17 @@ func SliceDuplicates(srcSlice interface{}) bool {
 		tmpItemValueI := srcSliceValue.Index(i).Interface()
 		for j := i + 1; j < lenSlice; j++ {
 			tmpItemValueJ := srcSliceValue.Index(j).Interface()
-			if tmpItemValueI == tmpItemValueJ {
+			tmpEqual := false
+			if tmpItemValueI == nil && tmpItemValueJ == nil {
+				tmpEqual = true
+			} else if tmpItemValueI == nil || tmpItemValueJ == nil {
+				tmpEqual = false
+			} else if tmpItemValueI == tmpItemValueJ {
+				tmpEqual = true
+			} else {
+				tmpEqual = false
+			}
+			if tmpEqual {
 				itemDuplicate = true
 				break
 			}
@@ -41,7 +51,7 @@ func SliceDuplicates(srcSlice interface{}) bool {
 }
 
 // 判断Slice是否含有重复元素
-func SliceDuplicatesByKey(srcSlice interface{}, key string) bool {
+func SliceDuplicatesByKey(srcSlice interface{}, keys ...string) bool {
 
 	if nil == srcSlice {
 		return false
@@ -55,31 +65,70 @@ func SliceDuplicatesByKey(srcSlice interface{}, key string) bool {
 	if lenSlice <= 1 {
 		return false
 	}
-	itemDuplicate := false
-	if len(key) <= 0 {
+	if len(keys) <= 0 || (len(keys) == 1 && len(keys[0]) <= 0) {
+		itemDuplicate := false
 		for i := 0; i < lenSlice; i++ {
 			tmpItemValueI := srcSliceValue.Index(i).Interface()
 			for j := i + 1; j < lenSlice; j++ {
 				tmpItemValueJ := srcSliceValue.Index(j).Interface()
-				if tmpItemValueI == tmpItemValueJ {
+				tmpEqual := false
+				if tmpItemValueI == nil && tmpItemValueJ == nil {
+					tmpEqual = true
+				} else if tmpItemValueI == nil || tmpItemValueJ == nil {
+					tmpEqual = false
+				} else if tmpItemValueI == tmpItemValueJ {
+					tmpEqual = true
+				} else {
+					tmpEqual = false
+				}
+				if tmpEqual {
 					itemDuplicate = true
 					break
 				}
 			}
 		}
+		return itemDuplicate
 	} else {
+		itemDuplicate := false
 		for i := 0; i < lenSlice; i++ {
-			tmpItemValueI := srcSliceValue.Index(i).FieldByName(key).Interface()
+			mapI := make(map[string]any, 0)
+			for _, key := range keys {
+				if len(key) <= 0 {
+					continue
+				}
+				tmpItemValueI := srcSliceValue.Index(i).FieldByName(key).Interface()
+				mapI[key] = tmpItemValueI
+			}
 			for j := i + 1; j < lenSlice; j++ {
-				tmpItemValueJ := srcSliceValue.Index(j).FieldByName(key).Interface()
-				if tmpItemValueI == tmpItemValueJ {
+				tmpDuplicate := true
+				for _, key := range keys {
+					if len(key) <= 0 {
+						continue
+					}
+					tmpItemValueI := srcSliceValue.Index(i).FieldByName(key).Interface()
+					tmpItemValueJ := srcSliceValue.Index(j).FieldByName(key).Interface()
+					tmpEqual := false
+					if tmpItemValueI == nil && tmpItemValueJ == nil {
+						tmpEqual = true
+					} else if tmpItemValueI == nil || tmpItemValueJ == nil {
+						tmpEqual = false
+					} else if tmpItemValueI == tmpItemValueJ {
+						tmpEqual = true
+					} else {
+						tmpEqual = false
+					}
+					if !tmpEqual {
+						tmpDuplicate = false
+					}
+				}
+				if tmpDuplicate {
 					itemDuplicate = true
 					break
 				}
 			}
 		}
+		return itemDuplicate
 	}
-	return itemDuplicate
 }
 
 // 判断Slice是否含有特定元素
