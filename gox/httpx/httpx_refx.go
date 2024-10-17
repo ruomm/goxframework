@@ -7,6 +7,7 @@ import (
 	"github.com/morrisxyang/xreflect"
 	"github.com/ruomm/goxframework/gox/corex"
 	"github.com/ruomm/goxframework/gox/refx"
+	"net/http"
 	"net/url"
 	"reflect"
 	"sort"
@@ -16,6 +17,7 @@ import (
 
 const (
 	xRef_log                 = false
+	xRequest_Parse_Json      = "json"
 	xRequest_Parse_Param     = "xreq_param"
 	xRequest_Parse_Query     = "xreq_query"
 	xRequest_Parse_Header    = "xreq_header"
@@ -149,38 +151,76 @@ func ParseToUrlEncodeString(origO interface{}) (string, error) {
 	}
 }
 
-func ParseToRequest(reqObj interface{}) (string, []byte, string, string, map[string]string, error) {
+func ParseToRequest(httpxMethod string, reqObj interface{}) (string, []byte, string, string, map[string]string, error) {
 	if nil == reqObj {
 		//return "", errors.New("XReflectCopy error,source interface is nil")
 		return "", nil, "", "", nil, errors.New("ParseToRequest error,reqObj interface is nil")
 	}
 	reqString, reqStrOk := xParseReqToString(reqObj)
 	if reqStrOk {
-		if len(reqString) <= 0 {
-			return "GET", nil, "", "", nil, nil
+		reqMethod := ""
+		if len(httpxMethod) > 0 {
+			reqMethod = httpxMethod
+		} else if len(reqString) <= 0 {
+			reqMethod = "GET"
 		} else if xIsJsonString(reqString) {
-			return "POST", []byte(reqString), "", "", nil, nil
+			reqMethod = "POST"
 		} else if xIsUrlString(reqString) {
-			return "GET", nil, "", reqString, nil, nil
+			reqMethod = "GET"
 		} else {
 			if strings.HasPrefix(reqString, "/") {
-				return "GET", nil, reqString, "", nil, nil
+				reqMethod = "GET"
 			} else {
-				return "GET", nil, "/" + reqString, "", nil, nil
+				reqMethod = "GET"
+			}
+		}
+		reqMethod = strings.ToUpper(reqMethod)
+		reqMethodVerify := xReqMethodVerify(reqMethod)
+		if !reqMethodVerify {
+			return "", nil, "", "", nil, errors.New("Request Method invalid error")
+		}
+		if len(reqString) <= 0 {
+			return reqMethod, nil, "", "", nil, nil
+		} else if xIsJsonString(reqString) {
+			return reqMethod, []byte(reqString), "", "", nil, nil
+		} else if xIsUrlString(reqString) {
+			return reqMethod, nil, "", reqString, nil, nil
+		} else {
+			if strings.HasPrefix(reqString, "/") {
+				return reqMethod, nil, reqString, "", nil, nil
+			} else {
+				return reqMethod, nil, "/" + reqString, "", nil, nil
 			}
 		}
 	}
-	reqMethod, _ := xParseHttpxMethod(reqObj)
-	reqBody, err := xParseReqJson(reqObj)
-	if err != nil {
-		return "", nil, "", "", nil, err
+	// 获取请求方法
+	reqMethod := ""
+	if len(httpxMethod) > 0 {
+		reqMethod = httpxMethod
+	} else {
+		reqMethod, _ = xParseHttpxMethod(reqObj)
+	}
+	reqMethod = strings.ToUpper(reqMethod)
+	reqMethodVerify := xReqMethodVerify(reqMethod)
+	if !reqMethodVerify {
+		return "", nil, "", "", nil, errors.New("Request Method invalid error")
+	}
+	var reqBody []byte = nil
+	if reqMethod == http.MethodGet || reqMethod == http.MethodOptions {
+		reqBody = nil
+	} else {
+		reqBodyTmp, errTmp := xParseReqJson(reqObj)
+		if errTmp != nil {
+			return "", nil, "", "", nil, errTmp
+		}
+		reqBody = reqBodyTmp
 	}
 
 	reqParam, err := xParseReqParam(reqObj)
 	if err != nil {
 		return "", nil, "", "", nil, err
 	}
-	reqQuery, err := xParseReqQuery(reqObj)
+	reqQuery, err := xParseReqQuery(reqObj, len(reqBody) == 0)
 	if err != nil {
 		return "", nil, "", "", nil, err
 	}
@@ -335,13 +375,21 @@ func xParseReqParam(reqObj interface{}) (string, error) {
 }
 
 // 解析为Query请求字符串
-func xParseReqQuery(reqObj interface{}) (string, error) {
+func xParseReqQuery(reqObj interface{}, jsonEmpty bool) (string, error) {
 	resOpt := make(map[string]string)
 	resOrig := make(map[string]string)
 	reflectValueMap, errG := xreflect.SelectFieldsDeep(reqObj, func(s string, field reflect.StructField, value reflect.Value) bool {
 		tagXreft, okXreft := field.Tag.Lookup(xRequest_Parse_Query)
 		if !okXreft {
 			return false
+		}
+		if !jsonEmpty {
+			jsonTag, jsonTagExsit := field.Tag.Lookup(xRequest_Parse_Json)
+			JsonVisibile := corex.TagJsonVisibile(jsonTag, jsonTagExsit)
+			// 如是JSON可见，则不解析JSON参数
+			if JsonVisibile {
+				return false
+			}
 		}
 		// 开始分割目标控制和属性控制
 		urlKey, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
@@ -398,6 +446,26 @@ func xParseReqQuery(reqObj interface{}) (string, error) {
 		return "", errG
 	} else {
 		return v.Encode(), errG
+	}
+}
+
+// 判断请求方法是否合法
+func xReqMethodVerify(requestMethod string) bool {
+	reqMethod := strings.ToUpper(requestMethod)
+	// MethodGet     = "GET"
+	//	MethodHead    = "HEAD"
+	//	MethodPost    = "POST"
+	//	MethodPut     = "PUT"
+	//	MethodPatch   = "PATCH" // RFC 5789
+	//	MethodDelete  = "DELETE"
+	//	MethodConnect = "CONNECT"
+	//	MethodOptions = "OPTIONS"
+	//	MethodTrace   = "TRACE"
+	if reqMethod == http.MethodGet || reqMethod == http.MethodPost || reqMethod == http.MethodPut || reqMethod == http.MethodDelete || reqMethod == http.MethodPatch ||
+		reqMethod == http.MethodHead || reqMethod == http.MethodConnect || reqMethod == http.MethodOptions || reqMethod == http.MethodTrace {
+		return true
+	} else {
+		return false
 	}
 }
 

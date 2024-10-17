@@ -11,12 +11,9 @@ import (
 
 // JSON请求自动封装和解封
 func DoHttpJson(reqUrl string, httpxMethod string, reqOjb interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
-	reqMethod, reqBody, reqParam, reqQuery, reqHeaderMap, err := ParseToRequest(reqOjb)
+	reqMethod, reqBody, reqParam, reqQuery, reqHeaderMap, err := ParseToRequest(httpxMethod, reqOjb)
 	if err != nil {
 		return nil, err
-	}
-	if len(httpxMethod) > 0 {
-		reqMethod = strings.ToUpper(httpxMethod)
 	}
 	requestUrl := xParseRequestUrl(reqUrl, reqParam, reqQuery)
 	var req *http.Request = nil

@@ -20,6 +20,28 @@ func ParseTagToNameOption(tag string) (string, TagOptions) {
 	return tag, TagOptions(opt)
 }
 
+// 依据判断JSON字段是否可见
+func TagJsonVisibile(tag string, tagExsit bool) bool {
+	if !tagExsit {
+		return true
+	}
+	if len(tag) == 0 {
+		return true
+	}
+	if !TagIsValid(tag) {
+		return false
+	}
+	jsonVisibile := true
+	tagOptionList := ParseTagToOptions(tag)
+	for _, option := range tagOptionList {
+		if string(option) == "-" {
+			jsonVisibile = false
+			break
+		}
+	}
+	return jsonVisibile
+}
+
 // 把tag分割为各个功能
 func ParseTagToOptions(tag string) []TagOptions {
 	if len(tag) == 0 {
