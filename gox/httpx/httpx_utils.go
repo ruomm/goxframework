@@ -11,11 +11,24 @@ import (
 )
 
 // JSON请求自动封装和解封
-func DoHttpToResponse(reqUrl string, httpxMethod string, reqOjb interface{}) (*http.Response, error) {
-	reqMethod, reqBody, reqParam, reqQuery, reqHeaderMap, err := ParseToRequest(httpxMethod, reqOjb)
+func DoHttpToResponse(reqUrl string, httpxMethod string, httpxHeaders map[string]string, reqOjb interface{}) (*http.Response, error) {
+	reqMethod, reqBody, reqParam, reqQuery, reqHeaders, err := ParseToRequest(httpxMethod, reqOjb)
 	if err != nil {
 		return nil, err
 	}
+	// headerMap值修订
+	reqHeaderMap := make(map[string]string, 0)
+	for headerKey, HeaderVal := range httpxHeaders {
+		if _, ok := reqHeaderMap[headerKey]; !ok {
+			reqHeaderMap[headerKey] = HeaderVal
+		}
+	}
+	for headerKey, HeaderVal := range reqHeaders {
+		if _, ok := reqHeaderMap[headerKey]; !ok {
+			reqHeaderMap[headerKey] = HeaderVal
+		}
+	}
+	// 请求路径获取
 	requestUrl := xParseRequestUrl(reqUrl, reqParam, reqQuery)
 	var req *http.Request = nil
 	if nil == reqBody {
@@ -46,11 +59,24 @@ func DoHttpToResponse(reqUrl string, httpxMethod string, reqOjb interface{}) (*h
 }
 
 // JSON请求自动封装和解封
-func DoHttpToJson(reqUrl string, httpxMethod string, reqOjb interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
-	reqMethod, reqBody, reqParam, reqQuery, reqHeaderMap, err := ParseToRequest(httpxMethod, reqOjb)
+func DoHttpToJson(reqUrl string, httpxMethod string, httpxHeaders map[string]string, reqOjb interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
+	reqMethod, reqBody, reqParam, reqQuery, reqHeaders, err := ParseToRequest(httpxMethod, reqOjb)
 	if err != nil {
 		return nil, err
 	}
+	// headerMap值修订
+	reqHeaderMap := make(map[string]string, 0)
+	for headerKey, HeaderVal := range httpxHeaders {
+		if _, ok := reqHeaderMap[headerKey]; !ok {
+			reqHeaderMap[headerKey] = HeaderVal
+		}
+	}
+	for headerKey, HeaderVal := range reqHeaders {
+		if _, ok := reqHeaderMap[headerKey]; !ok {
+			reqHeaderMap[headerKey] = HeaderVal
+		}
+	}
+	// 请求路径获取
 	requestUrl := xParseRequestUrl(reqUrl, reqParam, reqQuery)
 	var req *http.Request = nil
 	if nil == reqBody {
