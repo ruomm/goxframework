@@ -63,7 +63,7 @@ func TestS2S(t *testing.T) {
 	result := CommonResult{}
 	result2 := CommonResult{}
 	//DoHttpJson("http://localhost:8010/api/v1/configspec/gpu/delete", "DELETE", req, &result, &result2)
-	xResponse, err := DoHttpJson("http://localhost:8010/api/v1/configspec/gpu/delete", "DELETE", req, &result, &result2)
+	xResponse, err := DoHttpToJson("http://localhost:8010/api/v1/configspec/gpu/delete", "DELETE", req, &result, &result2)
 	fmt.Print(result)
 	fmt.Print(xResponse)
 	fmt.Print(err)

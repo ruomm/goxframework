@@ -2,6 +2,7 @@ package httpx
 
 import (
 	"bytes"
+	"errors"
 	"github.com/ruomm/goxframework/gox/corex"
 	"io"
 	"net/http"
@@ -10,7 +11,42 @@ import (
 )
 
 // JSON请求自动封装和解封
-func DoHttpJson(reqUrl string, httpxMethod string, reqOjb interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
+func DoHttpToResponse(reqUrl string, httpxMethod string, reqOjb interface{}) (*http.Response, error) {
+	reqMethod, reqBody, reqParam, reqQuery, reqHeaderMap, err := ParseToRequest(httpxMethod, reqOjb)
+	if err != nil {
+		return nil, err
+	}
+	requestUrl := xParseRequestUrl(reqUrl, reqParam, reqQuery)
+	var req *http.Request = nil
+	if nil == reqBody {
+		req, err = http.NewRequest(reqMethod, requestUrl, nil)
+	} else {
+		req, err = http.NewRequest(reqMethod, requestUrl, bytes.NewBuffer(reqBody))
+	}
+	if err != nil {
+		// logger.Error(fmt.Sprintf("Http Post by %v Build NewRequest err: %v", contentType, err.Error()))
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if nil != reqHeaderMap && len(reqHeaderMap) > 0 {
+		for headerKey, HeaderVal := range reqHeaderMap {
+			req.Header.Set(headerKey, HeaderVal)
+		}
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		// logger.Error(fmt.Sprintf("Http Post by %v Execute Request  err: %v", contentType, err.Error()))
+		return resp, err
+	}
+	if nil == resp {
+		return nil, errors.New("Http Response is Empty")
+	}
+	return resp, nil
+}
+
+// JSON请求自动封装和解封
+func DoHttpToJson(reqUrl string, httpxMethod string, reqOjb interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
 	reqMethod, reqBody, reqParam, reqQuery, reqHeaderMap, err := ParseToRequest(httpxMethod, reqOjb)
 	if err != nil {
 		return nil, err

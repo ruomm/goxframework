@@ -35,4 +35,6 @@ type HttpxResponse struct {
 	ContentLength int64
 	// Body represents the response body.
 	Body []byte
+	// HttpRespnse
+	Response *http.Response
 }
