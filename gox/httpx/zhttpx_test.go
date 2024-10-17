@@ -24,7 +24,7 @@ type ConfigGpuSpecDeleteReq struct {
 }
 
 func (u ConfigGpuSpecDeleteReq) HttpxMethod() string {
-	return "DELETE"
+	return "GET"
 }
 
 func (u CommonResult) HttpxMethod() string {
@@ -62,8 +62,11 @@ func TestS2S(t *testing.T) {
 	}
 	result := CommonResult{}
 	result2 := CommonResult{}
+	httpxHeaders := map[string]string{
+		"gpuModel": "gpuModel型号示例",
+	}
 	//DoHttpJson("http://localhost:8010/api/v1/configspec/gpu/delete", "DELETE", req, &result, &result2)
-	xResponse, err := DoHttpToJson("http://localhost:8010/api/v1/configspec/gpu/delete", "DELETE", req, &result, &result2)
+	xResponse, err := DoHttpToJson("http://localhost:8010/api/v1/configspec/gpu/delete", "", httpxHeaders, req, &result, &result2)
 	fmt.Print(result)
 	fmt.Print(xResponse)
 	fmt.Print(err)
