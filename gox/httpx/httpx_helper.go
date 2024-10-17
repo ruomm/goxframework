@@ -92,8 +92,8 @@ func xToHttpxResponseJson(resp *http.Response, resultObjs ...interface{}) (*Http
 	if len(pHttpxResponse.Body) <= 0 {
 		return pHttpxResponse, errors.New("Http Response Body is Empty,Can Not Unmarshal Response By JSON")
 	}
-	str := string(pHttpxResponse.Body)
-	fmt.Println(str)
+	//str := string(pHttpxResponse.Body)
+	//fmt.Println(str)
 	// 只有第一个主对象析失败才会返回JSON解析错误，其他对象解析失败，不返回JSON解析错误
 	var errResult error = nil
 	resultLen := len(resultObjs)

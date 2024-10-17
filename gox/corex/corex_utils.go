@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"reflect"
 	"regexp"
@@ -107,11 +108,57 @@ func FirstLetterToLower(str string) string {
 	}
 }
 
-func JsonUnmarshal(str string, v any) error {
+func JsonUnmarshal(str string, v any, nodes ...string) error {
 	if str == "" {
 		return errors.New("json Unmarshal not support empty string")
 	}
-	err := json.Unmarshal([]byte(str), v)
+	err := JsonUnmarshalByBytes([]byte(str), v, nodes...)
+	return err
+}
+
+func JsonUnmarshalByBytes(jsonByte []byte, v any, nodes ...string) error {
+	if len(jsonByte) <= 0 {
+		return errors.New("json Unmarshal not support empty byte")
+	}
+	if len(nodes) <= 0 {
+		err := json.Unmarshal(jsonByte, v)
+		return err
+	}
+	var mapResult map[string]interface{}
+	err := json.Unmarshal(jsonByte, &mapResult)
+	var nodeMapResult map[string]interface{}
+	nodeMapResult = mapResult
+	var realResult interface{} = nil
+	for i, node := range nodes {
+		tmpResult, tmpResultOk := nodeMapResult[node]
+		if !tmpResultOk {
+			nodeMapResult = nil
+			break
+		}
+		if i == len(nodes)-1 {
+			// 结果结束
+			realResult = tmpResult
+			break
+		}
+		tmpMap, tmpMapOk := tmpResult.(map[string]interface{})
+		if !tmpMapOk {
+			nodeMapResult = nil
+			return errors.New(fmt.Sprintf("json Unmarshal %s node fail,unable convert to map[string]interface{}", node))
+		} else {
+			nodeMapResult = tmpMap
+		}
+	}
+	if realResult == nil {
+		return nil
+	}
+	jsonData, err := json.Marshal(realResult)
+	if err != nil {
+		return err
+	}
+	if len(jsonData) == 0 {
+		return errors.New("json Marshal not support this object")
+	}
+	err = json.Unmarshal(jsonData, v)
 	return err
 }
 

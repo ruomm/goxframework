@@ -8,6 +8,8 @@ package httpx
 
 import (
 	"fmt"
+	"github.com/ruomm/goxframework/gox/corex"
+	"strconv"
 	"testing"
 )
 
@@ -35,6 +37,16 @@ type CommonResult struct {
 	UserMsg string                 `json:"msg,omitempty" newtag:"msg"`           //用户查看的信息，可读性更强
 	LogKV   map[string]interface{} `json:"errorMsg,omitempty" newtag:"errorMsg"` //打印日志的信息，携带错误详情，便于追查问题
 	Data    interface{}            `json:"data,omitempty" newtag:"-"`
+}
+
+type RespUserInfo struct {
+	UserId   uint   `json:"userId" newtag:"userId"`
+	UserName string `json:"userName" newtag:"userName"`
+}
+
+type RespUserVo struct {
+	Page      int            `json:"page" newtag:"page"`
+	UserInfos []RespUserInfo `json:"userInfos" newtag:"userInfos"`
 }
 
 func TestS2S(t *testing.T) {
@@ -65,4 +77,36 @@ func TestRange(t *testing.T) {
 	fmt.Println(start)
 	fmt.Println(end)
 
+}
+func generateTestJsonString() string {
+	var respUserInfos []RespUserInfo
+	commonResult := CommonResult{}
+	commonResult.Code = 200
+	commonResult.UserMsg = "success"
+	commonResult.LogKV = make(map[string]interface{})
+	for i := 0; i < 3; i++ {
+		respUserInfos = append(respUserInfos, RespUserInfo{
+			UserId:   1,
+			UserName: "用户名0" + strconv.Itoa(i),
+		})
+	}
+	respUserVo := RespUserVo{
+		Page:      1,
+		UserInfos: respUserInfos,
+	}
+	commonResult.Data = respUserVo
+	jsonStr, _ := corex.JsonMarshal(commonResult)
+	fmt.Println("来源：" + jsonStr)
+	return jsonStr
+
+}
+
+func TestJsonMaral(t *testing.T) {
+	//a := 123456.567
+	//a := true
+	jsonStr := generateTestJsonString()
+	var userInfos []RespUserInfo
+	err := corex.JsonUnmarshal(jsonStr, &userInfos, "data", "userInfos")
+	fmt.Println("错误信息：", err)
+	fmt.Println("解析结果：", userInfos)
 }
