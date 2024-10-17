@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ruomm/goxframework/gox/corex"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -97,15 +98,35 @@ func xToHttpxResponseJson(resp *http.Response, resultObjs ...interface{}) (*Http
 	// 只有第一个主对象析失败才会返回JSON解析错误，其他对象解析失败，不返回JSON解析错误
 	var errResult error = nil
 	resultLen := len(resultObjs)
+	var nodeTags []string = nil
+	firstParse := true
 	for i := 0; i < resultLen; i++ {
 		resultObj := resultObjs[i]
 		if nil == resultObj {
+			nodeTags = nil
 			continue
 		}
-		errTemp := json.Unmarshal(pHttpxResponse.Body, resultObj)
-		if i == 0 {
+		// 判断解析控制字符串
+		if tmpStr, tmpOk := resultObj.(string); tmpOk {
+			if strings.Contains(tmpStr, ",") {
+				nodeTags = corex.StringToSlice(tmpStr, ",", false)
+			} else {
+				nodeTags = corex.StringToSlice(tmpStr, ".", false)
+			}
+			continue
+		}
+		var errTemp error = nil
+		if len(nodeTags) <= 0 {
+			errTemp = json.Unmarshal(pHttpxResponse.Body, resultObj)
+		} else {
+			errTemp = corex.JsonUnmarshalByBytes(pHttpxResponse.Body, resultObj, nodeTags...)
+		}
+		nodeTags = nil
+		// 只返回第一个对象的错误解析信息
+		if firstParse {
 			errResult = errTemp
 		}
+		firstParse = false
 	}
 	return pHttpxResponse, errResult
 
