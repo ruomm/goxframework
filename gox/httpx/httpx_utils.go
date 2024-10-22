@@ -167,7 +167,7 @@ func DoHttpJson(httpClient *http.Client, httpxMethod string, reqUrl string, data
 	if nil != jsonData {
 		reqIo = bytes.NewBuffer(jsonData)
 	}
-	req, err := http.NewRequest("PUT", reqUrl, reqIo)
+	req, err := http.NewRequest(httpxMethod, reqUrl, reqIo)
 	if err != nil {
 		// logger.Error("Http Post by application/json Build NewRequest err:" + err.Error())
 		return nil, err
