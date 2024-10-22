@@ -11,7 +11,7 @@ import (
 )
 
 // JSON请求自动封装和解封
-func DoHttpToResponse(reqUrl string, httpxMethod string, httpxHeaders map[string]string, reqOjb interface{}) (*http.Response, error) {
+func DoHttpToResponse(httpClient *http.Client, reqUrl string, httpxMethod string, httpxHeaders map[string]string, reqOjb interface{}) (*http.Response, error) {
 	reqMethod, reqBody, reqParam, reqQuery, reqHeaders, err := ParseToRequest(httpxMethod, reqOjb)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,12 @@ func DoHttpToResponse(reqUrl string, httpxMethod string, httpxHeaders map[string
 			req.Header.Set(headerKey, HeaderVal)
 		}
 	}
-	client := &http.Client{}
+	var client *http.Client
+	if nil == httpClient {
+		client = &http.Client{}
+	} else {
+		client = httpClient
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		// logger.Error(fmt.Sprintf("Http Post by %v Execute Request  err: %v", contentType, err.Error()))
@@ -59,7 +64,7 @@ func DoHttpToResponse(reqUrl string, httpxMethod string, httpxHeaders map[string
 }
 
 // JSON请求自动封装和解封
-func DoHttpToJson(reqUrl string, httpxMethod string, httpxHeaders map[string]string, reqOjb interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
+func DoHttpToJson(httpClient *http.Client, reqUrl string, httpxMethod string, httpxHeaders map[string]string, reqOjb interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
 	reqMethod, reqBody, reqParam, reqQuery, reqHeaders, err := ParseToRequest(httpxMethod, reqOjb)
 	if err != nil {
 		return nil, err
@@ -94,7 +99,12 @@ func DoHttpToJson(reqUrl string, httpxMethod string, httpxHeaders map[string]str
 			req.Header.Set(headerKey, HeaderVal)
 		}
 	}
-	client := &http.Client{}
+	var client *http.Client
+	if nil == httpClient {
+		client = &http.Client{}
+	} else {
+		client = httpClient
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		// logger.Error(fmt.Sprintf("Http Post by %v Execute Request  err: %v", contentType, err.Error()))
@@ -106,7 +116,11 @@ func DoHttpToJson(reqUrl string, httpxMethod string, httpxHeaders map[string]str
 	return xToHttpxResponseJson(resp, resultObjs...)
 }
 
-func DoHttpPost(reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
+func DoHttp(httpClient *http.Client, httpxMethod string, reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
+	reqMethodVerify := xReqMethodVerify(httpxMethod)
+	if !reqMethodVerify {
+		return nil, errors.New("Request Method invalid error")
+	}
 	contentType := ""
 	if len(postContentType) > 0 {
 		contentType = postContentType
@@ -118,66 +132,18 @@ func DoHttpPost(reqUrl string, postContentType string, postStr string) (*HttpxRe
 	if len(postStr) > 0 {
 		reqIo = bytes.NewBuffer([]byte(postStr))
 	}
-	req, err := http.NewRequest("POST", reqUrl, reqIo)
+	req, err := http.NewRequest(httpxMethod, reqUrl, reqIo)
 	if err != nil {
 		// logger.Error(fmt.Sprintf("Http Post by %v Build NewRequest err: %v", contentType, err.Error()))
 		return nil, err
 	}
 	req.Header.Set("Content-Type", contentType)
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		// logger.Error(fmt.Sprintf("Http Post by %v Execute Request  err: %v", contentType, err.Error()))
-		return nil, err
-	}
-	return xToHttpxResponse(resp)
-}
-
-func DoHttpPostJson(reqUrl string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
-	jsonData, err := xParseReqJson(data)
-	if err != nil {
-		// logger.Error("Http Post by application/json Marshal Request Data err:" + err.Error())
-		return nil, err
-	}
-	// logger.Debug("Http Post by application/json Message of request:" + string(jsonData))
-	var reqIo io.Reader = nil
-	if nil != jsonData {
-		reqIo = bytes.NewBuffer(jsonData)
-	}
-	req, err := http.NewRequest("POST", reqUrl, reqIo)
-	if err != nil {
-		// logger.Error("Http Post by application/json Build NewRequest err:" + err.Error())
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		// logger.Error("Http Post by application/json Execute Request err:" + err.Error())
-		return nil, err
-	}
-	return xToHttpxResponseJson(resp, resultObjs...)
-}
-
-func DoHttpPut(reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
-	contentType := ""
-	if len(postContentType) > 0 {
-		contentType = postContentType
+	var client *http.Client
+	if nil == httpClient {
+		client = &http.Client{}
 	} else {
-		contentType = xParseRequestMime(postStr)
+		client = httpClient
 	}
-	// logger.Debug(fmt.Sprintf("Http Post by %v Message of request:", contentType))
-	var reqIo io.Reader = nil
-	if len(postStr) > 0 {
-		reqIo = bytes.NewBuffer([]byte(postStr))
-	}
-	req, err := http.NewRequest("PUT", reqUrl, reqIo)
-	if err != nil {
-		// logger.Error(fmt.Sprintf("Http Post by %v Build NewRequest err: %v", contentType, err.Error()))
-		return nil, err
-	}
-	req.Header.Set("Content-Type", contentType)
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		// logger.Error(fmt.Sprintf("Http Post by %v Execute Request  err: %v", contentType, err.Error()))
@@ -186,7 +152,11 @@ func DoHttpPut(reqUrl string, postContentType string, postStr string) (*HttpxRes
 	return xToHttpxResponse(resp)
 }
 
-func DoHttpPutJson(reqUrl string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
+func DoHttpJson(httpClient *http.Client, httpxMethod string, reqUrl string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
+	reqMethodVerify := xReqMethodVerify(httpxMethod)
+	if !reqMethodVerify {
+		return nil, errors.New("Request Method invalid error")
+	}
 	jsonData, err := xParseReqJson(data)
 	if err != nil {
 		// logger.Error("Http Post by application/json Marshal Request Data err:" + err.Error())
@@ -203,60 +173,12 @@ func DoHttpPutJson(reqUrl string, data interface{}, resultObjs ...interface{}) (
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		// logger.Error("Http Post by application/json Execute Request err:" + err.Error())
-		return nil, err
-	}
-	return xToHttpxResponseJson(resp, resultObjs...)
-}
-
-func DoHttpDelete(reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
-	contentType := ""
-	if len(postContentType) > 0 {
-		contentType = postContentType
+	var client *http.Client
+	if nil == httpClient {
+		client = &http.Client{}
 	} else {
-		contentType = xParseRequestMime(postStr)
+		client = httpClient
 	}
-	// logger.Debug(fmt.Sprintf("Http Post by %v Message of request:", contentType))
-	var reqIo io.Reader = nil
-	if len(postStr) > 0 {
-		reqIo = bytes.NewBuffer([]byte(postStr))
-	}
-	req, err := http.NewRequest("DELETE", reqUrl, reqIo)
-	if err != nil {
-		// logger.Error(fmt.Sprintf("Http Post by %v Build NewRequest err: %v", contentType, err.Error()))
-		return nil, err
-	}
-	req.Header.Set("Content-Type", contentType)
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		// logger.Error(fmt.Sprintf("Http Post by %v Execute Request  err: %v", contentType, err.Error()))
-		return nil, err
-	}
-	return xToHttpxResponse(resp)
-}
-
-func DoHttpDeleteJson(reqUrl string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
-	jsonData, err := xParseReqJson(data)
-	if err != nil {
-		// logger.Error("Http Post by application/json Marshal Request Data err:" + err.Error())
-		return nil, err
-	}
-	// logger.Debug("Http Post by application/json Message of request:" + string(jsonData))
-	var reqIo io.Reader = nil
-	if nil != jsonData {
-		reqIo = bytes.NewBuffer(jsonData)
-	}
-	req, err := http.NewRequest("DELETE", reqUrl, reqIo)
-	if err != nil {
-		// logger.Error("Http Post by application/json Build NewRequest err:" + err.Error())
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		// logger.Error("Http Post by application/json Execute Request err:" + err.Error())
@@ -265,14 +187,43 @@ func DoHttpDeleteJson(reqUrl string, data interface{}, resultObjs ...interface{}
 	return xToHttpxResponseJson(resp, resultObjs...)
 }
 
-func DoHttpGet(urlOfGet string, data interface{}) (*HttpxResponse, error) {
+func DoPost(httpClient *http.Client, reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
+	return DoHttp(httpClient, http.MethodPost, reqUrl, postContentType, postStr)
+}
+
+func DoPostJson(httpClient *http.Client, reqUrl string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
+	return DoHttpJson(httpClient, http.MethodPost, reqUrl, data, resultObjs...)
+}
+
+func DoPut(httpClient *http.Client, reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
+	return DoHttp(httpClient, http.MethodPut, reqUrl, postContentType, postStr)
+}
+
+func DoPutJson(httpClient *http.Client, reqUrl string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
+	return DoHttpJson(httpClient, http.MethodPut, reqUrl, data, resultObjs...)
+}
+
+func DoDelete(httpClient *http.Client, reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
+	return DoHttp(httpClient, http.MethodDelete, reqUrl, postContentType, postStr)
+}
+
+func DoDeleteJson(httpClient *http.Client, reqUrl string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
+	return DoHttpJson(httpClient, http.MethodDelete, reqUrl, data, resultObjs...)
+}
+
+func DoGet(httpClient *http.Client, urlOfGet string, data interface{}) (*HttpxResponse, error) {
 	urlData, err := ParseToUrlEncodeString(data)
 	if err != nil {
 		// logger.Error("Http Get Encode Request Data err:" + err.Error())
 		return nil, err
 	}
+	var resp *http.Response
 	// logger.Debug("Http Get Encode Request Data ok:" + urlData)
-	resp, err := http.Get(xParseRealGetUrl(urlOfGet, urlData))
+	if nil == httpClient {
+		resp, err = http.Get(xParseRealGetUrl(urlOfGet, urlData))
+	} else {
+		resp, err = httpClient.Get(xParseRealGetUrl(urlOfGet, urlData))
+	}
 	if err != nil {
 		// logger.Error("Http Get Do Request err:" + err.Error())
 		return nil, err
@@ -280,14 +231,19 @@ func DoHttpGet(urlOfGet string, data interface{}) (*HttpxResponse, error) {
 	return xToHttpxResponse(resp)
 }
 
-func DoHttpGetJson(urlOfGet string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
+func DoGetJson(httpClient *http.Client, urlOfGet string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
 	urlData, err := ParseToUrlEncodeString(data)
 	if err != nil {
 		// logger.Error("Http Get Encode Request Data err:" + err.Error())
 		return nil, err
 	}
+	var resp *http.Response
 	// logger.Debug("Http Get Encode Request Data ok:" + urlData)
-	resp, err := http.Get(xParseRealGetUrl(urlOfGet, urlData))
+	if nil == httpClient {
+		resp, err = http.Get(xParseRealGetUrl(urlOfGet, urlData))
+	} else {
+		resp, err = httpClient.Get(xParseRealGetUrl(urlOfGet, urlData))
+	}
 	if err != nil {
 		// logger.Error("Http Get Do Request err:" + err.Error())
 		return nil, err

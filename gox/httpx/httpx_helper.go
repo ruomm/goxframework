@@ -41,6 +41,7 @@ func Success2xx(httpxResponse *HttpxResponse) bool {
 	}
 }
 
+// 依据超时时间获取httpClient
 // 转换响应请求
 func xToHttpxResponse(resp *http.Response) (*HttpxResponse, error) {
 	if nil == resp {

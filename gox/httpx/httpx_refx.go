@@ -174,7 +174,6 @@ func ParseToRequest(httpxMethod string, reqObj interface{}) (string, []byte, str
 				reqMethod = "GET"
 			}
 		}
-		reqMethod = strings.ToUpper(reqMethod)
 		reqMethodVerify := xReqMethodVerify(reqMethod)
 		if !reqMethodVerify {
 			return "", nil, "", "", nil, errors.New("Request Method invalid error")
@@ -200,7 +199,6 @@ func ParseToRequest(httpxMethod string, reqObj interface{}) (string, []byte, str
 	} else {
 		reqMethod, _ = xParseHttpxMethod(reqObj)
 	}
-	reqMethod = strings.ToUpper(reqMethod)
 	reqMethodVerify := xReqMethodVerify(reqMethod)
 	if !reqMethodVerify {
 		return "", nil, "", "", nil, errors.New("Request Method invalid error")
@@ -450,8 +448,7 @@ func xParseReqQuery(reqObj interface{}, jsonEmpty bool) (string, error) {
 }
 
 // 判断请求方法是否合法
-func xReqMethodVerify(requestMethod string) bool {
-	reqMethod := strings.ToUpper(requestMethod)
+func xReqMethodVerify(reqMethod string) bool {
 	// MethodGet     = "GET"
 	//	MethodHead    = "HEAD"
 	//	MethodPost    = "POST"
