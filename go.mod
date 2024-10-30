@@ -1,6 +1,6 @@
 module github.com/ruomm/goxframework
 
-go 1.21.6
+go 1.21
 
 require (
 	github.com/morrisxyang/xreflect v0.0.0-20231001053442-6df0df9858ba
