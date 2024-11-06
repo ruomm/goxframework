@@ -108,6 +108,24 @@ func FirstLetterToLower(str string) string {
 	}
 }
 
+func IsJsonString(str string, trimMode bool) bool {
+	json := ""
+	if trimMode {
+		json = strings.TrimSpace(str)
+	} else {
+		json = str
+	}
+	if len(json) <= 0 {
+		return false
+	} else if strings.HasPrefix(json, "{") && strings.HasSuffix(json, "}") {
+		return true
+	} else if strings.HasPrefix(json, "[") && strings.HasSuffix(json, "]") {
+		return true
+	} else {
+		return false
+	}
+}
+
 func JsonUnmarshal(str string, v any, nodes ...string) error {
 	if str == "" {
 		return errors.New("json Unmarshal not support empty string")
