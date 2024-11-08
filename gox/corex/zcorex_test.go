@@ -101,3 +101,13 @@ func TestIsString(t *testing.T) {
 	//match = IsRegexMatch("^[a-z]$", "a_-.123")
 	//fmt.Println(match)
 }
+
+func TestIsChinese(t *testing.T) {
+	str := "、我是河南人住在黄河边上"
+	//index := strings.LastIndex(str, "黄")
+	//fmt.Println(index)
+	//strResult := str[index+len("黄"):]
+	//fmt.Println(strResult)
+	result := IsAllChineseWithPunctuation(str)
+	fmt.Println(result)
+}
