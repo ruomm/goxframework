@@ -32,11 +32,15 @@ func GetRequestIP(reqest *http.Request, proxyIpHeaderKey ...string) string {
 			continue
 		}
 		tmpIpAddresses := reqest.Header.Get(ipHeaderKey)
-		tmpIpAddressesLower := strings.ToLower(tmpIpAddresses)
-		if len(tmpIpAddresses) > 0 && "unknown" != tmpIpAddressesLower && localIP != tmpIpAddressesLower {
-			ipAddresses = tmpIpAddresses
-			break
+		if len(tmpIpAddresses) <= 0 {
+			continue
 		}
+		tmpIpAddressesLower := strings.ToLower(tmpIpAddresses)
+		if "unknown" == tmpIpAddressesLower || localIP == tmpIpAddressesLower {
+			continue
+		}
+		ipAddresses = tmpIpAddresses
+		break
 	}
 	ip := ""
 	//有些网络通过多层代理，那么获取到的ip就会有多个，一般都是通过逗号（,）分割开来，并且第一个ip为客户端的真实IP
