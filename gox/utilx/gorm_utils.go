@@ -639,6 +639,8 @@ func GormParseQueryStart(queryStart string) string {
 		return queryStart + "-01" + " 00:00:00"
 	} else if lenQuery == 10 {
 		return queryStart + " 00:00:00"
+	} else if lenQuery == 19 {
+		return queryStart
 	} else {
 		return ""
 	}
@@ -679,6 +681,8 @@ func GormParseQueryEnd(queryEnd string) string {
 			day = day + 1
 		}
 		return corex.Int64ToStrFill(year, 4) + "-" + corex.Int64ToStrFill(month, 2) + "-" + corex.Int64ToStrFill(day, 2) + " 00:00:00"
+	} else if lenQuery == 19 {
+		return queryEnd
 	} else {
 		return ""
 	}
