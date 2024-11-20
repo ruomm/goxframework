@@ -111,3 +111,13 @@ func TestIsChinese(t *testing.T) {
 	result := IsAllChineseWithPunctuation(str)
 	fmt.Println(result)
 }
+
+func TestMaskString(t *testing.T) {
+	str := "中1235465445665465464564dafsssssssssssssss56456456455555"
+	//index := strings.LastIndex(str, "黄")
+	//fmt.Println(index)
+	//strResult := str[index+len("黄"):]
+	//fmt.Println(strResult)
+	result := MaskString(str, false)
+	fmt.Println(result)
+}

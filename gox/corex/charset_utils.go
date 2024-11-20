@@ -1,7 +1,9 @@
 package corex
 
 import (
+	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 // isChinesePunctuation 判断字符是否是中文标点符号
@@ -77,4 +79,33 @@ func IsAllChineseWithPunctuation(str string) bool {
 		}
 	}
 	return count == lenRunes
+}
+
+// 字符串掩码
+func MaskString(str string, prettyMode bool) string {
+	lenRunes := utf8.RuneCountInString(str)
+	countClear := lenRunes / 2
+	countEnd := countClear / 2
+	countStart := countClear - countEnd
+	if countStart > 8 {
+		countStart = 8
+	}
+	if countEnd > 6 {
+		countEnd = 6
+	}
+	sb := strings.Builder{}
+	i := 0
+	for _, v := range str {
+		if i < countStart || i >= lenRunes-countEnd {
+			sb.WriteRune(v)
+		} else if prettyMode {
+			if i < countStart+8 || i >= lenRunes-countEnd-6 {
+				sb.WriteString("*")
+			}
+		} else {
+			sb.WriteString("*")
+		}
+		i++
+	}
+	return sb.String()
 }
