@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// 判断字符串是否匹配，支持正则表达式，支持开头结尾*通配符，支持严格匹配
+// 判断字符串是否匹配，支持正则表达式，支持开头结尾*通配符，支持严格匹配，空字符串不匹配
 func MatchStringCommon(pattern string, s string) bool {
 	if len(pattern) <= 0 {
 		return false
@@ -66,7 +66,7 @@ func MatchStringCommon(pattern string, s string) bool {
 	}
 }
 
-// 判断字符串是否匹配，支持正则表达式，支持开头结尾*通配符，支持严格匹配
+// 判断字符串是否匹配，支持正则表达式，支持开头结尾*通配符，支持严格匹配，空字符串匹配
 func MatchStringEmptyPatternPass(pattern string, s string) bool {
 	if len(pattern) <= 0 {
 		return true
@@ -144,7 +144,7 @@ func StringToNoBom(str string) string {
 	}
 }
 
-// 转换string为slice
+// 逐行转换string为slice，emptyRetain=true表示空的行也保留
 func StringReadByLine(str string, emptyRetain bool) []string {
 	lenStr := len(str)
 	if lenStr <= 0 {
@@ -174,7 +174,7 @@ func StringReadByLine(str string, emptyRetain bool) []string {
 	return resultSlice
 }
 
-// 转换string为slice
+// 逐行转换string为slice，首行去除bom，emptyRetain=true表示空的行也保留
 func StringReadByLineNoBom(str string, emptyRetain bool) []string {
 	lenStr := len(str)
 	if lenStr <= 0 {

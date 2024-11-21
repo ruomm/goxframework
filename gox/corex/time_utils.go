@@ -30,7 +30,7 @@ const timezone_offset int = 8 * 3600
 
 //var Time_Location_ShangHai = ToShanghaiLocation()
 
-// 转换时间为本地时间
+// time.Location转换时间为本地时间
 func ToTimeLocation() *time.Location {
 	// missing Location in call to Date
 	location, err := time.LoadLocation(timezone_location)
@@ -40,7 +40,7 @@ func ToTimeLocation() *time.Location {
 	return location
 }
 
-// 转换时间为特定时区时间
+// time.Location转换时间为特定时区时间
 func ToTimeLocationPattern(timezoneValue string, timezoneOffset int) *time.Location {
 	// missing Location in call to Date
 	location, err := time.LoadLocation(timezoneValue)
@@ -50,7 +50,7 @@ func ToTimeLocationPattern(timezoneValue string, timezoneOffset int) *time.Locat
 	return location
 }
 
-// 格式化时间为字符串
+// 格式化时间为字符串，timeLayout:格式化模板，mesc:毫秒时间戳
 func TimeFormatByMilliSeconds(timeLayout string, msec int64) string {
 	//TimeFormatByString
 	//"America/Adak" "Asia/Shanghai"
@@ -64,7 +64,7 @@ func TimeFormatByMilliSeconds(timeLayout string, msec int64) string {
 	return t.In(ToTimeLocation()).Format(realTimeLayout)
 }
 
-// 格式化时间为字符串
+// 格式化时间为字符串，timeLayout:格式化模板
 func TimeFormatByString(timeLayout string, t *time.Time) string {
 	//TimeFormatByString
 	//"America/Adak" "Asia/Shanghai"
@@ -78,7 +78,7 @@ func TimeFormatByString(timeLayout string, t *time.Time) string {
 }
 
 // TimeParseByString
-// 解析字符串为时间
+// 解析字符串为时间，timeLayout:格式化模板
 func TimeParseByString(timeLayout string, sTime string) (*time.Time, error) {
 	var realTimeLayout string
 	if len(timeLayout) > 0 {
@@ -94,6 +94,7 @@ func TimeParseByString(timeLayout string, sTime string) (*time.Time, error) {
 	}
 }
 
+// 判断时间是否在当前时间之后，timeLayout:格式化模板
 func TimeAfterCurrent(timeLayout string, timeStr string) (bool, error) {
 	cTime, err := TimeParseByString(timeLayout, timeStr)
 	if err != nil {
@@ -102,6 +103,7 @@ func TimeAfterCurrent(timeLayout string, timeStr string) (bool, error) {
 	return cTime.After(time.Now()), nil
 }
 
+// 判断时间是否在当前时间之前，timeLayout:格式化模板
 func TimeBeforceCurrent(timeLayout string, timeStr string) (bool, error) {
 	cTime, err := TimeParseByString(timeLayout, timeStr)
 	if err != nil {
@@ -134,10 +136,7 @@ func TimeToFileName(pTime *time.Time, filehead string, filetype string, fileTime
 	return filehead + dataStr + filetype
 }
 
-/*
-*
-判断是否闰年
-*/
+// 判断是否闰年
 func IsLeapyear(year int) bool {
 	if year%4 == 0 && year%100 != 0 {
 		return true
@@ -175,7 +174,8 @@ func IsLastDayInMonth(year int, month int, day int) bool {
 	}
 }
 
-// 解析查询的开始时间
+// 解析查询的开始时间，支持yyyy-MM,yyyy-MM-dd,yyyy-MM-dd HH:mm:ss格式
+// yyyy-MM解析为当月1号0点0分0秒,yyyy-MM-dd解析为当天的0点0分0秒，yyyy-MM-dd HH:mm:ss实际返回
 func QueryDayParseStart(queryStart string) string {
 	lenQuery := len(queryStart)
 	if lenQuery <= 0 {
@@ -184,12 +184,15 @@ func QueryDayParseStart(queryStart string) string {
 		return queryStart + "-01" + " 00:00:00"
 	} else if lenQuery == 10 {
 		return queryStart + " 00:00:00"
+	} else if lenQuery == 19 {
+		return queryStart
 	} else {
 		return ""
 	}
 }
 
-// 解析查询的结束时间
+// 解析查询的结束时间，支持yyyy-MM,yyyy-MM-dd,yyyy-MM-dd HH:mm:ss格式
+// yyyy-MM解析为下月1号0点0分0秒,yyyy-MM-dd解析为下一天的0点0分0秒，yyyy-MM-dd HH:mm:ss实际返回
 func QueryDayParseEnd(queryEnd string) string {
 	lenQuery := len(queryEnd)
 	if lenQuery <= 0 {
@@ -224,6 +227,8 @@ func QueryDayParseEnd(queryEnd string) string {
 			day = day + 1
 		}
 		return Int64ToStrFill(year, 4) + "-" + Int64ToStrFill(month, 2) + "-" + Int64ToStrFill(day, 2) + " 00:00:00"
+	} else if lenQuery == 19 {
+		return queryEnd
 	} else {
 		return ""
 	}
@@ -477,6 +482,8 @@ func TimeOffsetMonthByString(monthString string, offsetMonth int) string {
 	return timeOffsetString
 }
 
+// 格式化年月日转换为int类型的年月日，支持yyyy-MM、yyyy-MM-dd，无法转换返回0、0、0
+// 2024-06转换后为2024、6、0，2024-06-07转换后为2024、6、7
 func TimeToYearMonthDay(dayString string) (int64, int64, int64) {
 	if !TimeValidMonthString(dayString) && !TimeValidDayString(dayString) {
 		return 0, 0, 0
@@ -492,6 +499,7 @@ func TimeToYearMonthDay(dayString string) (int64, int64, int64) {
 	}
 }
 
+// 判断字符串是否符合yyyy-MM-dd日期格式
 func TimeValidDayString(dayString string) bool {
 	re, err := regexp.Compile("^\\d{4}-\\d{2}-\\d{2}$")
 	if err != nil {
@@ -518,6 +526,7 @@ func TimeValidDayString(dayString string) bool {
 	return true
 }
 
+// 判断字符串是否符合yyyy-MM月份格式
 func TimeValidMonthString(monthString string) bool {
 	re, err := regexp.Compile("^\\d{4}-\\d{2}$")
 	if err != nil {
