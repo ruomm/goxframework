@@ -114,7 +114,7 @@ func XRefStructCopy(origO interface{}, destO interface{}, options ...XrefOption)
 		// 开始分割目标控制和属性控制
 		tagOrigVal, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
 		// 判断是否可以进行复制
-		tagOrig, okCanXref := xReflect_canXCopy(tagOrigVal, origNameSpace)
+		tagOrig, okCanXref := xReflect_canXCopy(s, tagOrigVal, origNameSpace)
 		if !okCanXref {
 			return false
 		}
@@ -228,7 +228,7 @@ func XRefMapCopy(origMap map[string]string, destO interface{}, options ...XrefOp
 		// 开始分割目标控制和属性控制
 		tagOrigVal, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
 		// 判断是否可以进行复制
-		tagOrig, okCanXref := xReflect_canXCopy(tagOrigVal, origNameSpace)
+		tagOrig, okCanXref := xReflect_canXCopy(s, tagOrigVal, origNameSpace)
 		if !okCanXref {
 			return false
 		}
@@ -332,7 +332,7 @@ func XRefHandlerCopy(xrefOrigHandler XrefHandler, destO interface{}, options ...
 		// 开始分割目标控制和属性控制
 		tagOrigVal, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
 		// 判断是否可以进行复制
-		tagOrig, okCanXref := xReflect_canXCopy(tagOrigVal, origNameSpace)
+		tagOrig, okCanXref := xReflect_canXCopy(s, tagOrigVal, origNameSpace)
 		if !okCanXref {
 			return false
 		}
@@ -447,7 +447,7 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 		// 开始分割目标控制和属性控制
 		tagOrigVal, tagOpt := corex.ParseTagToNameOptionFenHao(tagXreft)
 		// 判断是否可以进行复制
-		tagOrig, okCanXref := xReflect_canXCopy(tagOrigVal, origNameSpace)
+		tagOrig, okCanXref := xReflect_canXCopy(s, tagOrigVal, origNameSpace)
 		if !okCanXref {
 			return false
 		}
@@ -548,16 +548,22 @@ func XRefValueCopy(origO interface{}, refValue reflect.Value, options ...XrefOpt
 }
 
 // 字段是否需要XReflect复制
-func xReflect_canXCopy(tagOrigVal string, origNameSpace string) (string, bool) {
+func xReflect_canXCopy(s string, tagOrigVal string, origNameSpace string) (string, bool) {
+	fileNameSimply := corex.FieldNameToSimply(s)
 	if tagOrigVal == "" {
-		return "", true
+		if len(fileNameSimply) <= 0 {
+			return "", false
+		} else {
+			return fileNameSimply, true
+		}
 	}
 	cpEnable := false
 	cpOrigKey := ""
 	tagOriglist := strings.Split(tagOrigVal, ",")
-	for _, tagOrigItem := range tagOriglist {
+	for _, tmpTagOrig := range tagOriglist {
+		tagOrigItem := tmpTagOrig
 		if tagOrigItem == "" {
-			continue
+			tagOrigItem = fileNameSimply
 		}
 		subVList := strings.Split(tagOrigItem, ":")
 		lenVList := len(subVList)
