@@ -105,7 +105,7 @@ func FirstIndexOfFileSeparator(filePath string) int {
  * 依据文文件或文件夹路径智能获取文件夹连接符号(File.separator)。
  *
  * @param filePath 文件或文件夹路径
- * @return 文件夹连接符号(File.separator)
+ * @return 文件夹连接符号(File.separator)，"\\"或"/"
  */
 func ParseFileSeparator(filePath string) string {
 	if len(filePath) <= 0 {
@@ -174,7 +174,7 @@ func ConcatFilePath(filePath string, fileName string, separatorRevise bool) stri
  * @param filePath            目录路径
  * @param subPath         次级目录路径
  * @param separatorRevise 是否修订名称中的文件分隔路径
- * @return 完整文件路径
+ * @return 完整文件路径，subPath有值时候，结果路径自动拼接文件夹连接符号(File.separator)
  */
 func ConcatDirPath(filePath string, subPath string, separatorRevise bool) string {
 	if len(filePath) == 0 && len(subPath) == 0 {
@@ -220,7 +220,6 @@ func ConcatDirPath(filePath string, subPath string, separatorRevise bool) string
 }
 
 // 获取当前的执行路径
-// C:\Users\Vic\AppData\Local\Temp\
 func GetCurrentPath() string {
 	//s, err := exec.LookPath(os.Args[0])
 	//checkErr(err)
@@ -230,6 +229,9 @@ func GetCurrentPath() string {
 	return filepath.Dir(os.Args[0])
 }
 
+// 判读是否绝对路径。
+// 以"\\"或"/"开头为绝对路径(mac、linux)
+// 前12个字符包含:为绝对路径(windows)
 func IsAbsDir(path string) bool {
 	if len(path) <= 0 {
 		return false
@@ -245,6 +247,7 @@ func IsAbsDir(path string) bool {
 	}
 }
 
+// 获取绝对路径，本身是绝对路径直接返回，本身是相对路径，拼接上go语言的环境路径返回
 func GetAbsDir(relativePath string) string {
 	if len(relativePath) <= 0 {
 		return filepath.Dir(os.Args[0])
@@ -256,6 +259,7 @@ func GetAbsDir(relativePath string) string {
 	}
 }
 
+// 判断文件是否存在，文件不存在不会返回错误，其他异常才返回错误
 func IsFileExit(file_path string) (bool, error) {
 	_, err := os.Stat(file_path)
 	if err == nil {
@@ -268,6 +272,7 @@ func IsFileExit(file_path string) (bool, error) {
 	}
 }
 
+// 判断文件是否存在，文件不存在会返回错误，其他异常也会返回错误
 func IsFileExitWithErr(file_path string) (bool, error) {
 	_, err := os.Stat(file_path)
 	if err == nil {
@@ -276,6 +281,7 @@ func IsFileExitWithErr(file_path string) (bool, error) {
 	return false, err
 }
 
+// 创建文件夹-多层级模式
 func MkdirAll(file_path string) (bool, error) {
 	fileExit, errExit := IsFileExit(file_path)
 	if errExit != nil {
@@ -295,6 +301,7 @@ func MkdirAll(file_path string) (bool, error) {
 	}
 }
 
+// 读取文件为字符串-ioutil模式
 func ReadFile(path string) (string, error) {
 	contentBytes, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -304,6 +311,7 @@ func ReadFile(path string) (string, error) {
 	return contentString, nil
 }
 
+// 读取文件为字符串-buffer模式
 func ReadFileBuffer(path string) (string, error) {
 	fi, errOpen := os.Open(path)
 	if errOpen != nil {
@@ -330,6 +338,7 @@ func ReadFileBuffer(path string) (string, error) {
 	return build.String(), nil
 }
 
+// 字符串写入文件-*os.File模式
 func WriteFile(path string, content string) error {
 	// 文件不存在时创建，存在时清空，以读写方式打开
 	// 如果不清空，再次打开写入时默认是从最开始写入的
@@ -346,6 +355,7 @@ func WriteFile(path string, content string) error {
 	return nil
 }
 
+// 字符串写入文件-buffer模式
 func WriteFileBuffer(path string, content string) error {
 	// 文件不存在时创建，存在时清空，以读写方式打开
 	// 如果不清空，再次打开写入时默认是从最开始写入的
@@ -369,6 +379,7 @@ func WriteFileBuffer(path string, content string) error {
 	return nil
 }
 
+// 文件复制
 func CopyFile(pathSrc string, pathDest string) error {
 	fiR, errOpenR := os.Open(pathSrc)
 	if errOpenR != nil {
