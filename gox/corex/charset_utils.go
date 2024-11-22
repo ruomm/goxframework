@@ -17,6 +17,7 @@ func isChinesePunctuationByRune(ch rune) bool {
 	return isPunctuation
 }
 
+// 判断字符是否含有中文标点符号，IsChinesePunctuation("你好，晴天")=true,IsChinesePunctuation("hello，world。")=true,IsChinesePunctuation("你好,晴天.")=false
 func IsChinesePunctuation(str string) bool {
 	var count int
 	for _, v := range str {
@@ -27,7 +28,7 @@ func IsChinesePunctuation(str string) bool {
 	return count > 0
 }
 
-// 判断是否含有中文方法1
+// 判断字符是否含有中文字符，IsChinese("你好,晴天.")=true,IsChinese("hello，world。")=false,IsChinese("hello,world.")=false
 func IsChinese(str string) bool {
 	var count int
 	for _, v := range str {
@@ -39,7 +40,7 @@ func IsChinese(str string) bool {
 	return count > 0
 }
 
-// 判断是否含有中文方法2
+// 判断字符是否含有中文字符或中文标点符号，IsChineseWithPunctuation("你好,晴天.")=true,IsChineseWithPunctuation("hello，world。")=true,IsChineseWithPunctuation("hello,world.")=false
 func IsChineseWithPunctuation(str string) bool {
 	var count int
 	for _, v := range str {
@@ -53,7 +54,7 @@ func IsChineseWithPunctuation(str string) bool {
 	return count > 0
 }
 
-// 判断是全部是中文方法1
+// 判断字符串是否全部是中文字符，IsAllChinese("你好晴天")=true,IsAllChinese("你好，晴天。")=false,IsAllChinese("hello,world.")=false
 func IsAllChinese(str string) bool {
 	var count int
 	var lenRunes int
@@ -66,7 +67,7 @@ func IsAllChinese(str string) bool {
 	return count == lenRunes
 }
 
-// 判断是全部是中文方法2
+// 判断字符串是否全部是中文字符或中文标点符号，IsAllChineseWithPunctuation("你好晴天")=true,IsAllChineseWithPunctuation("你好，晴天。")=true,IsAllChineseWithPunctuation("hello,world.")=false
 func IsAllChineseWithPunctuation(str string) bool {
 	var count int
 	var lenRunes int
@@ -81,7 +82,8 @@ func IsAllChineseWithPunctuation(str string) bool {
 	return count == lenRunes
 }
 
-// 字符串掩码
+// 字符串掩码函数，掩码数量至少字符串长度的向上取整的一半，可显示字符前面最大8字符，后面最大6字符，prettyMode:true的时候，过长字符掩码时候中间*会缩短为固定长度
+// 如：MaskString("张三丰")="张**",MaskString("1234567890")="1234567890"
 func MaskString(str string, prettyMode bool) string {
 	lenRunes := utf8.RuneCountInString(str)
 	countClear := lenRunes / 2
