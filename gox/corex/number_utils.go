@@ -7,12 +7,14 @@ import (
 	"strings"
 )
 
-// 填充数字为多少位数
-
+// 左侧填充字符串到特定长度，input:字符串,paddin:填充的字符,len_total:总计长度
+// 如：FillStringLeft("abc", "x", 6)="xxxabc",FillStringLeft("123456789", "x", 6)="123456789"
 func FillStringLeft(input string, padding string, len_total int) string {
 	return fillStringByMode(input, padding, len_total, true)
 }
 
+// 右侧侧填充字符串到特定长度，input:字符串,paddin:填充的字符,len_total:总计长度
+// 如：FillStringRight("abc", "x", 6)="abcxxx",FillStringLeft("123456789", "x", 6)="123456789"
 func FillStringRight(input string, padding string, len_total int) string {
 	return fillStringByMode(input, padding, len_total, false)
 }
@@ -36,32 +38,44 @@ func fillStringByMode(input string, padding string, len_total int, leftFillMode 
 	return input
 }
 
+// int64转string
 func Int64ToStr(i int64) string {
 	return strconv.FormatInt(i, 10)
 }
 
+// int64转string，左侧填充0到特定长度
+// 如：Int64ToStrFill(15,4) = 0015,Int64ToStrFill(-15,4) = -0015
 func Int64ToStrFill(i int64, len_total int) string {
-	return FillStringLeft(strconv.FormatInt(i, 10), "0", len_total)
+	if i >= 0 {
+		return FillStringLeft(strconv.FormatInt(i, 10), "0", len_total)
+	} else {
+		return "-" + FillStringLeft(strconv.FormatInt(-i, 10), "0", len_total)
+	}
 }
 
+// string转int64，无法转换时候返回0
 func StrToInt64(str string) int64 {
 	i, _ := strconv.ParseInt(str, 10, 64)
 	return i
 }
 
+// uint64转string
 func Uint64ToStr(i uint64) string {
 	return strconv.FormatUint(i, 10)
 }
 
+// uint64转string，左侧填充0到特定长度
 func Uint64ToStrFill(i uint64, len_total int) string {
 	return FillStringLeft(strconv.FormatUint(i, 10), "0", len_total)
 }
 
+// string转uint64，无法转换时候返回0
 func StrToUInt64(str string) uint64 {
 	i, _ := strconv.ParseUint(str, 10, 64)
 	return i
 }
 
+// float64转string
 func Float64ToStr(floatVal float64, prec int) string {
 	realPrec := -1
 	if prec >= 0 {
@@ -70,6 +84,8 @@ func Float64ToStr(floatVal float64, prec int) string {
 	return strconv.FormatFloat(floatVal, 'f', realPrec, 64)
 }
 
+// float64转换为特定小数位数的float
+// 如：Float64Format(5.6781, 1) = 5.68
 func Float64Format(floatVal float64, prec int) float64 {
 	if prec < 0 {
 		return floatVal
@@ -78,11 +94,14 @@ func Float64Format(floatVal float64, prec int) float64 {
 	return resultVal
 }
 
+// string转float64，无法转换时候返回0
 func StrToFloat64(str string) float64 {
 	numFloat64, _ := strconv.ParseFloat(str, 64)
 	return numFloat64
 }
 
+// byteSize存储大小格式化为KB、MB、GB、TB存储大小显示，prec为保留的小数位数
+// 如：512*1024*1024 = 512MB，1000*1024*1024 = 0.9766GB
 func StoreSizeFormat(byteSize int64, prec int) string {
 	realPrec := -1
 	if prec >= 0 {
@@ -123,6 +142,8 @@ func StoreSizeFormat(byteSize int64, prec int) string {
 	}
 }
 
+// KB、MB、GB、TB存储大小解析为byteSize存储大小
+// 如： 512MB、512M = 512*1024*1024，0.9766GB、0.9766G = 1000*1024*1024
 func StoreSizeParse(bytesizeStr string) (int64, error) {
 	if len(bytesizeStr) == 0 {
 		return 0, errors.New("parse bytesize err,input string is empty")
@@ -170,6 +191,8 @@ func StoreSizeParse(bytesizeStr string) (int64, error) {
 	return value, nil
 }
 
+// 格式化时间戳为ms、s、m、h、d(毫秒、秒、分钟、小时、天)显示的时间，timeNumberValue:时间戳,prce:保留小数位数,secondMode:false-毫秒模式,true-秒模式
+// TimeNumberFormat(150,2,true) = 2.50m,TimeNumberFormat(150,2,false) = 150ms
 func TimeNumberFormat(timeNumberValue int64, prec int, secondMode bool) string {
 	realPrec := -1
 	if prec >= 0 {
@@ -226,6 +249,9 @@ func TimeNumberFormat(timeNumberValue int64, prec int, secondMode bool) string {
 	}
 }
 
+// ms、s、m、h、d(毫秒、秒、分钟、小时、天)显示的时间解析为时间戳，timenumStr:格式化的时间戳,secondMode:false-毫秒模式,true-秒模式
+// TimeNumberParse(150s,true) = 150,TimeNumberFormat(150s,false) = 150*1000
+// TimeNumberParse(150,true) = 150,TimeNumberFormat(150,false) = 150
 func TimeNumberParse(timenumStr string, secondMode bool) (int64, error) {
 	if len(timenumStr) == 0 {
 		if secondMode {
