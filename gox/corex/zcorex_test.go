@@ -94,10 +94,10 @@ func TestIsRegexMatch(t *testing.T) {
 
 func TestIsString(t *testing.T) {
 
-	fmt.Println(ToCamelCase("d_d@DSa"))
-	fmt.Println(ToSnakeCase("ADSSdas"))
-	fmt.Println(FirstLetterToLower("ADSSdas"))
-	fmt.Println(FirstLetterToUpper("adssDAS"))
+	fmt.Println(ToCamelCase("Demo_user_info"))
+	fmt.Println(ToSnakeCase("DemoUserInfo"))
+	fmt.Println(FirstLetterToLower("中ADSSdas"))
+	fmt.Println(FirstLetterToUpper("中adssDAS"))
 	//match = IsRegexMatch("^[a-z]$", "a_-.123")
 	//fmt.Println(match)
 }

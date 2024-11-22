@@ -27,6 +27,7 @@ func ServerTrace(tracePort int) {
 	http.ListenAndServe("0.0.0.0:"+strconv.Itoa(tracePort), nil)
 }
 
+// 获取字符串MD5值
 func GetMd5(data string) string {
 	h := md5.New()
 	h.Write([]byte(data))
@@ -34,15 +35,16 @@ func GetMd5(data string) string {
 	return hex.EncodeToString(bs)
 }
 
+// 获取字符串结尾拼接盐值的MD5值
 func GetMd5WithSlat(data, slat string) string {
-	var realSlat string
+	//var realSlat string
 	h := md5.New()
-	h.Write([]byte(data + realSlat))
+	h.Write([]byte(data + slat))
 	bs := h.Sum(nil)
 	return hex.EncodeToString(bs)
 }
 
-// field名称简化
+// field完整名称简化为字段名称,FieldNameToSimply("vo.UserInfo.UserName")="UserName"
 func FieldNameToSimply(fieldName string) string {
 	lenFieldName := len(fieldName)
 	if lenFieldName <= 0 {
@@ -56,7 +58,7 @@ func FieldNameToSimply(fieldName string) string {
 	}
 }
 
-// 驼峰转蛇形工具
+// 驼峰转蛇形工具,ToSnakeCase("DemoUserInfo") = "demo_user_info"
 func ToSnakeCase(str string) string {
 	str = xvalid_matchNonAlphaNumeric.ReplaceAllString(str, "_")     //非常规字符转化为 _
 	snake := xvalid_matchFirstCap.ReplaceAllString(str, "${1}_${2}") //拆分出连续大写
@@ -64,20 +66,21 @@ func ToSnakeCase(str string) string {
 	return strings.ToLower(snake)                                    //全部转小写
 }
 
-// 蛇形转驼峰工具
+// 蛇形转驼峰工具,ToCamelCase("demo_user_info") = "demoUserInfo"
 func ToCamelCase(str string) string {
 	sb := strings.Builder{}
 	upFlag := false
-	for i := 0; i < len(str); i++ {
-		if str[i] == '_' {
+	for _, v := range str {
+
+		if v == '_' {
 			upFlag = true
 			continue
 		} else {
 			if upFlag {
 				upFlag = false
-				sb.WriteString(strings.ToUpper(str[i : i+1]))
+				sb.WriteString(strings.ToUpper(string(v)))
 			} else {
-				sb.WriteString(str[i : i+1])
+				sb.WriteString(string(v))
 			}
 		}
 	}
