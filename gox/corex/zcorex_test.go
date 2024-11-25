@@ -131,7 +131,8 @@ func TestUtf8(t *testing.T) {
 	fmt.Println(Utf8Sub("hello，你好！", 6, 8))
 	fmt.Println(Utf8Index("hello，你好啊！", "好啊"))
 	fmt.Println(Utf8Sub(str, 6, -1))
-	//fmt.Println(FirstLetterToUpper("中adssDAS"))
+	fmt.Println(FirstLetterToUpper("a中adssDAS"))
+	fmt.Println(FirstLetterToLower("a中adssDAS"))
 	//match = IsRegexMatch("^[a-z]$", "a_-.123")
 	//fmt.Println(match)
 }

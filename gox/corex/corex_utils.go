@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 var (
@@ -71,7 +72,6 @@ func ToCamelCase(str string) string {
 	sb := strings.Builder{}
 	upFlag := false
 	for _, v := range str {
-
 		if v == '_' {
 			upFlag = true
 			continue
@@ -89,28 +89,49 @@ func ToCamelCase(str string) string {
 
 // 首字母大小
 func FirstLetterToUpper(str string) string {
-	length := len(str)
-	if length == 0 {
+	lenRunes := utf8.RuneCountInString(str)
+	if lenRunes <= 0 {
 		return str
-	} else if length == 1 {
+	} else if lenRunes == 1 {
 		return strings.ToUpper(str)
 	} else {
-		return strings.ToUpper(str[0:1]) + str[1:length]
+		firstLetter := ""
+		secondIndex := -1
+		for i, r := range str {
+			if i == 0 {
+				firstLetter = strings.ToUpper(string(r))
+			} else {
+				secondIndex = i
+				break
+			}
+		}
+		return firstLetter + str[secondIndex:]
 	}
 }
 
 // 首字母小写
 func FirstLetterToLower(str string) string {
-	length := len(str)
-	if length == 0 {
+	lenRunes := utf8.RuneCountInString(str)
+	if lenRunes <= 0 {
 		return str
-	} else if length == 1 {
+	} else if lenRunes == 1 {
 		return strings.ToLower(str)
 	} else {
-		return strings.ToLower(str[0:1]) + str[1:length]
+		firstLetter := ""
+		secondIndex := -1
+		for i, r := range str {
+			if i == 0 {
+				firstLetter = strings.ToLower(string(r))
+			} else {
+				secondIndex = i
+				break
+			}
+		}
+		return firstLetter + str[secondIndex:]
 	}
 }
 
+// 判断字符串str是否JSON字符串，trimMode:true时候，字符串str经过trim后判断
 func IsJsonString(str string, trimMode bool) bool {
 	json := ""
 	if trimMode {
@@ -129,6 +150,7 @@ func IsJsonString(str string, trimMode bool) bool {
 	}
 }
 
+// JSON解析，nodes有值会解析节点的值，如JsonUnmarshal(str, v, data, user)会解析str字符串的data.user节点
 func JsonUnmarshal(str string, v any, nodes ...string) error {
 	if str == "" {
 		return errors.New("json Unmarshal not support empty string")
@@ -137,6 +159,7 @@ func JsonUnmarshal(str string, v any, nodes ...string) error {
 	return err
 }
 
+// JSON解析，nodes有值会解析节点的值，如JsonUnmarshal(jsonByte, v, data, user)会解析jsonByte字节的data.user节点
 func JsonUnmarshalByBytes(jsonByte []byte, v any, nodes ...string) error {
 	if len(jsonByte) <= 0 {
 		return errors.New("json Unmarshal not support empty byte")
@@ -183,6 +206,7 @@ func JsonUnmarshalByBytes(jsonByte []byte, v any, nodes ...string) error {
 	return err
 }
 
+// JSON编码为字符串
 func JsonMarshal(v any) (string, error) {
 	jsonData, err := json.Marshal(v)
 	if err != nil {
@@ -194,6 +218,7 @@ func JsonMarshal(v any) (string, error) {
 	return string(jsonData), err
 }
 
+// JSON编码为字符串，prefix、indent设置编码的美化方式
 func JsonMarshalIndent(v any, prefix, indent string) (string, error) {
 	jsonData, err := json.MarshalIndent(v, prefix, indent)
 	if err != nil {
@@ -205,6 +230,7 @@ func JsonMarshalIndent(v any, prefix, indent string) (string, error) {
 	return string(jsonData), err
 }
 
+// JSON编码为字符串，默认换行和缩进进行美化
 func JsonMarshalPretty(v any) (string, error) {
 	jsonData, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
@@ -216,6 +242,7 @@ func JsonMarshalPretty(v any) (string, error) {
 	return string(jsonData), err
 }
 
+// 获取任意对象的长度
 func GetLenForAny(i interface{}) int {
 	if i == nil {
 		return 0
@@ -234,6 +261,7 @@ func GetLenForAny(i interface{}) int {
 	}
 }
 
+// 判断任意对象是否为空
 func IsNil(i interface{}) bool {
 	vi := reflect.ValueOf(i)
 	viKind := vi.Kind()
@@ -244,7 +272,7 @@ func IsNil(i interface{}) bool {
 	return false
 }
 
-// 解析Http强求range头的第一个请求范围
+// 解析Http强求range头的第一个请求范围，主要是分片上传和分片下载时候使用
 func ParseHttpRangeFirst(rangeHeader string) (int64, int64) {
 	if len(rangeHeader) <= 0 {
 		return -1, -1
