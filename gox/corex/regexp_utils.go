@@ -11,6 +11,7 @@ import (
 	"regexp"
 )
 
+// 验证字符是否符合字符串规则，主要用于正则表达式验证
 func IsRegexMatch(reg_pattern string, val string) bool {
 	re, err := regexp.Compile(reg_pattern)
 	if err != nil {

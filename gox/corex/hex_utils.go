@@ -11,6 +11,7 @@ import (
 	"strings"
 )
 
+// 判断是否Hex字符串，strictMatch:true时候字符串长度必须为偶数才判断
 func IsHexString(str string, strictMatch bool) bool {
 	s := ""
 	if strings.HasPrefix(str, "0x") || strings.HasPrefix(str, "0X") {
@@ -32,6 +33,7 @@ func IsHexString(str string, strictMatch bool) bool {
 	return true
 }
 
+// 解析hex字符串为正常字符串，strictMatch:true时候字符串长度必须为偶数才解析
 func ToHexString(str string, strictMatch bool) (string, error) {
 	s := ""
 	if strings.HasPrefix(str, "0x") || strings.HasPrefix(str, "0X") {
