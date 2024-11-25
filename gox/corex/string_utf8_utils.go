@@ -72,6 +72,7 @@ func Utf8Sub(str string, startIndex int, endIndex int) string {
 }
 
 // uft8模式：获取字符串substr在字符串s中的首位索引位置，没有则返回-1
+// 如：Utf8Index("hello，你好啊！", "好啊") = 7
 func Utf8Index(s string, substr string) int {
 	index := strings.Index(s, substr)
 	if index <= 0 {
