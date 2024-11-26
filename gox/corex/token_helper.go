@@ -2,23 +2,30 @@ package corex
 
 import "math/rand"
 
+// 随机字符串结构体
 type TokenHelper struct {
+	// 默认随机字符串token生成的长度
 	TokenLen int
-	Dicts    string
+	// 随机字符串token生成的字典
+	Dicts string
 }
 
+// 以默认长度生成随机字符串，默认长度为0时候生成4位随机字符串
 func (t *TokenHelper) GenTokenDefault() string {
 	return t.genTokenCommon(0, false)
 }
 
+// 以默认长度生成非0开头的随机字符串，默认长度为0时候生成4位随机字符串
 func (t *TokenHelper) GenTokenDefaultNoZeroStart() string {
 	return t.genTokenCommon(0, false)
 }
 
+// 以特定长度生成随机字符串，特定长度为0时候生成4位随机字符串
 func (t *TokenHelper) GenToken(token_len int) string {
 	return t.genTokenCommon(token_len, false)
 }
 
+// 以特定长度生成非0开头的随机字符串，特定长度为0时候生成4位随机字符串
 func (t *TokenHelper) GenTokenNoZeroStart(token_len int) string {
 	return t.genTokenCommon(token_len, true)
 }
