@@ -281,6 +281,29 @@ func IsFileExitWithErr(file_path string) (bool, error) {
 	return false, err
 }
 
+// 判断文件是否存在并获取文件大小，文件不存在不会返回错误，其他异常才返回错误
+func GetFileSize(file_path string) (int64, bool, error) {
+	fileInfo, err := os.Stat(file_path)
+	if err == nil {
+		return fileInfo.Size(), true, nil
+	}
+	if os.IsNotExist(err) {
+		return 0, false, nil
+	} else {
+		return 0, false, err
+	}
+}
+
+// 判断文件是否存在并获取文件大小，文件不存在会返回错误，其他异常也会返回错误
+func GetFileSizeWithErr(file_path string) (int64, bool, error) {
+	fileInfo, err := os.Stat(file_path)
+	if err == nil {
+		return fileInfo.Size(), true, nil
+	} else {
+		return 0, false, err
+	}
+}
+
 // 创建文件夹-多层级模式
 func MkdirAll(file_path string) (bool, error) {
 	fileExit, errExit := IsFileExit(file_path)
