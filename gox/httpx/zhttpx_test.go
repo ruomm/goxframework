@@ -112,4 +112,11 @@ func TestJsonMaral(t *testing.T) {
 	err := corex.JsonUnmarshal(jsonStr, &userInfos, "data", "userInfos")
 	fmt.Println("错误信息：", err)
 	fmt.Println("解析结果：", userInfos)
+	protocol, host, port, relativeUrl, err := ParseUrlElement("ftp://zhongguo/")
+	fmt.Println(protocol)
+	fmt.Println(host)
+	fmt.Println(port)
+	fmt.Println(relativeUrl)
+	fmt.Println(err)
+
 }
