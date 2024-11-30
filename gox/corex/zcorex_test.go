@@ -136,3 +136,15 @@ func TestUtf8(t *testing.T) {
 	//match = IsRegexMatch("^[a-z]$", "a_-.123")
 	//fmt.Println(match)
 }
+
+func TestTokenHelper_GenToken(t *testing.T) {
+	dicts := "01234567899中华人民共和国abcdefg"
+	tokenHelper := TokenHelper{
+		Dicts:    dicts,
+		TokenLen: 0,
+	}
+	for i := 0; i < 100; i++ {
+		fmt.Println(tokenHelper.GenTokenNoZeroStart(6))
+	}
+
+}
