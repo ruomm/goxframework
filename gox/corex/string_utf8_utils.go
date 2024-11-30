@@ -12,8 +12,8 @@ import (
 	"unicode/utf8"
 )
 
-// uft8模式：计算字符串长度
-func Uft8Len(str string) int {
+// utf8模式：计算字符串长度
+func Utf8Len(str string) int {
 	if str == "" {
 		return 0
 	}
@@ -21,7 +21,7 @@ func Uft8Len(str string) int {
 	return lenRunes
 }
 
-// uft8模式：获取一个字符串特定位置的字符串，Utf8At("hello，你好！", 6) = "你"
+// utf8模式：获取一个字符串特定位置的字符串，Utf8At("hello，你好！", 6) = "你"
 func Utf8At(str string, index int) string {
 	lenRunes := utf8.RuneCountInString(str)
 	if index < 0 || index > lenRunes {
@@ -39,7 +39,7 @@ func Utf8At(str string, index int) string {
 	return sb.String()
 }
 
-// uft8模式：获取一个字符串特定开始和结束位置的中间字符串，startIndex:索引开始位置(包含)，endIndex:索引结束位置(不包含)
+// utf8模式：获取一个字符串特定开始和结束位置的中间字符串，startIndex:索引开始位置(包含)，endIndex:索引结束位置(不包含)
 // Utf8Sub("hello，你好！", 6, -1)="你好！"，Utf8Sub("hello，你好！", 6, 8)"=你好"
 func Utf8Sub(str string, startIndex int, endIndex int) string {
 	lenRunes := utf8.RuneCountInString(str)
@@ -71,7 +71,7 @@ func Utf8Sub(str string, startIndex int, endIndex int) string {
 	return sb.String()
 }
 
-// uft8模式：获取字符串substr在字符串s中的首位索引位置，没有则返回-1
+// utf8模式：获取字符串substr在字符串s中的首位索引位置，没有则返回-1
 // 如：Utf8Index("hello，你好啊！", "好啊") = 7
 func Utf8Index(s string, substr string) int {
 	index := strings.Index(s, substr)

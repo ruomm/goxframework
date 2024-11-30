@@ -6,7 +6,7 @@ import (
 )
 
 // 随机字符串结构体
-type TokenHelper struct {
+type TokenHelperUtf8 struct {
 	// 默认随机字符串token生成的长度
 	TokenLen int
 	// 随机字符串token生成的字典
@@ -14,31 +14,31 @@ type TokenHelper struct {
 }
 
 // 以默认长度生成随机字符串，默认长度为0时候生成4位随机字符串
-func (t *TokenHelper) GenTokenDefault() string {
+func (t *TokenHelperUtf8) GenTokenDefault() string {
 	return t.genTokenCommon(0, false, false)
 }
 
 // 以默认长度生成非0开头的随机字符串，默认长度为0时候生成4位随机字符串
-func (t *TokenHelper) GenTokenDefaultNoZeroStart() string {
+func (t *TokenHelperUtf8) GenTokenDefaultNoZeroStart() string {
 	return t.genTokenCommon(0, false, false)
 }
 
 // 以特定长度生成随机字符串，特定长度为0时候生成4位随机字符串
-func (t *TokenHelper) GenToken(token_len int) string {
+func (t *TokenHelperUtf8) GenToken(token_len int) string {
 	return t.genTokenCommon(token_len, false, false)
 }
 
 // 以特定长度生成非0开头的随机字符串，特定长度为0时候生成4位随机字符串
-func (t *TokenHelper) GenTokenNoZeroStart(token_len int) string {
+func (t *TokenHelperUtf8) GenTokenNoZeroStart(token_len int) string {
 	return t.genTokenCommon(token_len, true, false)
 }
 
 // 以特定长度生成非数字开头的随机字符串，特定长度为0时候生成4位随机字符串
-func (t *TokenHelper) GenTokenNoNumberStart(token_len int) string {
+func (t *TokenHelperUtf8) GenTokenNoNumberStart(token_len int) string {
 	return t.genTokenCommon(token_len, true, true)
 }
 
-func (t *TokenHelper) genTokenCommon(token_len int, noZeroStart bool, noNumStart bool) string {
+func (t *TokenHelperUtf8) genTokenCommon(token_len int, noZeroStart bool, noNumStart bool) string {
 	realLen := 0
 	if token_len > 0 {
 		realLen = token_len
@@ -53,26 +53,26 @@ func (t *TokenHelper) genTokenCommon(token_len int, noZeroStart bool, noNumStart
 	} else {
 		realDicts = t.Dicts
 	}
-	dictsLen := len(realDicts)
+	utf8Len := Utf8Len(realDicts)
 	tokenresult := ""
 	for i := 0; i < realLen; i++ {
 		if i == 0 {
 			if noZeroStart || noNumStart {
 				tokenresult = tokenresult + t.generateNoNumbnerStr(realDicts, noZeroStart, noNumStart)
 			} else {
-				tmpIndx := rand.Intn(dictsLen)
-				tokenresult = tokenresult + realDicts[tmpIndx:tmpIndx+1]
+				tmpIndx := rand.Intn(utf8Len)
+				tokenresult = tokenresult + Utf8At(realDicts, tmpIndx)
 			}
 		} else {
-			tmpIndx := rand.Intn(dictsLen)
-			tokenresult = tokenresult + realDicts[tmpIndx:tmpIndx+1]
+			tmpIndx := rand.Intn(utf8Len)
+			tokenresult = tokenresult + Utf8At(realDicts, tmpIndx)
 		}
 	}
 	return tokenresult
 }
 
 // 生成首字符串不为数字或不为0的随机字符串
-func (t *TokenHelper) generateNoNumbnerStr(realDicts string, noZeroStart bool, noNumStart bool) string {
+func (t *TokenHelperUtf8) generateNoNumbnerStr(realDicts string, noZeroStart bool, noNumStart bool) string {
 	sb := strings.Builder{}
 	for _, r := range realDicts {
 		if noNumStart && r >= 48 && r <= 57 {
@@ -84,15 +84,15 @@ func (t *TokenHelper) generateNoNumbnerStr(realDicts string, noZeroStart bool, n
 		}
 	}
 	letterDicts := sb.String()
-	letterLen := len(letterDicts)
+	letterLen := Utf8Len(letterDicts)
 	if letterLen > 0 {
 		tmpIndx := rand.Intn(letterLen)
-		resultStr := letterDicts[tmpIndx : tmpIndx+1]
+		resultStr := Utf8At(letterDicts, tmpIndx)
 		return resultStr
 	} else {
-		dictsLen := len(realDicts)
-		tmpIndx := rand.Intn(dictsLen)
-		resultStr := realDicts[tmpIndx : tmpIndx+1]
+		utf8Len := Utf8Len(realDicts)
+		tmpIndx := rand.Intn(utf8Len)
+		resultStr := Utf8At(realDicts, tmpIndx)
 		return resultStr
 	}
 }

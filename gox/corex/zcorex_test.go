@@ -125,7 +125,7 @@ func TestMaskString(t *testing.T) {
 func TestUtf8(t *testing.T) {
 	str := "hello，你好啊！"
 	//str = ""
-	fmt.Println(Uft8Len("hello，你好！"))
+	fmt.Println(Utf8Len("hello，你好！"))
 	fmt.Println(Utf8At("hello，你好！", 6))
 	fmt.Println(Utf8Sub("hello，你好！", 6, -1))
 	fmt.Println(Utf8Sub("hello，你好！", 6, 8))
@@ -137,8 +137,8 @@ func TestUtf8(t *testing.T) {
 	//fmt.Println(match)
 }
 
-func TestTokenHelper_GenToken(t *testing.T) {
-	dicts := "01234567899中华人民共和国abcdefg"
+func TestTokenHelper(t *testing.T) {
+	dicts := "01234567899abcdefg"
 	tokenHelper := TokenHelper{
 		Dicts:    dicts,
 		TokenLen: 0,
@@ -146,5 +146,15 @@ func TestTokenHelper_GenToken(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		fmt.Println(tokenHelper.GenTokenNoZeroStart(6))
 	}
+}
 
+func TestTokenHelperUtf8(t *testing.T) {
+	dicts := "01234567899中华人民共和国abcdefg"
+	tokenHelper := TokenHelperUtf8{
+		Dicts:    dicts,
+		TokenLen: 0,
+	}
+	for i := 0; i < 100; i++ {
+		fmt.Println(tokenHelper.GenTokenNoZeroStart(6))
+	}
 }
