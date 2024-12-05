@@ -547,3 +547,18 @@ func TimeValidMonthString(monthString string) bool {
 	}
 	return true
 }
+
+// 依据开始时间，结束时间查询一共有多少天
+func TimeTotalDaysForQuery(timeStart *time.Time, timeEnd *time.Time) int {
+	if nil == timeStart || nil == timeEnd {
+		return 0
+	}
+	startDayStr := TimeFormatByString(TIME_PATTERN_STANDARD_DAY, timeStart)
+	endDayStr := TimeFormatByString(TIME_PATTERN_STANDARD_DAY, timeEnd)
+	resultStart, _ := TimeParseByString(TIME_PATTERN_STANDARD, startDayStr+" 00:00:00")
+	resultEnd, _ := TimeParseByString(TIME_PATTERN_STANDARD, endDayStr+" 00:00:00")
+	if nil == resultStart || nil == resultEnd {
+		return 0
+	}
+	return int(resultEnd.Sub(*resultStart).Hours() / 24)
+}

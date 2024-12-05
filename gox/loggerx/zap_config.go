@@ -9,6 +9,7 @@ package loggerx
 import "go.uber.org/zap"
 
 type LogConfigs struct {
+	LogPath         string `xref:"LogPath"`
 	Level           string `xref:"Level"`
 	StdOut          bool   `xref:"StdOut"`
 	MaxSize         int    `xref:"MaxSize"`

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ruomm/goxframework/gox/corex"
 	"github.com/ruomm/goxframework/gox/refx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -125,11 +126,17 @@ func generateZapLogger(logConfig interface{}, workDirPath string, instanceName s
 }
 
 func getLogWriter(logConfig *LogConfigs) zapcore.WriteSyncer {
+	logDirPath := ""
+	if len(logConfig.LogPath) > 0 {
+		logDirPath = logConfig.LogPath
+	} else {
+		logDirPath = "./logs/"
+	}
 	fileName := ""
 	if len(logConfig.InstanceName) > 0 {
-		fileName = fmt.Sprintf("./logs/%s-%s.log", logConfig.ServiceName, logConfig.InstanceName)
+		fileName = corex.ConcatFilePath(logDirPath, fmt.Sprintf("%s-%s.log", logConfig.ServiceName, logConfig.InstanceName), true)
 	} else {
-		fileName = fmt.Sprintf("./logs/%s.log", logConfig.ServiceName)
+		fileName = corex.ConcatFilePath(logDirPath, fmt.Sprintf("%s.log", logConfig.ServiceName), true)
 	}
 	lumberJackLogger := &lumberjack.Logger{
 		Filename:   fileName,
