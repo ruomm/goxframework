@@ -560,5 +560,10 @@ func TimeTotalDaysForQuery(timeStart *time.Time, timeEnd *time.Time) int {
 	if nil == resultStart || nil == resultEnd {
 		return 0
 	}
-	return int(resultEnd.Sub(*resultStart).Hours() / 24)
+	if resultEnd.Before(*timeStart) {
+		return int(resultStart.Sub(*resultEnd).Hours()/24) + 1
+	} else {
+		return int(resultEnd.Sub(*resultStart).Hours()/24) + 1
+	}
+
 }
