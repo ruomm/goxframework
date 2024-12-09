@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// 随机字符串结构体
+// 随机字符串结构体-支持中文
 type TokenHelper struct {
 	// 默认随机字符串token生成的长度
 	TokenLen int

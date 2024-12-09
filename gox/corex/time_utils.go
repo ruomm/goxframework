@@ -548,7 +548,9 @@ func TimeValidMonthString(monthString string) bool {
 	return true
 }
 
-// 依据开始时间，结束时间查询一共有多少天
+// 依据开始时间，结束时间查询一共有多少天，开始和结束都计数
+// 如：TimeTotalDaysForQuery(2024-06-15 15:00,2024-06-15 15:00) = 1
+// 如：TimeTotalDaysForQuery(2024-06-15 23:59,2024-06-16 00:00) =2
 func TimeTotalDaysForQuery(timeStart *time.Time, timeEnd *time.Time) int {
 	if nil == timeStart || nil == timeEnd {
 		return 0
