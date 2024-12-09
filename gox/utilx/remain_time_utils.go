@@ -55,6 +55,7 @@ func ParseRemainMonthSenconds(t1 *time.Time, t2 *time.Time) (int64, int64, error
 	return tEndMonths - tStartMonths - 1, offsetSecondStart + offsetSecondEnd, nil
 }
 
+// 获取剩余时间，返回格式化的时间
 func ParseRemainFormat(t1 *time.Time, t2 *time.Time, zeroShow bool) (string, error) {
 	months, seconds, err := ParseRemainMonthSenconds(t1, t2)
 	if err != nil {
