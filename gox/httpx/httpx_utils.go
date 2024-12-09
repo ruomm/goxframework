@@ -10,7 +10,12 @@ import (
 	"strings"
 )
 
-// JSON请求自动封装和解封
+// JSON请求自动封装
+// httpClient不传入则使用默认的http.Client
+// reqUrl:请求路径
+// httpxMethod:请求的方法，reqObj定义有HttpxMethod则此参数可以不填写，使用reqObj定义的请求方法
+// httpxHeaders自定义的请求Header列表
+// reqObj:请求的实体类，通过json、xreq_param、xreq_query、xreq_header注解定义请求参数
 func DoHttpToResponse(httpClient *http.Client, reqUrl string, httpxMethod string, httpxHeaders map[string]string, reqOjb interface{}) (*http.Response, error) {
 	reqMethod, reqBody, reqParam, reqQuery, reqHeaders, err := ParseToRequest(httpxMethod, reqOjb)
 	if err != nil {
@@ -63,7 +68,14 @@ func DoHttpToResponse(httpClient *http.Client, reqUrl string, httpxMethod string
 	return resp, nil
 }
 
-// JSON请求自动封装和解封
+// JSON请求自动封装和解封，
+// httpClient不传入则使用默认的http.Client
+// reqUrl:请求路径
+// httpxMethod:请求的方法，reqObj定义有HttpxMethod则此参数可以不填写，使用reqObj定义的请求方法
+// httpxHeaders自定义的请求Header列表
+// reqObj:请求的实体类，通过json、xreq_param、xreq_query、xreq_header注解定义请求参数，
+// resultObjects:请求结果自动解析为对象列表，多个参数只有第一个解析错误才返回error。resultObjects中间有字符串的，则视为需要解析的JSON节点。
+// 如：DoHttpToJson(nil,"http://xxxx","GET",nil,reqObj,jsonA,"data.info",jsonB),jsonB解析的数据来源为data.info节点的数据。
 func DoHttpToJson(httpClient *http.Client, reqUrl string, httpxMethod string, httpxHeaders map[string]string, reqOjb interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
 	reqMethod, reqBody, reqParam, reqQuery, reqHeaders, err := ParseToRequest(httpxMethod, reqOjb)
 	if err != nil {
@@ -116,6 +128,12 @@ func DoHttpToJson(httpClient *http.Client, reqUrl string, httpxMethod string, ht
 	return xToHttpxResponseJson(resp, resultObjs...)
 }
 
+// http请求-字符串模式
+// httpClient不传入则使用默认的http.Client
+// httpxMethod:请求的方法，reqObj定义有HttpxMethod则此参数可以不填写，使用reqObj定义的请求方法
+// reqUrl:请求路径
+// postContentType请求的Content-Type，如实不填写，则依据postStr自动判断
+// postStr:请求体文本
 func DoHttp(httpClient *http.Client, httpxMethod string, reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
 	reqMethodVerify := xReqMethodVerify(httpxMethod)
 	if !reqMethodVerify {
@@ -152,6 +170,12 @@ func DoHttp(httpClient *http.Client, httpxMethod string, reqUrl string, postCont
 	return xToHttpxResponse(resp)
 }
 
+// http请求-JSON模式
+// httpClient不传入则使用默认的http.Client
+// httpxMethod:请求的方法，reqObj定义有HttpxMethod则此参数可以不填写，使用reqObj定义的请求方法
+// reqUrl:请求路径
+// data:请求的JSON实体
+// resultObjects:请求结果自动解析为对象列表，多个参数只有第一个解析错误才返回error。resultObjects中间有字符串的，则视为需要解析的JSON节点。
 func DoHttpJson(httpClient *http.Client, httpxMethod string, reqUrl string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
 	reqMethodVerify := xReqMethodVerify(httpxMethod)
 	if !reqMethodVerify {
@@ -187,30 +211,70 @@ func DoHttpJson(httpClient *http.Client, httpxMethod string, reqUrl string, data
 	return xToHttpxResponseJson(resp, resultObjs...)
 }
 
+// http请求-POST-字符串模式
+// httpClient不传入则使用默认的http.Client
+// httpxMethod:请求的方法，reqObj定义有HttpxMethod则此参数可以不填写，使用reqObj定义的请求方法
+// reqUrl:请求路径
+// data:请求的JSON实体
+// resultObjects:请求结果自动解析为对象列表，多个参数只有第一个解析错误才返回error。resultObjects中间有字符串的，则视为需要解析的JSON节点。
 func DoPost(httpClient *http.Client, reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
 	return DoHttp(httpClient, http.MethodPost, reqUrl, postContentType, postStr)
 }
 
+// http请求-POST-JSON模式
+// httpClient不传入则使用默认的http.Client
+// httpxMethod:请求的方法，reqObj定义有HttpxMethod则此参数可以不填写，使用reqObj定义的请求方法
+// reqUrl:请求路径
+// data:请求的JSON实体
+// resultObjects:请求结果自动解析为对象列表，多个参数只有第一个解析错误才返回error。resultObjects中间有字符串的，则视为需要解析的JSON节点。
 func DoPostJson(httpClient *http.Client, reqUrl string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
 	return DoHttpJson(httpClient, http.MethodPost, reqUrl, data, resultObjs...)
 }
 
+// http请求-PUT-字符串模式
+// httpClient不传入则使用默认的http.Client
+// httpxMethod:请求的方法，reqObj定义有HttpxMethod则此参数可以不填写，使用reqObj定义的请求方法
+// reqUrl:请求路径
+// data:请求的JSON实体
+// resultObjects:请求结果自动解析为对象列表，多个参数只有第一个解析错误才返回error。resultObjects中间有字符串的，则视为需要解析的JSON节点。
 func DoPut(httpClient *http.Client, reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
 	return DoHttp(httpClient, http.MethodPut, reqUrl, postContentType, postStr)
 }
 
+// http请求-PUT-JSON模式
+// httpClient不传入则使用默认的http.Client
+// httpxMethod:请求的方法，reqObj定义有HttpxMethod则此参数可以不填写，使用reqObj定义的请求方法
+// reqUrl:请求路径
+// data:请求的JSON实体
+// resultObjects:请求结果自动解析为对象列表，多个参数只有第一个解析错误才返回error。resultObjects中间有字符串的，则视为需要解析的JSON节点。
 func DoPutJson(httpClient *http.Client, reqUrl string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
 	return DoHttpJson(httpClient, http.MethodPut, reqUrl, data, resultObjs...)
 }
 
+// http请求-DELETE-字符串模式
+// httpClient不传入则使用默认的http.Client
+// httpxMethod:请求的方法，reqObj定义有HttpxMethod则此参数可以不填写，使用reqObj定义的请求方法
+// reqUrl:请求路径
+// data:请求的JSON实体
+// resultObjects:请求结果自动解析为对象列表，多个参数只有第一个解析错误才返回error。resultObjects中间有字符串的，则视为需要解析的JSON节点。
 func DoDelete(httpClient *http.Client, reqUrl string, postContentType string, postStr string) (*HttpxResponse, error) {
 	return DoHttp(httpClient, http.MethodDelete, reqUrl, postContentType, postStr)
 }
 
+// http请求-DELETE-JSON模式
+// httpClient不传入则使用默认的http.Client
+// httpxMethod:请求的方法，reqObj定义有HttpxMethod则此参数可以不填写，使用reqObj定义的请求方法
+// reqUrl:请求路径
+// data:请求的JSON实体
+// resultObjects:请求结果自动解析为对象列表，多个参数只有第一个解析错误才返回error。resultObjects中间有字符串的，则视为需要解析的JSON节点。
 func DoDeleteJson(httpClient *http.Client, reqUrl string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
 	return DoHttpJson(httpClient, http.MethodDelete, reqUrl, data, resultObjs...)
 }
 
+// http请求-GETT-string、url.Values、xreq_query模式
+// httpClient不传入则使用默认的http.Client
+// urlOfGet:请求路径
+// data:请求实体，支持stirng、url.Values、xreq_query模式
 func DoGet(httpClient *http.Client, urlOfGet string, data interface{}) (*HttpxResponse, error) {
 	urlData, err := ParseToUrlEncodeString(data)
 	if err != nil {
@@ -231,6 +295,11 @@ func DoGet(httpClient *http.Client, urlOfGet string, data interface{}) (*HttpxRe
 	return xToHttpxResponse(resp)
 }
 
+// http请求-GET-string、url.Values、xreq_query模式
+// httpClient不传入则使用默认的http.Client
+// urlOfGet:请求路径
+// data:请求实体，支持stirng、url.Values、xreq_query模式
+// resultObjects:请求结果自动解析为对象列表，多个参数只有第一个解析错误才返回error。resultObjects中间有字符串的，则视为需要解析的JSON节点。
 func DoGetJson(httpClient *http.Client, urlOfGet string, data interface{}, resultObjs ...interface{}) (*HttpxResponse, error) {
 	urlData, err := ParseToUrlEncodeString(data)
 	if err != nil {
