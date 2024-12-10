@@ -11,6 +11,7 @@ import (
 	"math"
 )
 
+// Decimal辅助类
 type DecimalHelper struct {
 	Prec int32 // 保留的小数位数
 }
