@@ -646,6 +646,22 @@ func GormParseQueryStart(queryStart string) string {
 	}
 }
 
+// yyyy-MM-dd查询条件拼接“ 23:59:59”，yyyy-MM查询条件拼接“-01 23:59:59”
+func GormParseQueryEnd2359(queryStart string) string {
+	lenQuery := len(queryStart)
+	if lenQuery <= 0 {
+		return ""
+	} else if lenQuery == 7 {
+		return queryStart + "-01" + " 23:59:59"
+	} else if lenQuery == 10 {
+		return queryStart + " 23:59:59"
+	} else if lenQuery == 19 {
+		return queryStart
+	} else {
+		return ""
+	}
+}
+
 // yyyy-MM-dd查询条件获取下一天拼接“ 00:00:00”，yyyy-MM查询条件获取下一个月拼接“-01 00:00:00”
 func GormParseQueryEnd(queryEnd string) string {
 	lenQuery := len(queryEnd)
