@@ -111,7 +111,7 @@ func SplitHostPort(hostPort string) (string, int, error) {
 	} else {
 		hostStr = hostPorts[0]
 		portStr = hostPorts[1]
-		errMsgs = append(errMsgs, "host port string after split is invalid")
+		//errMsgs = append(errMsgs, "host port string after split is invalid")
 	}
 	if len(portStr) > 0 {
 		intVal, intValErr := strconv.ParseInt(portStr, 10, 64)
@@ -131,6 +131,7 @@ func SplitHostPort(hostPort string) (string, int, error) {
 	} else {
 		return hostStr, port, nil
 	}
+	return hostStr, port, nil
 }
 
 // 解析URL单元，返回协议、host、port、相对路径
