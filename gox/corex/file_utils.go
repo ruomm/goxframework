@@ -561,3 +561,19 @@ func GetFileExtension(filePath string) string {
 		return filePath[extenPosi+1:]
 	}
 }
+
+// 验证是否有效的名称，必须是xx.xx格式的文件名称
+func VerifyFileName(fileName string) bool {
+	if strings.Contains(fileName, "/") || strings.Contains(fileName, "\\") || strings.Contains(fileName, "\r") || strings.Contains(fileName, "\n") || strings.Contains(fileName, "\t") {
+		return false
+	}
+	fileNameWithoutExtension := GetFileNameWithoutExtension(fileName)
+	fileExtension := GetFileExtension(fileName)
+	if len(fileNameWithoutExtension) <= 0 {
+		return false
+	}
+	if len(fileExtension) <= 0 {
+		return false
+	}
+	return true
+}
