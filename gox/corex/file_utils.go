@@ -562,8 +562,11 @@ func GetFileExtension(filePath string) string {
 	}
 }
 
-// 验证是否有效的名称，必须是xx.xx格式的文件名称
+// 验证是否有效的文件名称，必须是xx.xx格式的文件名称
 func VerifyFileName(fileName string) bool {
+	if len(fileName) <= 0 {
+		return false
+	}
 	if strings.Contains(fileName, "/") || strings.Contains(fileName, "\\") || strings.Contains(fileName, "\r") || strings.Contains(fileName, "\n") || strings.Contains(fileName, "\t") {
 		return false
 	}
@@ -576,4 +579,43 @@ func VerifyFileName(fileName string) bool {
 		return false
 	}
 	return true
+}
+
+// 验证是否有效的文件路径名称，必须是xx/xx.xx格式的文件路径
+func VerifyFilePath(filePath string) bool {
+	if len(filePath) <= 0 {
+		return false
+	}
+	if strings.Contains(filePath, "\r") || strings.Contains(filePath, "\n") || strings.Contains(filePath, "\t") {
+		return false
+	}
+	fileName := GetFileName(filePath)
+	fileNameWithoutExtension := GetFileNameWithoutExtension(fileName)
+	fileExtension := GetFileExtension(fileName)
+	if len(fileNameWithoutExtension) <= 0 {
+		return false
+	}
+	if len(fileExtension) <= 0 {
+		return false
+	}
+	return true
+}
+
+// 验证是否有效的文件夹名称，必须是xx/xx/xx格式的文件夹
+func VerifyFileDir(filePath string) bool {
+	if len(filePath) <= 0 {
+		return false
+	}
+	if strings.Contains(filePath, "\r") || strings.Contains(filePath, "\n") || strings.Contains(filePath, "\t") {
+		return false
+	}
+	fileName := GetFileName(filePath)
+	if len(fileName) <= 0 {
+		return true
+	}
+	if strings.Contains(fileName, ".") {
+		return false
+	} else {
+		return true
+	}
 }
